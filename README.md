@@ -38,6 +38,9 @@ Used libraries:
 - Image resize/optimizaiton library
 - FBX, OBJ, GLB support
 - Sound/Audio
+- Material
+- Mesh
+- Animation
 
 
 - Editor
