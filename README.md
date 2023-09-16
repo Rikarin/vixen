@@ -31,8 +31,11 @@ Used libraries:
     - Study how https://github.com/erincatto/box2c works and implement similar physics engine
 - Input System
 - Shader compilation system
+- PBR/BSDF shader program
 - VFX
 - UI library
+    - Canvas
+    - Button, Slider, Radio, Image, Panel, Horizontal/Vertical group, and other stuff from unity
 - Camera
 - Lights
 - Image resize/optimizaiton library
@@ -40,7 +43,10 @@ Used libraries:
 - Sound/Audio
 - Material
 - Mesh
+- Textures
+- Support most common image formats as imports
 - Animation
+- Networking
 
 
 - Editor
