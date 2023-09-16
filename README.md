@@ -37,6 +37,7 @@ Used libraries:
 - UI library
     - Canvas
     - Button, Slider, Radio, Image, Panel, Horizontal/Vertical group, and other stuff from unity
+    - Consider using https://github.com/ultralight-ux/ultralight
 - Camera
 - Lights
 - Image resize/optimizaiton library
