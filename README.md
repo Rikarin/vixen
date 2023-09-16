@@ -15,6 +15,7 @@ Used libraries:
 - Consider using Nuke.GlobalTool as build tool
 - Serilog
 - YAML serialization/deserialization
+- Image loading and font rendering https://github.com/SixLabors/ImageSharp
 
 
 ## Topics
