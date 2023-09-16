@@ -4,10 +4,10 @@
 ## Motivation
 
 Create game engine with requirements:
-- Support most popular desktop operation systems: win64, OSX64, OSX-ARM, Linux64
-- Run on .NET 7
-- Use Vulkan, OpenGL API
-- HLSL Shaders compiled to SPIR-V
+- Supports most popular desktop operation systems: win64, OSX64, OSX-ARM, Linux64
+- Runs on .NET 7
+- Uses Vulkan, OpenGL API
+- Has HLSL Shaders compiled to SPIR-V
 
 
 Used libraries:
@@ -47,6 +47,7 @@ Used libraries:
 - Support most common image formats as imports
 - Animation
 - Networking
+- HLSL Shader compilation to SPIR-V
 
 
 - Editor
