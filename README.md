@@ -18,6 +18,7 @@ Create game engine with requirements:
 - YAML serialization/deserialization
 - Image loading and font rendering https://github.com/SixLabors/ImageSharp
 - FBX Loader https://github.com/izrik/FbxSharp
+- YAML Serializer/Deserializer https://github.com/aaubry/YamlDotNet
 
 
 ## References
@@ -69,6 +70,7 @@ Create game engine with requirements:
 - ScriptableObject
 - Terrain
 - Scene
+- Create special method to be called after deserialization of an object
 
 
 - Editor
