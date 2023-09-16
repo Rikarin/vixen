@@ -80,3 +80,9 @@ Create game engine with requirements:
 
 - Editor
     - Linking of assets. We should be able to link Mesh to MeshFilter class which should be represented as special reference in the editor (.meta files) but it's a regular object instance in C#
+
+
+## Use Cases
+
+MeshImporter should be deserialized based on .meta file of the mesh then it should load and create Mesh itself for editor or build system but for compiled/runtime game there should be a special MeshImporter
+which can work better with already optimized data.
