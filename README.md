@@ -58,7 +58,7 @@ Create game engine with requirements:
 - FBX, OBJ, GLB support
 - Sound/Audio
 - Material
-- Mesh
+- Mesh, MeshFilter, MeshRenderer
 - Textures
 - Support most common image formats as imports
 - Animation
