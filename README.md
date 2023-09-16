@@ -75,6 +75,7 @@ Create game engine with requirements:
 - Create special method to be called after deserialization of an object
 - Metadata and some sort of FileId and VFS to resolve files by ID instead of their real location
 - Importers for importing .meta files and creating "Editor" objects
+- Build pipeline for exporting assets, bundling them, compressing by LZ4 or other format and creating a whole executable
 
 
 - Editor
