@@ -78,5 +78,5 @@ Create game engine with requirements:
 - Build pipeline for exporting assets, bundling them, compressing by LZ4 or other format and creating a whole executable
 - Custom serialization library which can handle self referencing files by replacing references by {FileId:...} "structs"
 
-
 - Editor
+    - Linking of assets. We should be able to link Mesh to MeshFilter class which should be represented as special reference in the editor (.meta files) but it's a regular object instance in C#
