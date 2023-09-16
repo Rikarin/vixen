@@ -10,12 +10,19 @@ Create game engine with requirements:
 - Has HLSL Shaders compiled to SPIR-V
 
 
-Used libraries:
+## Used libraries
+
 - Silk.NET
 - Consider using Nuke.GlobalTool as build tool
 - Serilog
 - YAML serialization/deserialization
 - Image loading and font rendering https://github.com/SixLabors/ImageSharp
+- FBX Loader https://github.com/izrik/FbxSharp
+
+
+## References
+
+- https://github.com/TheCherno/Sparky
 
 
 ## Topics
