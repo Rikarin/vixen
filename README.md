@@ -49,7 +49,14 @@ Used libraries:
 - Animation
 - Networking
 - HLSL Shader compilation to SPIR-V
+    - Use DXC compiler
+    - https://github.com/amerkoleci/Vortice.Windows/tree/main/src/Vortice.Dxc make similar wrappers
+    - Build DXC for all supported platforms https://github.com/microsoft/DirectXShaderCompiler/issues/4480
 - Create wrappers around the ImageSharp library and others as well
+- Prefabs (format, serialize/deserialize)
+- ScriptableObject
+- Terrain
+- Scene
 
 
 - Editor
