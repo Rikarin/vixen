@@ -71,6 +71,7 @@ Create game engine with requirements:
 - Terrain
 - Scene
 - Create special method to be called after deserialization of an object
+- Metadata and some sort of FileId and VFS to resolve files by ID instead of their real location
 
 
 - Editor
