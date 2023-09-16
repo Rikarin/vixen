@@ -23,6 +23,8 @@ Create game engine with requirements:
 
 ## References
 
+- Unity YAML serialization format https://blog.unity.com/engine-platform/understanding-unitys-serialization-language-yaml
+
 ### Game Engines
 
 - https://github.com/TheCherno/Sparky
