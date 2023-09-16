@@ -86,3 +86,23 @@ Create game engine with requirements:
 
 MeshImporter should be deserialized based on .meta file of the mesh then it should load and create Mesh itself for editor or build system but for compiled/runtime game there should be a special MeshImporter
 which can work better with already optimized data.
+
+
+## Random Classes which needs to be implemented (somehow)
+
+- GameObject
+- Component
+- Renderer
+- MeshRenderer
+- Transform
+- Mesh
+- Material
+- Texture
+- MeshImporter
+- TextureImporter
+- Light
+- Sound
+- Font
+- FontCollection
+- Window
+- Camera
