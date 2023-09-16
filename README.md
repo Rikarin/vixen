@@ -49,6 +49,7 @@ Used libraries:
 - Animation
 - Networking
 - HLSL Shader compilation to SPIR-V
+- Create wrappers around the ImageSharp library and others as well
 
 
 - Editor
