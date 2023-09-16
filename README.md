@@ -22,7 +22,11 @@ Create game engine with requirements:
 
 ## References
 
+### Game Engines
+
 - https://github.com/TheCherno/Sparky
+- https://github.com/EQMG/Acid
+- Very basic C# game engine https://github.com/garlfin/garEnginePublic
 
 
 ## Topics
