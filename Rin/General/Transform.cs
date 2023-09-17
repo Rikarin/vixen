@@ -19,5 +19,9 @@ public class Transform : Component {
     public Vector3 LocalEulerAngles => LocalRotation.ToEulerAngles();
 
     public Transform Root => Parent != null ? Parent.Root : this;
-    
+
+
+    public void SetParent(Transform? parent, bool sameWorldPosition = false) {
+        Parent = parent;
+    }
 }
