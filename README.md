@@ -24,6 +24,7 @@ Create game engine with requirements:
 ## References
 
 - Unity YAML serialization format https://blog.unity.com/engine-platform/understanding-unitys-serialization-language-yaml
+- Interesting reference how to implement openGL Buffers https://github.com/frederikja163/Silk.NET/blob/tutorials/examples/CSharp/OpenGL/Tutorial%201.3%20-%20Abstractions/BufferObject.cs
 
 ### Game Engines
 

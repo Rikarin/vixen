@@ -1,5 +1,3 @@
 namespace Editor.General;
 
-public static class Resources {
-    
-}
+public static class Resources { }

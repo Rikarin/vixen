@@ -1,5 +1,3 @@
 namespace Editor.General;
 
-public class MeshRenderer : Component {
-    
-}
+public class MeshRenderer : Component { }
