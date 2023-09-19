@@ -1,3 +1,4 @@
+using Editor.Platform.Internal;
 using Editor.Platform.Silk;
 
 namespace Editor.General;
@@ -22,7 +23,7 @@ public class RenderTexture : Texture {
 
 public class Texture2D : Texture {
     bool isReadable;
-    IInternalTexture2D handle;
+    internal IInternalTexture2D handle;
     byte[]? buffer;
 
     public TextureFormat Format { get; }

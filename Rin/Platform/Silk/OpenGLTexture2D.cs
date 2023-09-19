@@ -1,13 +1,8 @@
 using Editor.General;
+using Editor.Platform.Internal;
 using Silk.NET.OpenGL;
 
 namespace Editor.Platform.Silk;
-
-
-interface IInternalTexture2D {
-    void SetData<T>(ReadOnlySpan<T> data) where T : unmanaged;
-    void Bind(uint unit);
-}
 
 sealed class OpenGLTexture2D : IInternalTexture2D, IDisposable {
     readonly GL gl;

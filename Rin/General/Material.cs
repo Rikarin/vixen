@@ -10,8 +10,24 @@ public class Material {
     readonly Dictionary<int, MaterialValue> idBuffer = new();
     readonly Dictionary<string, MaterialValue> nameBuffer = new();
 
-    public Shader Shader { get; set; }
-    public Texture Texture { get; set; }
+    public Shader Shader { get; set; } // TODO: bind to default one when not specified
+
+    // TODO: Not sure if MainTexture, MainTextureScale and MainTextureOffset should be nullable or not
+    
+    public Texture MainTexture {
+        get => GetTexture("_MainTex");
+        set => SetTexture("_MainText", value);
+    }
+
+    public Vector2 MainTextureOffset {
+        get => GetTextureOffset("_MainTexOffset");
+        set => SetTextureOffset("_MainTexOffset", value);
+    }
+    
+    public Vector2 MainTextureScale {
+        get => GetTextureOffset("_MainTexScale");
+        set => SetTextureOffset("_MainTexScale", value);
+    }
 
     public bool HasColor(string name) => HasType(MaterialType.Color, name);
     public bool HasColor(int id) => HasType(MaterialType.Color, id);
@@ -337,6 +353,18 @@ public class Material {
         idBuffer[id] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(id, values));
     }
 
+    internal void Render() {
+        // Shader.Render();
+        // TODO: Bind shader and then render??
+        
+        foreach (var x in nameBuffer.Values) {
+            x.Callback();
+        }
+        
+        foreach (var x in idBuffer.Values) {
+            x.Callback();
+        }
+    }
 
     bool HasType(MaterialType type, int id) {
         if (idBuffer.TryGetValue(id, out var value)) {

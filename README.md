@@ -19,6 +19,7 @@ Create game engine with requirements:
 - Image loading and font rendering https://github.com/SixLabors/ImageSharp
 - FBX Loader https://github.com/izrik/FbxSharp
 - YAML Serializer/Deserializer https://github.com/aaubry/YamlDotNet
+- Use PhysX for 3D https://github.com/Cysharp/MagicPhysX
 
 
 ## References
