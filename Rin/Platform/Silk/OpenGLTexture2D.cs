@@ -10,21 +10,21 @@ sealed class OpenGLTexture2D : IInternalTexture2D, IDisposable {
     readonly SizedInternalFormat internalFormat;
     readonly uint width;
     readonly uint height;
-    uint handle;
-    
+    readonly uint handle;
+
     internal OpenGLTexture2D(uint width, uint height, TextureFormat format) {
         gl = SilkWindow.MainWindow.Gl;
         this.width = width;
         this.height = height;
         internalFormat = format.ToInternalFormat();
         dataFormat = format.ToDataFormat();
-        
+
         handle = gl.CreateTexture(TextureTarget.Texture2D);
         gl.TextureStorage2D(handle, 0, internalFormat, width, height);
-        
+
         gl.TextureParameterI(handle, TextureParameterName.TextureMinFilter, (int)GLEnum.Linear);
         gl.TextureParameterI(handle, TextureParameterName.TextureMagFilter, (int)GLEnum.Linear);
-        
+
         // TODO: set this according to TextureWrapMode
         gl.TextureParameterI(handle, TextureParameterName.TextureWrapS, (int)GLEnum.Repeat);
         gl.TextureParameterI(handle, TextureParameterName.TextureWrapT, (int)GLEnum.Repeat);
@@ -32,7 +32,7 @@ sealed class OpenGLTexture2D : IInternalTexture2D, IDisposable {
 
     public void SetData<T>(ReadOnlySpan<T> data) where T : unmanaged {
         gl.TextureSubImage2D(handle, 0, 0, 0, width, height, dataFormat, PixelType.Byte, data);
-        
+
         // TODO: not sure about this
         // gl.GenerateMipmap(TextureTarget.Texture2D);
     }
@@ -48,8 +48,6 @@ sealed class OpenGLTexture2D : IInternalTexture2D, IDisposable {
     }
 }
 
-
-
 static class TextureFormatExtensions {
     internal static PixelFormat ToDataFormat(this TextureFormat format) =>
         format switch {
@@ -57,7 +55,7 @@ static class TextureFormatExtensions {
             TextureFormat.RGBA8 => PixelFormat.Rgba,
             _ => throw new ArgumentOutOfRangeException()
         };
-    
+
     internal static SizedInternalFormat ToInternalFormat(this TextureFormat format) =>
         format switch {
             TextureFormat.RGB8 => SizedInternalFormat.Rgb8,

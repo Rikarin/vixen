@@ -78,7 +78,7 @@ class OpenGLShader : IInternalShader {
         if (value is Texture2D texture2D) {
             // TODO: set on incremental basis
             const uint unit = 0;
-            
+
             texture2D.handle.Bind(unit);
             gl.Uniform1(id, unit);
         }
@@ -106,7 +106,9 @@ class OpenGLShader : IInternalShader {
 
     public void SetVector(string name, Vector4 value) => SetVector(PropertyToId(name), value);
     public void SetVector(int id, Vector4 value) => gl.Uniform4(id, value.X, value.Y, value.Z, value.W);
-    public void SetVectorArray(string name, ReadOnlyMemory<Vector4> values) => SetVectorArray(PropertyToId(name), values);
+
+    public void SetVectorArray(string name, ReadOnlyMemory<Vector4> values) =>
+        SetVectorArray(PropertyToId(name), values);
 
     public void SetVectorArray(int id, ReadOnlyMemory<Vector4> values) {
         throw new NotImplementedException();

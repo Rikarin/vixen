@@ -10,7 +10,7 @@ public class OpenGLUniformBuffer : UniformBuffer {
     public unsafe OpenGLUniformBuffer(UIntPtr size, uint binding) {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
         handle = gl.CreateBuffer();
-        
+
         gl.NamedBufferData(handle, size, null, GLEnum.DynamicDraw);
         gl.BindBufferBase(GLEnum.UniformBuffer, binding, handle);
     }

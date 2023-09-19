@@ -22,8 +22,8 @@ public class RenderTexture : Texture {
 }
 
 public class Texture2D : Texture {
-    bool isReadable;
     internal IInternalTexture2D handle;
+    bool isReadable;
     byte[]? buffer;
 
     public TextureFormat Format { get; }

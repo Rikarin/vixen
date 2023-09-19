@@ -13,7 +13,7 @@ public class Material {
     public Shader Shader { get; set; } // TODO: bind to default one when not specified
 
     // TODO: Not sure if MainTexture, MainTextureScale and MainTextureOffset should be nullable or not
-    
+
     public Texture MainTexture {
         get => GetTexture("_MainTex");
         set => SetTexture("_MainText", value);
@@ -23,7 +23,7 @@ public class Material {
         get => GetTextureOffset("_MainTexOffset");
         set => SetTextureOffset("_MainTexOffset", value);
     }
-    
+
     public Vector2 MainTextureScale {
         get => GetTextureOffset("_MainTexScale");
         set => SetTextureOffset("_MainTexScale", value);
@@ -353,19 +353,6 @@ public class Material {
         idBuffer[id] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(id, values));
     }
 
-    internal void Render() {
-        // Shader.Render();
-        // TODO: Bind shader and then render??
-        
-        foreach (var x in nameBuffer.Values) {
-            x.Callback();
-        }
-        
-        foreach (var x in idBuffer.Values) {
-            x.Callback();
-        }
-    }
-
     bool HasType(MaterialType type, int id) {
         if (idBuffer.TryGetValue(id, out var value)) {
             return value.Type == type;
@@ -380,6 +367,19 @@ public class Material {
         }
 
         return false;
+    }
+
+    internal void Render() {
+        // Shader.Render();
+        // TODO: Bind shader and then render??
+
+        foreach (var x in nameBuffer.Values) {
+            x.Callback();
+        }
+
+        foreach (var x in idBuffer.Values) {
+            x.Callback();
+        }
     }
 
     record struct MaterialValue(MaterialType Type, object Value, Action Callback);

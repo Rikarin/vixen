@@ -1,5 +1,3 @@
 namespace Editor.Editor;
 
-public sealed class Texture2DImporter : Importer {
-    
-}
+public sealed class Texture2DImporter : Importer { }

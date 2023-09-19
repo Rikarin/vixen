@@ -8,7 +8,7 @@ public class OpenGLVertexArray : VertexArray {
     readonly List<VertexBuffer> vertexBuffers = new();
     readonly GL gl;
     readonly uint handle;
-    uint vertexBufferIndex = 0;
+    uint vertexBufferIndex;
 
     public override IReadOnlyList<VertexBuffer> VertexBuffers => vertexBuffers.AsReadOnly();
 
@@ -81,15 +81,16 @@ public class OpenGLVertexArray : VertexArray {
                             (void*)(element.Offset + sizeof(float) * element.ComponentCount + i)
                         );
                         gl.VertexAttribDivisor(vertexBufferIndex, 1);
-                        vertexBufferIndex++; 
+                        vertexBufferIndex++;
                     }
+
                     break;
                 }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
+
         vertexBuffers.Add(buffer);
     }
 
