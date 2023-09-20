@@ -12,7 +12,7 @@ sealed class OpenGLIndexBuffer : IndexBuffer {
     public OpenGLIndexBuffer(ReadOnlySpan<uint> indices) {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
         Count = indices.Length;
-        handle = gl.CreateBuffer();
+        handle = gl.GenBuffer();
 
         gl.BindBuffer(GLEnum.ArrayBuffer, handle);
         gl.BufferData(GLEnum.ArrayBuffer, indices, GLEnum.StaticDraw);

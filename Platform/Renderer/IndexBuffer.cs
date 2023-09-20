@@ -2,7 +2,7 @@ using Rin.Platform.Silk;
 
 namespace Rin.Platform.Renderer;
 
-abstract class IndexBuffer : IDisposable {
+public abstract class IndexBuffer : IDisposable {
     public abstract int Count { get; }
 
     public abstract void Bind();

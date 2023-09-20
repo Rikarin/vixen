@@ -1,6 +1,6 @@
 namespace Rin.Platform.Renderer;
 
-enum ShaderDataType {
+public enum ShaderDataType {
     None = 0,
     Float,
     Float2,

@@ -10,7 +10,7 @@ public class Material {
     readonly Dictionary<int, MaterialValue> idBuffer = new();
     readonly Dictionary<string, MaterialValue> nameBuffer = new();
 
-    public Shader Shader { get; set; } // TODO: bind to default one when not specified
+    public Shader Shader { get; }
 
     // TODO: Not sure if MainTexture, MainTextureScale and MainTextureOffset should be nullable or not
 
@@ -27,6 +27,14 @@ public class Material {
     public Vector2 MainTextureScale {
         get => GetTextureOffset("_MainTexScale");
         set => SetTextureOffset("_MainTexScale", value);
+    }
+
+    public Material(Material original) {
+        throw new NotImplementedException();
+    }
+
+    public Material(Shader shader) {
+        Shader = shader;
     }
 
     public bool HasColor(string name) => HasType(MaterialType.Color, name);
@@ -369,7 +377,9 @@ public class Material {
         return false;
     }
 
-    internal void Render() {
+    // internal
+    public void Render() {
+        Shader.Handle.Bind();
         // Shader.Render();
         // TODO: Bind shader and then render??
 

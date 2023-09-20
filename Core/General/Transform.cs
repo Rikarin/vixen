@@ -20,6 +20,12 @@ public class Transform : Component {
 
     public Transform Root => Parent != null ? Parent.Root : this;
 
+    public Matrix4x4 ViewMatrix =>
+        Matrix4x4.Identity
+        * Matrix4x4.CreateScale(LocalScale)
+        * Matrix4x4.CreateFromQuaternion(LocalRotation)
+        * Matrix4x4.CreateTranslation(LocalPosition);
+
 
     public void SetParent(Transform? parent, bool sameWorldPosition = false) {
         Parent = parent;

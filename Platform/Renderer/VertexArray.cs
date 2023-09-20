@@ -1,6 +1,8 @@
+using Rin.Platform.Silk;
+
 namespace Rin.Platform.Renderer;
 
-abstract class VertexArray : IDisposable {
+public abstract class VertexArray : IDisposable {
     public abstract IReadOnlyList<VertexBuffer> VertexBuffers { get; }
     public IndexBuffer IndexBuffer { get; protected set; }
 
@@ -12,7 +14,7 @@ abstract class VertexArray : IDisposable {
     public static VertexArray Create() {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.None: throw new NotImplementedException();
-            // case RendererApi.Api.OpenGl: return new OpenGLVertexBuffer(size);
+            case RendererApi.Api.OpenGl: return new OpenGLVertexArray();
             default: throw new ArgumentOutOfRangeException();
         }
     }

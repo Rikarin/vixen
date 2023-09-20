@@ -3,10 +3,16 @@
 namespace Rin.Core.General;
 
 public class Application {
-    readonly Window window;
+    // TODO: this shouldn't be static
+    internal static Window Window;
+
+    public event Action? Load;
+    public event Action? Render;
 
     public Application() {
-        window = new Window();
+        Window = new();
+        Window.Load += () => Load?.Invoke();
+        Window.Render += () => Render?.Invoke();
     }
 
     // ConcurrentQueue<Action> queue = new();
@@ -17,7 +23,7 @@ public class Application {
     }
 
     public void Run() {
-        window.Run();
+        Window.Run();
     }
 
     // public void Run() {

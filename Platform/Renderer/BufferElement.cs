@@ -1,6 +1,6 @@
 namespace Rin.Platform.Renderer;
 
-sealed class BufferElement {
+public sealed class BufferElement {
     public string Name { get; }
     public ShaderDataType Type { get; }
     public uint Size { get; }

@@ -1,5 +1,5 @@
 namespace Rin.Core.General;
 
-public class Component {
+public abstract class Component {
     public GameObject GameObject { get; }
 }

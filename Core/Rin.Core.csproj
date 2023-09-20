@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj" />
-      <ProjectReference Include="..\Platform\Rin.Platform.csproj" />
+        <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj"/>
+        <ProjectReference Include="..\Platform\Rin.Platform.csproj"/>
     </ItemGroup>
 </Project>

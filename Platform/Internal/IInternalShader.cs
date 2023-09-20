@@ -6,6 +6,7 @@ namespace Rin.Platform.Internal;
 // TODO: Some of the methods may be reduced. eg. Material should convert Texture into buffer as well as offset and scale into Vector2
 // TODO: Texture should be as is because OpenGL needs to decide on location binding??
 interface IInternalShader {
+    void Bind();
     int PropertyToId(string name);
     void SetColor(string name, Color value);
     void SetColor(int id, Color value);

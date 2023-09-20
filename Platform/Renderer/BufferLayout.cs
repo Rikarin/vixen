@@ -1,6 +1,6 @@
 namespace Rin.Platform.Renderer;
 
-sealed class BufferLayout {
+public sealed class BufferLayout {
     readonly List<BufferElement> elements = new();
 
     public uint Stride { get; private set; }

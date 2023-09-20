@@ -1,4 +1,5 @@
 using Rin.Platform.Internal;
+using Serilog;
 using Silk.NET.OpenGL;
 using System.Drawing;
 using System.Numerics;
@@ -7,11 +8,43 @@ namespace Rin.Platform.Silk;
 
 sealed class OpenGLShader : IInternalShader {
     readonly GL gl;
-    uint handle;
+    readonly uint handle;
     readonly Dictionary<string, int> locationCache = new();
 
     public OpenGLShader() {
         gl = SilkWindow.MainWindow.Gl;
+    }
+
+    /// <summary>
+    ///     Loading GLSL shaders directly
+    ///     For testing purpose only
+    /// </summary>
+    /// <param name="vertexPath"></param>
+    /// <param name="fragmentPath"></param>
+    /// <exception cref="Exception"></exception>
+    public OpenGLShader(string vertexPath, string fragmentPath) {
+        gl = SilkWindow.MainWindow.Gl;
+
+        var vertex = LoadShader(ShaderType.VertexShader, vertexPath);
+        var fragment = LoadShader(ShaderType.FragmentShader, fragmentPath);
+
+        handle = gl.CreateProgram();
+        gl.AttachShader(handle, vertex);
+        gl.AttachShader(handle, fragment);
+
+        gl.LinkProgram(handle);
+        var infoLog = gl.GetProgramInfoLog(handle);
+        if (!string.IsNullOrWhiteSpace(infoLog)) {
+            throw new($"Program failed to link with error: {infoLog}");
+        }
+
+        gl.DetachShader(handle, vertex);
+        gl.DetachShader(handle, fragment);
+
+        Log.Information("Uniforms");
+        foreach (var uniform in GetUniforms()) {
+            Log.Information("Uniform: {Name}", uniform);
+        }
     }
 
     // TODO: return size and type as well so the information can be used in the editor later
@@ -26,7 +59,6 @@ sealed class OpenGLShader : IInternalShader {
         }
     }
 
-
     public void Bind() {
         gl.UseProgram(handle);
     }
@@ -35,13 +67,10 @@ sealed class OpenGLShader : IInternalShader {
         gl.UseProgram(0);
     }
 
-    public void SetColor(string name, Color value) {
-        throw new NotImplementedException();
-    }
+    public void SetColor(string name, Color value) => SetColor(PropertyToId(name), value);
 
-    public void SetColor(int id, Color value) {
-        throw new NotImplementedException();
-    }
+    public void SetColor(int id, Color value) =>
+        gl.Uniform4(id, value.R / 255f, value.G / 255f, value.B / 255f, value.A / 255f);
 
     public void SetColorArray(string name, ReadOnlyMemory<Color> values) {
         throw new NotImplementedException();
@@ -63,7 +92,7 @@ sealed class OpenGLShader : IInternalShader {
     public void SetMatrixArray(string name, ReadOnlyMemory<Matrix4x4> values) =>
         SetMatrixArray(PropertyToId(name), values);
 
-    public unsafe void SetMatrixArray(int id, ReadOnlyMemory<Matrix4x4> values) {
+    public void SetMatrixArray(int id, ReadOnlyMemory<Matrix4x4> values) {
         // TODO: verify this implementation
         // fixed (float* val = &values.Span[0]) {
         //     gl.UniformMatrix4(id, (uint)values.Length, false, val);
@@ -114,6 +143,21 @@ sealed class OpenGLShader : IInternalShader {
 
         locationCache[name] = location;
         return location;
+    }
+
+    uint LoadShader(ShaderType type, string path) {
+        var src = File.ReadAllText(path);
+        var handle = gl.CreateShader(type);
+
+        gl.ShaderSource(handle, src);
+        gl.CompileShader(handle);
+
+        var infoLog = gl.GetShaderInfoLog(handle);
+        if (!string.IsNullOrWhiteSpace(infoLog)) {
+            throw new($"Error compiling shader of type {type}, failed with error {infoLog}");
+        }
+
+        return handle;
     }
 }
 

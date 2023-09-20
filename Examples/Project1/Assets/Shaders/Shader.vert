@@ -1,14 +1,19 @@
 #version 330 core
-layout (location = 0) in vec3 vPos;
-layout (location = 1) in vec2 vUv;
 
-uniform mat4 uModel;
-uniform mat4 uView;
-uniform mat4 uPerspective;
+layout(location = 0) in vec3 a_Position;
+layout(location = 1) in vec4 a_Color;
 
-out vec2 fUv;
+uniform vec4 u_Color;
+uniform mat4 u_ViewProjection;
+uniform mat4 u_Transform;
 
-void main() {
-    gl_Position = uPerspective * uView * vec4(vPos, 1.0);
-    fUv = vUv;
+out vec3 v_Position;
+out vec4 v_Color;
+
+void main()
+{
+    v_Position = a_Position;
+    v_Color = u_Color;
+//    gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);
+    gl_Position = vec4(a_Position, 1.0);
 }

@@ -9,7 +9,7 @@ sealed class OpenGLVertexBuffer : VertexBuffer {
 
     public OpenGLVertexBuffer(uint size) {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
-        handle = gl.CreateBuffer();
+        handle = gl.GenBuffer();
 
         gl.BindBuffer(GLEnum.ArrayBuffer, handle);
 
@@ -18,9 +18,9 @@ sealed class OpenGLVertexBuffer : VertexBuffer {
         }
     }
 
-    public OpenGLVertexBuffer(ReadOnlySpan<uint> vertices) {
+    public OpenGLVertexBuffer(ReadOnlySpan<float> vertices) {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
-        handle = gl.CreateBuffer();
+        handle = gl.GenBuffer();
 
         gl.BindBuffer(GLEnum.ArrayBuffer, handle);
         gl.BufferData(GLEnum.ArrayBuffer, vertices, GLEnum.StaticDraw);

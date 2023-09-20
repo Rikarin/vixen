@@ -1,9 +1,10 @@
 using Rin.Platform.Renderer;
 using Silk.NET.OpenGL;
+using VertexArray = Rin.Platform.Renderer.VertexArray;
 
 namespace Rin.Platform.Silk;
 
-sealed class OpenGLVertexArray : Renderer.VertexArray {
+sealed class OpenGLVertexArray : VertexArray {
     readonly List<VertexBuffer> vertexBuffers = new();
     readonly GL gl;
     readonly uint handle;
@@ -13,7 +14,7 @@ sealed class OpenGLVertexArray : Renderer.VertexArray {
 
     public OpenGLVertexArray() {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
-        handle = gl.CreateVertexArray();
+        handle = gl.GenVertexArray();
     }
 
     public override void Bind() {
