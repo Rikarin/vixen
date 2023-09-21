@@ -1,6 +1,6 @@
 namespace Rin.Editor;
 
-public class EditorManager {
+class EditorManager {
     readonly Project project;
     FileSystemWatcher watcher;
 

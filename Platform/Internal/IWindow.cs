@@ -15,5 +15,5 @@ interface IWindow {
     bool GetMouseButtonDown(MouseButton mouseButton);
     bool GetMouseButtonUp(MouseButton mouseButton);
     event Action? Load;
-    event Action? Render;
+    event Action<float>? Render;
 }

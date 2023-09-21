@@ -7,12 +7,12 @@ public class Window {
     internal readonly IWindow handle;
 
     public event Action? Load;
-    public event Action? Render;
+    public event Action<float>? Render;
 
     public Window() {
         handle = new SilkWindow();
         handle.Load += () => Load?.Invoke();
-        handle.Render += () => Render?.Invoke();
+        handle.Render += deltaTime => Render?.Invoke(deltaTime);
     }
 
     public void Run() {

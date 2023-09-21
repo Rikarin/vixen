@@ -70,7 +70,7 @@ sealed class OpenGLShader : IInternalShader {
     public void SetColor(string name, Color value) => SetColor(PropertyToId(name), value);
 
     public void SetColor(int id, Color value) =>
-        gl.Uniform4(id, value.R / 255f, value.G / 255f, value.B / 255f, value.A / 255f);
+        gl.Uniform4(id, value.R / 256f, value.G / 256f, value.B / 256f, value.A / 256f);
 
     public void SetColorArray(string name, ReadOnlyMemory<Color> values) {
         throw new NotImplementedException();

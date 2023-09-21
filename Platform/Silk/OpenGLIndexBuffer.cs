@@ -9,7 +9,7 @@ sealed class OpenGLIndexBuffer : IndexBuffer {
 
     public override int Count { get; }
 
-    public OpenGLIndexBuffer(ReadOnlySpan<uint> indices) {
+    public OpenGLIndexBuffer(ReadOnlySpan<int> indices) {
         gl = SilkWindow.MainWindow.Gl; // TODO: rewire this
         Count = indices.Length;
         handle = gl.GenBuffer();

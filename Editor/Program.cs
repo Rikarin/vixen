@@ -1,7 +1,6 @@
 ﻿using Rin.Core.Abstractions;
 using Rin.Core.General;
 using Rin.Editor;
-using Rin.Platform.Renderer;
 using Serilog;
 using Serilog.Exceptions;
 using System.Drawing;
@@ -20,36 +19,51 @@ editor.Watch();
 
 Log.Information("Bar");
 
+// var compiler = new ShaderCompiler();
+// compiler.Test();
+
 var app = new Application();
 
-VertexArray? vertexArray = null;
+// Test API
+var boxObj = new GameObject();
+boxObj.AddComponent<MeshFilter>();
+
+
+
+
+
+// VertexArray? vertexArray = null;
+Mesh? box = null;
 Material? material = null;
 
 
 app.Load += () => {
     Log.Information("Application Loading");
     RenderCommand.Initialize();
-    
-    vertexArray = VertexArray.Create();
-    float[] vertices = {
-        -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
-        0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
-        0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
-    };
 
-    var vertexBuffer = VertexBuffer.Create(vertices);
-    var bufferLayout = new BufferLayout(
-        new[] {
-            new BufferElement(ShaderDataType.Float3, "a_Position"), new BufferElement(ShaderDataType.Float4, "a_Color")
-        }
-    );
+    box = Mesh.CreateBox();
+    box.SetupMesh();
     
-    vertexBuffer.Layout = bufferLayout;
-    vertexArray.AddVertexBuffer(vertexBuffer);
-    
-    uint[] indices = { 0, 1, 2 };
-    var indexBuffer = IndexBuffer.Create(indices);
-    vertexArray.SetIndexBuffer(indexBuffer);
+    // vertexArray = VertexArray.Create();
+    // float[] vertices = {
+    //     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+    //     0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+    //     0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
+    // };
+    //
+    // var vertexBuffer = VertexBuffer.Create(vertices);
+    // var bufferLayout = new BufferLayout(
+    //     new[] {
+    //         new BufferElement(ShaderDataType.Float3, "a_Position"), new BufferElement(ShaderDataType.Float4, "a_Color")
+    //     }
+    // );
+    //
+    // vertexBuffer.Layout = bufferLayout;
+    // vertexArray.AddVertexBuffer(vertexBuffer);
+    //
+    // int[] indices = { 0, 1, 2 };
+    // var indexBuffer = IndexBuffer.Create(indices);
+    // vertexArray.SetIndexBuffer(indexBuffer);
     
     Shader.Create(
         "Basic/Shader1",
@@ -63,7 +77,7 @@ app.Load += () => {
     Log.Information("Application Loaded");
 };
 
-app.Render += () => {
+app.Render += deltaTime => {
     RenderCommand.SetClearColor(Color.Gray);
     RenderCommand.Clear();
     // This can be called from SilkWindow
@@ -81,18 +95,20 @@ app.Render += () => {
         Log.Information("Key W Up");
     }
     
-    
     material?.Render();
-    if (vertexArray != null) {
-        RenderCommand.Draw(vertexArray);
+    if (box != null) {
+        RenderCommand.Draw(box);
     }
 };
+
+// This needs to be set after the RenderCommand.Clear() is called
+var guiRenderer = new ImGuiRenderer(app);
 
 
 // TODO: Example of creating a few objects
 // {
-//     var box = new GameObject();
-//     box.AddComponent<Transform>();
+     // var box = new GameObject();
+     // box.AddComponent<Transform>();
 //     var meshFilter = box.AddComponent<MeshFilter>();
 //     meshFilter.Mesh = Mesh.CreateBox();
 //

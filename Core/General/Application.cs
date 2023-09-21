@@ -1,4 +1,6 @@
-// using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("Rin.Editor")]
 
 namespace Rin.Core.General;
 
@@ -7,12 +9,12 @@ public class Application {
     internal static Window Window;
 
     public event Action? Load;
-    public event Action? Render;
+    public event Action<float>? Render;
 
     public Application() {
         Window = new();
         Window.Load += () => Load?.Invoke();
-        Window.Render += () => Render?.Invoke();
+        Window.Render += deltaTime => Render?.Invoke(deltaTime);
     }
 
     // ConcurrentQueue<Action> queue = new();

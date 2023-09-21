@@ -1,19 +1,20 @@
+using Serilog;
 using Silk.NET.Input;
-using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using IWindow = Rin.Platform.Internal.IWindow;
 
 [assembly: InternalsVisibleTo("Rin.Core")]
+[assembly: InternalsVisibleTo("Rin.Editor")]
 
 namespace Rin.Platform.Silk;
 
 sealed class SilkWindow : IWindow {
     internal static SilkWindow MainWindow;
-    global::Silk.NET.Windowing.IWindow window = null!;
+    internal global::Silk.NET.Windowing.IWindow silkWindow = null!;
+    internal IInputContext input;
 
     // TODO: this needs to be fixed
     // I think user can press multiple keys during one frame
@@ -25,7 +26,7 @@ sealed class SilkWindow : IWindow {
 
     readonly bool[] keyPressed = new bool[(int)Key.Menu + 1];
     readonly bool[] mouseButtonPressed = new bool[(int)MouseButton.Button12 + 1];
-    
+
     public Vector2 MousePosition { get; private set; } = Vector2.Zero;
 
     internal GL Gl { get; private set; }
@@ -36,7 +37,7 @@ sealed class SilkWindow : IWindow {
     }
 
     public void Run() {
-        window.Run();
+        silkWindow.Run();
     }
 
     public bool GetKey(Core.Abstractions.Key key) => keyPressed[(int)key];
@@ -53,21 +54,16 @@ sealed class SilkWindow : IWindow {
 
     void Initialize() {
         var options = WindowOptions.Default with { };
-        window = Window.Create(options);
+        silkWindow = Window.Create(options);
 
-        window.Load += OnLoad;
-        window.Update += OnUpdate;
-        window.Render += OnRender;
-        window.Closing += OnClosing;
-        window.Resize += OnResize;
+        silkWindow.Load += OnLoad;
+        silkWindow.Render += OnRender;
+        // silkWindow.Closing += OnClosing;
+        silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
     }
 
-    void OnResize(Vector2D<int> obj) {
-        Gl.Viewport(Point.Empty, new(obj.X, obj.Y));
-    }
-
-    void OnRender(double obj) {
-        Render?.Invoke();
+    void OnRender(double deltaTime) {
+        Render?.Invoke((float)deltaTime);
         keyDown = null;
         keyUp = null;
         mouseAxis = Vector2.Zero;
@@ -75,10 +71,9 @@ sealed class SilkWindow : IWindow {
         mouseButtonUp = null;
     }
 
-    void OnUpdate(double obj) { }
-
     void OnLoad() {
-        var input = window.CreateInput();
+        Gl = silkWindow.CreateOpenGL();
+        input = silkWindow.CreateInput();
 
         foreach (var keyboard in input.Keyboards) {
             keyboard.KeyDown += KeyDown;
@@ -92,8 +87,7 @@ sealed class SilkWindow : IWindow {
             // click, scroll, double click??
         }
 
-        Gl = GL.GetApi(window.GLContext);
-        // Gl.Viewport(Point.Empty, new(window.Size.X, window.Size.Y));
+        Log.Information("OpenGL Context initialized");
         Load?.Invoke();
     }
 
@@ -112,14 +106,12 @@ sealed class SilkWindow : IWindow {
         mouseButtonDown = arg2;
     }
 
-    void OnClosing() { }
-
     void KeyDown(IKeyboard keyboard, Key key, int index) {
         keyPressed[(int)key] = true;
         keyDown = key;
 
         if (key == Key.Escape) {
-            window.Close();
+            silkWindow.Close();
         }
     }
 
@@ -129,5 +121,5 @@ sealed class SilkWindow : IWindow {
     }
 
     public event Action? Load;
-    public event Action? Render;
+    public event Action<float>? Render;
 }

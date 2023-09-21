@@ -26,4 +26,20 @@ public static class QuaternionExtensions {
 
         return angles;
     }
+
+    public static Quaternion ToQuaternion(this Vector3 v) {
+        var cy = (float)System.Math.Cos(v.Z * 0.5);
+        var sy = (float)System.Math.Sin(v.Z * 0.5);
+        var cp = (float)System.Math.Cos(v.Y * 0.5);
+        var sp = (float)System.Math.Sin(v.Y * 0.5);
+        var cr = (float)System.Math.Cos(v.X * 0.5);
+        var sr = (float)System.Math.Sin(v.X * 0.5);
+
+        return new() {
+            W = cr * cp * cy + sr * sp * sy,
+            X = sr * cp * cy - cr * sp * sy,
+            Y = cr * sp * cy + sr * cp * sy,
+            Z = cr * cp * sy - sr * sp * cy
+        };
+    }
 }
