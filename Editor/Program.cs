@@ -12,7 +12,8 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
     .CreateLogger();
 
-var project = new Project("../Examples/Project1");
+var project = Project.CreateProject("Example 1", "../Examples/Project1");
+project.Save();
 var editor = new EditorManager(project);
 
 editor.Watch();
@@ -25,6 +26,9 @@ Log.Information("Bar");
 var app = new Application();
 
 // Test API
+var scene = SceneManager.CreateScene("Main Scene");
+SceneManager.SetActiveScene(scene);
+
 var boxObj = new GameObject();
 boxObj.AddComponent<MeshFilter>();
 
@@ -102,7 +106,7 @@ app.Render += deltaTime => {
 };
 
 // This needs to be set after the RenderCommand.Clear() is called
-var guiRenderer = new ImGuiRenderer(app);
+var guiRenderer = new GuiRenderer(app, project);
 
 
 // TODO: Example of creating a few objects

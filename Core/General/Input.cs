@@ -5,17 +5,17 @@ namespace Rin.Core.General;
 
 // TODO: finish this
 public static class Input {
-    public static Vector2 MousePosition => Application.Window.handle.MousePosition;
+    public static Vector2 MousePosition => Application.Current.MainWindow.Handle.MousePosition;
 
-    public static bool GetKey(Key key) => Application.Window.handle.GetKey(key);
-    public static bool GetKeyDown(Key key) => Application.Window.handle.GetKeyDown(key);
-    public static bool GetKeyUp(Key key) => Application.Window.handle.GetKeyUp(key);
+    public static bool GetKey(Key key) => Application.Current.MainWindow.Handle.GetKey(key);
+    public static bool GetKeyDown(Key key) => Application.Current.MainWindow.Handle.GetKeyDown(key);
+    public static bool GetKeyUp(Key key) => Application.Current.MainWindow.Handle.GetKeyUp(key);
 
-    public static Vector2 GetMouseAxis() => Application.Window.handle.GetMouseAxis();
+    public static Vector2 GetMouseAxis() => Application.Current.MainWindow.Handle.GetMouseAxis();
 
     public static bool GetMouseButtonDown(MouseButton mouseButton) =>
-        Application.Window.handle.GetMouseButtonDown(mouseButton);
+        Application.Current.MainWindow.Handle.GetMouseButtonDown(mouseButton);
 
     public static bool GetMouseButtonUp(MouseButton mouseButton) =>
-        Application.Window.handle.GetMouseButtonUp(mouseButton);
+        Application.Current.MainWindow.Handle.GetMouseButtonUp(mouseButton);
 }

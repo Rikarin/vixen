@@ -1,6 +1,10 @@
 # Game Engine
 
 
+Freely available open source game engine designed in the similar way as Unity.
+The whole codebase is licensed under MIT license.
+
+
 ## Motivation
 
 Create game engine with requirements:
@@ -82,6 +86,10 @@ Create game engine with requirements:
 
 - Create some interfaces to make it possible to switch between OpenGL, WEbGL and Vulkan API
 
+- CI/CD builds (also release nightly build)
+- Generate API documentation
+
+
 - Editor
     - Linking of assets. We should be able to link Mesh to MeshFilter class which should be represented as special reference in the editor (.meta files) but it's a regular object instance in C#
 
@@ -92,21 +100,39 @@ MeshImporter should be deserialized based on .meta file of the mesh then it shou
 which can work better with already optimized data.
 
 
-## Random Classes which needs to be implemented (somehow)
+## Architecture
 
-- GameObject
-- Component
-- Renderer
-- MeshRenderer
-- Transform
-- Mesh
-- Material
-- Texture
-- MeshImporter
-- TextureImporter
-- Light
-- Sound
-- Font
-- FontCollection
-- Window
-- Camera
+Application is split into three main parts. **Core**, **Editor** and **Platform**.
+
+
+### Core
+
+User API for interactions with the engine.
+
+
+### Platform
+
+Provides Internal interfaces to Core and Editor for interacting with low level stuff
+such as OpenGL, GLFW or ImGui (for Editor only?).
+
+
+### Editor
+
+Editor implements loading/saving of projects, compiling shaders (HLSL) with ShaderC
+to SPIR-V.
+
+
+## Topics
+
+How MeshRenderer assigns materials to submeshes of a mesh?
+
+How are meshes and submeshes loaded and stored?
+Should they be loaded right into the VertexBuffer and IndexBuffer and 
+removed from the memory?
+
+How UV mapping work?
+
+How to instantiate GameObject into the Scene?
+
+How to load whole project with assets, scenes and wire it up in the Editor?
+

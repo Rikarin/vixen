@@ -1,19 +1,19 @@
+using Rin.Platform.Internal;
 using Serilog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using IWindow = Rin.Platform.Internal.IWindow;
 
 [assembly: InternalsVisibleTo("Rin.Core")]
 [assembly: InternalsVisibleTo("Rin.Editor")]
 
 namespace Rin.Platform.Silk;
 
-sealed class SilkWindow : IWindow {
+sealed class SilkWindow : IInternalWindow {
     internal static SilkWindow MainWindow;
-    internal global::Silk.NET.Windowing.IWindow silkWindow = null!;
+    internal IWindow silkWindow = null!;
     internal IInputContext input;
 
     // TODO: this needs to be fixed
@@ -35,6 +35,8 @@ sealed class SilkWindow : IWindow {
         MainWindow = this;
         Initialize();
     }
+
+    public IInternalGuiRenderer CreateGuiRenderer() => new SilkImGuiRenderer(new(Gl, silkWindow, input));
 
     public void Run() {
         silkWindow.Run();
@@ -58,8 +60,12 @@ sealed class SilkWindow : IWindow {
 
         silkWindow.Load += OnLoad;
         silkWindow.Render += OnRender;
-        // silkWindow.Closing += OnClosing;
+        silkWindow.Closing += OnClosing;
         silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
+    }
+
+    void OnClosing() {
+        Closing?.Invoke();
     }
 
     void OnRender(double deltaTime) {
@@ -121,5 +127,6 @@ sealed class SilkWindow : IWindow {
     }
 
     public event Action? Load;
+    public event Action? Closing;
     public event Action<float>? Render;
 }

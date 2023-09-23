@@ -5,16 +5,16 @@ using System.Runtime.CompilerServices;
 namespace Rin.Core.General;
 
 public class Application {
-    // TODO: this shouldn't be static
-    internal static Window Window;
+    internal static Application Current = null!;
 
-    public event Action? Load;
-    public event Action<float>? Render;
+    public Window MainWindow { get; }
 
     public Application() {
-        Window = new();
-        Window.Load += () => Load?.Invoke();
-        Window.Render += deltaTime => Render?.Invoke(deltaTime);
+        Current = this;
+        MainWindow = new();
+        MainWindow.Load += () => Load?.Invoke();
+        MainWindow.Closing += () => Closing?.Invoke();
+        MainWindow.Render += deltaTime => Render?.Invoke(deltaTime);
     }
 
     // ConcurrentQueue<Action> queue = new();
@@ -25,8 +25,12 @@ public class Application {
     }
 
     public void Run() {
-        Window.Run();
+        MainWindow.Run();
     }
+
+    public event Action? Load;
+    public event Action? Closing;
+    public event Action<float>? Render;
 
     // public void Run() {
     //     while (running) {

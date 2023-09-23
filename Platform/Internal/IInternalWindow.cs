@@ -3,9 +3,10 @@ using System.Numerics;
 
 namespace Rin.Platform.Internal;
 
-interface IWindow {
+interface IInternalWindow {
     Vector2 MousePosition { get; }
 
+    IInternalGuiRenderer CreateGuiRenderer();
     void Run();
 
     bool GetKey(Key key);
@@ -15,5 +16,6 @@ interface IWindow {
     bool GetMouseButtonDown(MouseButton mouseButton);
     bool GetMouseButtonUp(MouseButton mouseButton);
     event Action? Load;
+    public event Action? Closing;
     event Action<float>? Render;
 }

@@ -9,7 +9,8 @@ class EditorManager {
     }
 
     public void Watch() {
-        watcher = new(project.RootDirectory);
+        var assetPath = Path.Combine(project.RootDirectory, "Assets");
+        watcher = new(assetPath);
 
         watcher.IncludeSubdirectories = true;
         watcher.EnableRaisingEvents = true;

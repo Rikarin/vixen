@@ -1,0 +1,76 @@
+using ImGuiNET;
+using Rin.Platform.Internal;
+using Serilog;
+using Silk.NET.OpenGL.Extensions.ImGui;
+using System.Numerics;
+using System.Runtime.InteropServices;
+
+namespace Rin.Platform.Silk;
+
+class SilkImGuiRenderer : IInternalGuiRenderer {
+    readonly ImGuiController controller;
+
+    readonly Platform_CreateWindow createWindow;
+    // Platform_DestroyWindow destroyWindow;
+    // Platform_GetWindowPos getWindowPos;
+    // Platform_ShowWindow showWindow;
+    // Platform_SetWindowPos setWindowPos;
+    // Platform_SetWindowSize setWindowSize;
+    // Platform_GetWindowSize getWindowSize;
+    // Platform_SetWindowFocus setWindowFocus;
+    // Platform_GetWindowFocus getWindowFocus;
+    // Platform_GetWindowMinimized getWindowMinimized;
+    // Platform_SetWindowTitle setWindowTitle;
+
+    public SilkImGuiRenderer(ImGuiController controller) {
+        this.controller = controller;
+
+        // Multi-Viewport
+        createWindow = Callback_CreateWindow;
+        // destroyWindow = Callback_DestroyWindow;
+        
+        var platformIo = ImGui.GetPlatformIO();
+        platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(createWindow);
+        // platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(destroyWindow);
+        // platformIo.Platform_GetWindowPos = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_ShowWindow = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_SetWindowPos = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_SetWindowSize = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_GetWindowSize = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_SetWindowFocus = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_GetWindowFocus = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_GetWindowMinimized = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+        // platformIo.Platform_SetWindowTitle = Marshal.GetFunctionPointerForDelegate(() => Log.Information("Called"));
+    }
+
+    public void Update(float deltaTime) => controller.Update(deltaTime);
+    public void Render() => controller.Render();
+
+
+    void Callback_CreateWindow(ImGuiViewportPtr vp) {
+        Log.Warning("{Name} not implemented", nameof(Callback_CreateWindow));
+    }
+}
+
+
+delegate void Platform_CreateWindow(ImGuiViewportPtr vp);
+
+delegate void Platform_DestroyWindow(ImGuiViewportPtr vp);
+
+delegate void Platform_ShowWindow(ImGuiViewportPtr vp);
+
+delegate void Platform_SetWindowPos(ImGuiViewportPtr vp, Vector2 pos);
+
+unsafe delegate void Platform_GetWindowPos(ImGuiViewportPtr vp, Vector2* outPos);
+
+delegate void Platform_SetWindowSize(ImGuiViewportPtr vp, Vector2 size);
+
+unsafe delegate void Platform_GetWindowSize(ImGuiViewportPtr vp, Vector2* outSize);
+
+delegate void Platform_SetWindowFocus(ImGuiViewportPtr vp);
+
+delegate byte Platform_GetWindowFocus(ImGuiViewportPtr vp);
+
+delegate byte Platform_GetWindowMinimized(ImGuiViewportPtr vp);
+
+delegate void Platform_SetWindowTitle(ImGuiViewportPtr vp, IntPtr title);

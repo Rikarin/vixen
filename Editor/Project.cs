@@ -1,12 +1,71 @@
+using Serilog;
+using System.Text;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
+
 namespace Rin.Editor;
 
 class Project {
-    public string RootDirectory { get; }
+    static readonly ISerializer serializer = new SerializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .Build();
 
-    public string[] Layers => new string[32];
-    public string[] Tags => new string[32];
+    static readonly IDeserializer deserializer = new DeserializerBuilder()
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+        .IgnoreUnmatchedProperties()
+        .Build();
 
-    public Project(string rootDirectory) {
+    public string Name { get; private set; }
+    public string RootDirectory { get; private set; }
+
+    public List<string> Layers { get; } = new();
+    public List<string> Tags { get; } = new();
+
+    // Project() { }
+
+    Project(string name, string rootDirectory) {
+        Name = name;
         RootDirectory = rootDirectory;
+    }
+
+    public void Save() {
+        var projectFile = Path.Combine(RootDirectory, $"{Name}.rin");
+        using var stream = new StreamWriter(projectFile, false, Encoding.UTF8);
+
+        stream.Write(serializer.Serialize(this));
+        Log.Information("Project saved");
+    }
+
+    public static Project CreateProject(string name, string rootDirectory) {
+        var project = new Project(name, rootDirectory);
+        project.Layers.AddRange(new [] {
+            "Default",
+            "Ground",
+            "Water",
+            "UI",
+            "Player"
+        });
+        
+        project.Tags.AddRange(new [] {
+            "Untagged",
+            "MainCamera",
+            "Player",
+            "GameController",
+            "EditorOnly"
+        });
+
+        return project;
+    }
+
+    public static Project LoadProject(string path) {
+        if (File.Exists(path)) {
+            using var input = new StreamReader(path, Encoding.UTF8);
+            var project = deserializer.Deserialize<Project>(input);
+
+            // TODO: set loaded project to somewhere?
+            return project;
+        }
+
+        throw new FileNotFoundException($"File {path}");
     }
 }

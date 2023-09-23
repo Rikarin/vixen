@@ -2,12 +2,12 @@ using ImGuiNET;
 
 namespace Rin.Editor.Elements;
 
-public static class Hierarchy {
-    static bool foobar;
+sealed class HierarchyPane : Pane {
+    bool foobar;
 
-    public static void Render() {
-        ImGui.Begin("Hierarchy");
-
+    public HierarchyPane() : base("Hierarchy") { }
+    
+    protected override void OnRender() {
         if (ImGui.TreeNodeEx("Scene Name", ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen)) {
             // TODO: render scene objects
 
@@ -33,7 +33,5 @@ public static class Hierarchy {
 
             ImGui.TreePop();
         }
-
-        ImGui.End();
     }
 }
