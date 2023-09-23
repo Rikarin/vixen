@@ -33,21 +33,18 @@ var boxObj = new GameObject();
 boxObj.AddComponent<MeshFilter>();
 
 
-
-
-
 // VertexArray? vertexArray = null;
 Mesh? box = null;
 Material? material = null;
 
 
-app.Load += () => {
+app.MainWindow.Load += () => {
     Log.Information("Application Loading");
     RenderCommand.Initialize();
 
     box = Mesh.CreateBox();
     box.SetupMesh();
-    
+
     // vertexArray = VertexArray.Create();
     // float[] vertices = {
     //     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
@@ -68,7 +65,7 @@ app.Load += () => {
     // int[] indices = { 0, 1, 2 };
     // var indexBuffer = IndexBuffer.Create(indices);
     // vertexArray.SetIndexBuffer(indexBuffer);
-    
+
     Shader.Create(
         "Basic/Shader1",
         "../Examples/Project1/Assets/Shaders/Shader.vert",
@@ -77,11 +74,11 @@ app.Load += () => {
 
     material = new(Shader.Find("Basic/Shader1")!);
     material.SetColor("u_Color", Color.Bisque);
-    
+
     Log.Information("Application Loaded");
 };
 
-app.Render += deltaTime => {
+app.MainWindow.Render += deltaTime => {
     RenderCommand.SetClearColor(Color.Gray);
     RenderCommand.Clear();
     // This can be called from SilkWindow
@@ -90,15 +87,15 @@ app.Render += deltaTime => {
     if (Input.GetKey(Key.A)) {
         Log.Information("Key A pressed");
     }
-    
+
     if (Input.GetKeyDown(Key.W)) {
         Log.Information("Key W Down");
     }
-    
+
     if (Input.GetKeyUp(Key.W)) {
         Log.Information("Key W Up");
     }
-    
+
     material?.Render();
     if (box != null) {
         RenderCommand.Draw(box);
@@ -111,8 +108,8 @@ var guiRenderer = new GuiRenderer(app, project);
 
 // TODO: Example of creating a few objects
 // {
-     // var box = new GameObject();
-     // box.AddComponent<Transform>();
+// var box = new GameObject();
+// box.AddComponent<Transform>();
 //     var meshFilter = box.AddComponent<MeshFilter>();
 //     meshFilter.Mesh = Mesh.CreateBox();
 //

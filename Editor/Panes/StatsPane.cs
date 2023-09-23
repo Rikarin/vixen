@@ -1,12 +1,10 @@
 using ImGuiNET;
 
-namespace Rin.Editor.Elements;
+namespace Rin.Editor.Panes;
 
-class StatsPane : Pane {
-    public StatsPane() : base("Stats") {
-        
-    }
-    
+sealed class StatsPane : Pane {
+    public StatsPane() : base("Stats") { }
+
     protected override void OnRender() {
         ImGui.Text("Renderer Stats:");
         ImGui.Text("Draw Calls: 42");

@@ -38,21 +38,9 @@ class Project {
 
     public static Project CreateProject(string name, string rootDirectory) {
         var project = new Project(name, rootDirectory);
-        project.Layers.AddRange(new [] {
-            "Default",
-            "Ground",
-            "Water",
-            "UI",
-            "Player"
-        });
-        
-        project.Tags.AddRange(new [] {
-            "Untagged",
-            "MainCamera",
-            "Player",
-            "GameController",
-            "EditorOnly"
-        });
+        project.Layers.AddRange(new[] { "Default", "Ground", "Water", "UI", "Player" });
+
+        project.Tags.AddRange(new[] { "Untagged", "MainCamera", "Player", "GameController", "EditorOnly" });
 
         return project;
     }

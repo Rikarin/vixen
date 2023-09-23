@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Numerics;
 
-namespace Rin.Editor.Elements;
+namespace Rin.Editor.Panes;
 
 // ImGui.PushStyleColor(ImGuiCol.FrameBg, Color.Red.ToVector4());
 // ImGui.PopStyleColor();

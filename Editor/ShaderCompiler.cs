@@ -27,7 +27,7 @@ public class ShaderCompiler {
         var entryPoint = "main";
         var path = "/foo/bar";
         var testString = "Foo Bar";
-        
+
         var result = api.CompileIntoSpv(
             compiler,
             (byte*)&testString,
@@ -41,8 +41,6 @@ public class ShaderCompiler {
         if (result == null) {
             Log.Error("Result is null");
         }
-        
-        
     }
 
     unsafe void IncludeReleaser(void* arg0, IncludeResult* arg1) {

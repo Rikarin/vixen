@@ -1,6 +1,6 @@
 using ImGuiNET;
 using Rin.Core.General;
-using Rin.Editor.Elements;
+using Rin.Editor.Panes;
 using Rin.Platform.Internal;
 using Serilog;
 using System.Numerics;
@@ -10,42 +10,59 @@ namespace Rin.Editor;
 sealed class GuiRenderer : IDisposable {
     IInternalGuiRenderer guiHandle;
     readonly Application application;
-
-    string settingsPath;
+    readonly Dictionary<Type, Pane> panes = new();
+    readonly bool fullScreenDock = true;
+    readonly string settingsPath;
     bool firstTime = true;
     bool dockSpaceOpen = true;
-    readonly bool fullScreenDock = true;
-    readonly Dictionary<Type, Pane> panes = new();
+
+    public Project Project { get; private set; }
 
     string DefaultPath => Path.Combine(settingsPath, "Default.ini");
-    public Project Project { get; private set; }
 
     public GuiRenderer(Application application, Project project) {
         this.application = application;
         Project = project;
         settingsPath = Path.Combine(project.RootDirectory, "ProjectSettings", "Editor");
         Directory.CreateDirectory(settingsPath);
-        
-        application.Load += OnStart;
-        application.Closing += OnClosing;
-        application.Render += OnRender;
+
+        var mainWindow = this.application.MainWindow;
+        mainWindow.Load += OnStart;
+        mainWindow.Closing += OnClosing;
+        mainWindow.Render += OnRender;
 
         AddPane<StatsPane>();
         AddPane<HierarchyPane>();
-        
+        AddPane<ProjectPane>();
+        AddPane<ConsolePane>();
+        AddPane<LightningPane>();
         AddPane<InspectorPane>();
+        AddPane<ScenePane>();
         AddPane<DebugTransformViewMatrixPane>();
         AddPane<TagPane>();
-    }
 
-    void OnClosing() {
-        ImGui.SaveIniSettingsToDisk(DefaultPath);
+        // TODO: Load/Save of opened windows
+
+        // This is for testing purpose only; till load/save will be implemented
+        OpenPane<HierarchyPane>();
+        OpenPane<InspectorPane>();
+        OpenPane<ProjectPane>();
+        OpenPane<ConsolePane>();
+        OpenPane<LightningPane>();
+        OpenPane<ScenePane>();
     }
 
     public void Dispose() {
-        application.Load -= OnStart;
-        application.Closing -= OnClosing;
-        application.Render -= OnRender;
+        var mainWindow = application.MainWindow;
+        mainWindow.Load -= OnStart;
+        mainWindow.Closing -= OnClosing;
+        mainWindow.Render -= OnRender;
+    }
+
+    public void OpenPane<T>() => panes[typeof(T)].Open();
+
+    void OnClosing() {
+        ImGui.SaveIniSettingsToDisk(DefaultPath);
     }
 
     void OnRender(float deltaTime) {
@@ -60,8 +77,6 @@ sealed class GuiRenderer : IDisposable {
     void AddPane<T>() where T : Pane, new() {
         panes.Add(typeof(T), new T { Gui = this });
     }
-
-    public void OpenPane<T>() => panes[typeof(T)].Open();
 
     void OnStart() {
         guiHandle = Application.Current.MainWindow.Handle.CreateGuiRenderer();
@@ -133,7 +148,7 @@ sealed class GuiRenderer : IDisposable {
         }
 
         style.WindowMinSize.X = minWindowSizeX;
-        io.WantSaveIniSettings = false;
+        io.WantSaveIniSettings = false; // Doesn't work or what
 
         // Start pane renderings
         foreach (var pane in panes.Values) {
@@ -180,11 +195,11 @@ sealed class GuiRenderer : IDisposable {
             if (ImGui.BeginMenu("View")) {
                 if (ImGui.BeginMenu("General")) {
                     if (ImGui.MenuItem("Scene")) {
-                        // TODO
+                        OpenPane<ScenePane>();
                     }
 
                     if (ImGui.MenuItem("Game")) {
-                        // TODO
+                        OpenPane<GamePane>();
                     }
 
                     if (ImGui.MenuItem("Inspector", "Ctrl+I")) {
@@ -195,16 +210,24 @@ sealed class GuiRenderer : IDisposable {
                         OpenPane<HierarchyPane>();
                     }
 
-                    ImGui.EndMenu();
-                }
+                    if (ImGui.MenuItem("Project")) {
+                        OpenPane<ProjectPane>();
+                    }
 
-                if (ImGui.MenuItem("Stats")) {
-                    OpenPane<StatsPane>();
+                    if (ImGui.MenuItem("Console")) {
+                        OpenPane<ConsolePane>();
+                    }
+
+                    ImGui.EndMenu();
                 }
 
                 if (ImGui.BeginMenu("Debug")) {
                     if (ImGui.MenuItem("Debug Transform View Matrix")) {
                         OpenPane<DebugTransformViewMatrixPane>();
+                    }
+
+                    if (ImGui.MenuItem("Stats")) {
+                        OpenPane<StatsPane>();
                     }
 
                     ImGui.EndMenu();

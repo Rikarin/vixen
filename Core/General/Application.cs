@@ -12,9 +12,6 @@ public class Application {
     public Application() {
         Current = this;
         MainWindow = new();
-        MainWindow.Load += () => Load?.Invoke();
-        MainWindow.Closing += () => Closing?.Invoke();
-        MainWindow.Render += deltaTime => Render?.Invoke(deltaTime);
     }
 
     // ConcurrentQueue<Action> queue = new();
@@ -27,10 +24,6 @@ public class Application {
     public void Run() {
         MainWindow.Run();
     }
-
-    public event Action? Load;
-    public event Action? Closing;
-    public event Action<float>? Render;
 
     // public void Run() {
     //     while (running) {

@@ -1,10 +1,8 @@
-namespace Rin.Editor.Elements; 
+namespace Rin.Editor.Panes;
 
 sealed class DebugTransformViewMatrixPane : Pane {
-    public DebugTransformViewMatrixPane() : base("Debug Transform View Matrix") {
-        
-    }
-    
+    public DebugTransformViewMatrixPane() : base("Debug Transform View Matrix") { }
+
     protected override void OnRender() {
         // var vm = transform.ViewMatrix;
         // var line1 = new Vector4(vm.M11, vm.M12, vm.M13, vm.M14);

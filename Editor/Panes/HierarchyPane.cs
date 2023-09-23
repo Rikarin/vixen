@@ -1,12 +1,12 @@
 using ImGuiNET;
 
-namespace Rin.Editor.Elements;
+namespace Rin.Editor.Panes;
 
 sealed class HierarchyPane : Pane {
     bool foobar;
 
     public HierarchyPane() : base("Hierarchy") { }
-    
+
     protected override void OnRender() {
         if (ImGui.TreeNodeEx("Scene Name", ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen)) {
             // TODO: render scene objects

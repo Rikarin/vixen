@@ -3,9 +3,9 @@ using Rin.Core.General;
 using Rin.Core.Math;
 using System.Numerics;
 
-namespace Rin.Editor.Elements;
+namespace Rin.Editor.Panes;
 
-class InspectorPane : Pane {
+sealed class InspectorPane : Pane {
     // Inspector params
     bool isEnabled;
     bool isStatic;
@@ -32,62 +32,62 @@ class InspectorPane : Pane {
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.Text("Position");
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("X##PositionX", ref position.X, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalPosition = position;
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Y##PositionY", ref position.Y, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalPosition = position;
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Z##PositionZ", ref position.Z, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalPosition = position;
                 }
-        
+
                 // Rotation
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.Text("Rotation");
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("X##RotationX", ref rotation.X, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalRotation = rotation.ToQuaternion();
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Y##RotationY", ref rotation.Y, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalRotation = rotation.ToQuaternion();
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Z##RotationZ", ref rotation.Z, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalRotation = rotation.ToQuaternion();
                 }
-        
+
                 // Scale
                 ImGui.TableNextRow();
                 ImGui.TableNextColumn();
                 ImGui.Text("Scale");
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("X##ScaleX", ref scale.X, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalScale = scale;
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Y##ScaleY", ref scale.Y, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalScale = scale;
                 }
-        
+
                 ImGui.TableNextColumn();
                 if (ImGui.DragFloat("Z##ScaleZ", ref scale.Z, 0.03f, 0, 0, "%.2f")) {
                     transform.LocalScale = scale;
                 }
-        
+
                 ImGui.EndTable();
             }
         }

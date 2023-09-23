@@ -1,10 +1,10 @@
 using ImGuiNET;
 
-namespace Rin.Editor.Elements; 
+namespace Rin.Editor.Panes;
 
 abstract class Pane {
     bool isOpened;
-    
+
     public bool IsOpened => isOpened;
     public string Title { get; }
     public GuiRenderer Gui { get; init; }

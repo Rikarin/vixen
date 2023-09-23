@@ -30,6 +30,8 @@ Create game engine with requirements:
 
 - Unity YAML serialization format https://blog.unity.com/engine-platform/understanding-unitys-serialization-language-yaml
 - Interesting reference how to implement openGL Buffers https://github.com/frederikja163/Silk.NET/blob/tutorials/examples/CSharp/OpenGL/Tutorial%201.3%20-%20Abstractions/BufferObject.cs
+- ImGui Table references https://github.com/ocornut/imgui/issues/3740
+- Model loading https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/OpenGL%20Tutorials/Tutorial%204.1%20-%20Model%20Loading/Program.cs
 
 ### Game Engines
 
@@ -92,6 +94,24 @@ Create game engine with requirements:
 
 - Editor
     - Linking of assets. We should be able to link Mesh to MeshFilter class which should be represented as special reference in the editor (.meta files) but it's a regular object instance in C#
+
+
+## TODO
+
+Prefabs and prefab variants
+
+Finish these classes
+
+- Transform
+- GameObject
+- Component
+- MonoBehaviour
+- Mesh (also SubMeshes)
+- Shader
+- MeshFilter
+- MeshRenderer
+- Resources
+- Camera
 
 
 ## Use Cases
