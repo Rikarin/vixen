@@ -84,8 +84,7 @@ sealed class VulkanPhysicalDevice {
         uint count = 0;
         vk.GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice, ref count, null);
 
-        using var mem = GlobalMemory.Allocate((int)count * sizeof(QueueFamilyProperties));
-        var queueFamilies = (QueueFamilyProperties*)Unsafe.AsPointer(ref mem.GetPinnableReference());
+        using var handle = VulkanUtils.Alloc<QueueFamilyProperties>(count, out var queueFamilies);
         vk.GetPhysicalDeviceQueueFamilyProperties(VkPhysicalDevice, ref count, queueFamilies);
 
         for (var i = 0; i < count; i++) {
@@ -99,8 +98,7 @@ sealed class VulkanPhysicalDevice {
 
         vk.EnumerateDeviceExtensionProperties(VkPhysicalDevice, (byte*)null, ref count, null);
         if (count > 0) {
-            using var mem = GlobalMemory.Allocate((int)count * sizeof(ExtensionProperties));
-            var extensionProperties = (ExtensionProperties*)Unsafe.AsPointer(ref mem.GetPinnableReference());
+            using var handle = VulkanUtils.Alloc<ExtensionProperties>(count, out var extensionProperties);
             if (
                 vk.EnumerateDeviceExtensionProperties(VkPhysicalDevice, (byte*)null, ref count, extensionProperties)
                 == Result.Success

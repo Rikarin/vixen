@@ -19,10 +19,11 @@ public class Shader {
 
     // TODO: This method is used for testing purpose only! Replace with Silk.SPIR-V compiler in Editor and load IL runtime
     public static Shader Create(string name, string vertexPath, string fragmentPath) {
-        var shader = new Shader(new OpenGLShader(vertexPath, fragmentPath));
+        // var shader = new Shader(new OpenGLShader(vertexPath, fragmentPath));
 
-        loadedShaders[name] = shader;
-        return shader;
+        // loadedShaders[name] = shader;
+        throw new NotImplementedException();
+        // return shader;
     }
 
     public static Shader? Find(string name) {

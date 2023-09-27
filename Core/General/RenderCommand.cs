@@ -1,12 +1,12 @@
 using Rin.Platform.Internal;
-using Rin.Platform.Renderer;
+using Rin.Platform.Rendering;
 using Rin.Platform.Silk;
 using System.Drawing;
 
 namespace Rin.Core.General; 
 
 public static class RenderCommand {
-    static IRendererApi api = new OpenGLRendererApi();
+    static IRendererApi api = null; //new OpenGLRendererApi();
 
     public static void Initialize() => api.Initialize();
     public static void SetViewport(Point point, Size size) => api.SetViewport(point, size);

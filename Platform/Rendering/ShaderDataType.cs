@@ -1,4 +1,4 @@
-namespace Rin.Platform.Renderer;
+namespace Rin.Platform.Rendering;
 
 public enum ShaderDataType {
     None = 0,

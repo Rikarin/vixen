@@ -39,7 +39,7 @@ public class Texture2D : Texture {
 
     // mip, linear
     public Texture2D(int width, int height, TextureFormat textureFormat = TextureFormat.RGBA32) {
-        handle = new OpenGLTexture2D((uint)width, (uint)height, textureFormat); // TODO
+        // handle = new OpenGLTexture2D((uint)width, (uint)height, textureFormat); // TODO
         Width = width;
         Height = height;
         Format = textureFormat;

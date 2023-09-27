@@ -1,4 +1,4 @@
-using Rin.Platform.Renderer;
+using Rin.Platform.Rendering;
 using System.Drawing;
 
 namespace Rin.Platform.Internal;

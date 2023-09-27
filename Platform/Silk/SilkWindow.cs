@@ -35,14 +35,13 @@ sealed class SilkWindow : IInternalWindow {
     public RendererContext RendererContext { get; private set; }
     public Vector2 MousePosition { get; private set; } = Vector2.Zero;
 
-    internal GL Gl { get; private set; }
-
     internal SilkWindow(WindowOptions options) {
         MainWindow = this;
         Initialize(options);
     }
 
-    public IInternalGuiRenderer CreateGuiRenderer() => new SilkImGuiRenderer(new(Gl, silkWindow, input));
+    public IInternalGuiRenderer CreateGuiRenderer() => throw new NotImplementedException();
+        // new SilkImGuiRenderer(new(Gl, silkWindow, input));
 
     public void Run() {
         silkWindow.Run();
@@ -70,7 +69,8 @@ sealed class SilkWindow : IInternalWindow {
         silkWindow.Load += OnLoad;
         silkWindow.Render += OnRender;
         silkWindow.Closing += OnClosing;
-        silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
+        // TODO
+        // silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
         silkWindow.Initialize();
 
         RendererContext = ObjectFactory.CreateRendererContext();
@@ -86,6 +86,8 @@ sealed class SilkWindow : IInternalWindow {
         
         // swapChain.Dispose();
         swapChain.BeginFrame();
+        
+        swapChain.Present();
     }
 
     void OnClosing() {

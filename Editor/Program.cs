@@ -3,9 +3,11 @@ using Rin.Core.General;
 using Rin.Editor;
 using Serilog;
 using Serilog.Exceptions;
-using Silk.NET.Vulkan;
+using System.Diagnostics.Tracing;
 using System.Drawing;
-using System.Runtime.InteropServices;
+
+var eventSourceListener = new EventSourceCreatedListener();
+
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -25,7 +27,11 @@ Log.Information("Bar");
 // var compiler = new ShaderCompiler();
 // compiler.Test();
 
-var app = new Application();
+// LoadRuntime, ...
+var app = Application.CreateDefault(
+    options => {
+        options.Name = "Project 1";
+    });
 
 // Test API
 var scene = SceneManager.CreateScene("Main Scene");
@@ -151,3 +157,20 @@ var guiRenderer = new GuiRenderer(app, project);
 app.Run();
 
 return 0;
+
+
+
+// TODO: use this to show in editor EventSource metrics
+sealed class EventSourceCreatedListener : EventListener {
+    protected override void OnEventSourceCreated(EventSource eventSource) {
+        base.OnEventSourceCreated(eventSource);
+        
+        // EnableEvents(eventSource, EventLevel.Verbose, EventKeywords.All);
+        Console.WriteLine($"New event source: {eventSource.Name}");
+    }
+
+    protected override void OnEventWritten(EventWrittenEventArgs eventData) {
+        base.OnEventWritten(eventData);
+        // Console.WriteLine($"event data {eventData.EventName}");
+    }
+}

@@ -1,4 +1,4 @@
-using Rin.Platform.Renderer;
+using Rin.Platform.Rendering;
 using System.Numerics;
 
 namespace Rin.Core.General;
@@ -38,8 +38,8 @@ public class Mesh {
             vertices[i * 3 + 2] = Vertices[i].Z;
         }
 
-        vertexBuffer = VertexBuffer.Create(vertices);
-        vertexBuffer.Layout = new(new[] { new VertexBufferElement(ShaderDataType.Float3, "a_Position") });
+        // vertexBuffer = VertexBuffer.Create(vertices);
+        // vertexBuffer.Layout = new(new[] { new VertexBufferElement(ShaderDataType.Float3, "a_Position") });
         vertexArray.AddVertexBuffer(vertexBuffer);
         
         indexBuffer = IndexBuffer.Create(Triangles);

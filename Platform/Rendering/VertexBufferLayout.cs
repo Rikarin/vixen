@@ -1,4 +1,4 @@
-namespace Rin.Platform.Renderer;
+namespace Rin.Platform.Rendering;
 
 public sealed class VertexBufferLayout {
     readonly List<VertexBufferElement> elements = new();

@@ -35,6 +35,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
     public unsafe void CreateInstance() {
         var appInfo = new ApplicationInfo {
             SType = StructureType.ApplicationInfo,
+            // TODO: fix these
             PApplicationName = (byte*)Marshal.StringToHGlobalAnsi("Hello Triangle"),
             ApplicationVersion = Vk.MakeVersion(1, 0),
             PEngineName = (byte*)Marshal.StringToHGlobalAnsi("Rin"),
@@ -92,13 +93,16 @@ sealed class VulkanContext : RendererContext, IDisposable {
         };
 
         CurrentDevice = new(physicalDevice, enabledFeatures);
-        // TODO: VulkanAllocator.Init(CurrentDevice);
+        VulkanAllocator.Init();
 
+        // TODO: this should be moved to pipeline
         var pipelineCacheCreateInfo = new PipelineCacheCreateInfo { SType = StructureType.PipelineCacheCreateInfo };
         Vulkan.CreatePipelineCache(CurrentDevice.VkLogicalDevice, pipelineCacheCreateInfo, null, out pipelineCache);
     }
 
     public unsafe void Dispose() {
+        VulkanAllocator.Shutdown();
+        
         var instance = Vulkan.CurrentInstance!.Value;
         if (EnableValidationLayers) {
             debugUtils?.DestroyDebugUtilsMessenger(instance, debugMessenger, null);
@@ -171,7 +175,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             return;
         }
 
-        DebugUtilsMessengerCreateInfoEXT createInfo = new();
+        var createInfo = new DebugUtilsMessengerCreateInfoEXT();
         PopulateDebugMessengerCreateInfo(ref createInfo);
 
         if (debugUtils!.CreateDebugUtilsMessenger(instance, in createInfo, null, out debugMessenger)

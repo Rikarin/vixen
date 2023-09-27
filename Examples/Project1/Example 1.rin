@@ -1,0 +1,14 @@
+﻿name: Example 1
+rootDirectory: ../Examples/Project1
+layers:
+- Default
+- Ground
+- Water
+- UI
+- Player
+tags:
+- Untagged
+- MainCamera
+- Player
+- GameController
+- EditorOnly

@@ -1,6 +1,4 @@
-using Rin.Platform.Silk;
-
-namespace Rin.Platform.Renderer;
+namespace Rin.Platform.Rendering;
 
 public abstract class IndexBuffer : IDisposable {
     public abstract int Count { get; }
@@ -11,7 +9,7 @@ public abstract class IndexBuffer : IDisposable {
     public static IndexBuffer Create(ReadOnlySpan<int> indices) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.None: throw new NotImplementedException();
-            case RendererApi.Api.OpenGl: return new OpenGLIndexBuffer(indices);
+            // case RendererApi.Api.OpenGl: return new OpenGLIndexBuffer(indices);
             default: throw new ArgumentOutOfRangeException();
         }
     }

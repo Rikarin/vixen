@@ -1,17 +1,16 @@
+using Rin.Core.Abstractions;
 using Serilog;
-using Silk.NET.Core.Native;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
-using System.Runtime.CompilerServices;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace Rin.Platform.Vulkan;
 
 sealed class VulkanSwapChain : IDisposable {
-    // readonly Instance instance;
-    // readonly VulkanDevice device;
     readonly ILogger logger = Log.ForContext<VulkanSwapChain>();
+    readonly Vk vk;
+    readonly Device vkDevice;
 
     uint? queueNodeIndex;
     ColorSpaceKHR colorSpace;
@@ -22,30 +21,39 @@ sealed class VulkanSwapChain : IDisposable {
 
     SwapchainKHR? swapchain;
     SurfaceKHR surface;
+    RenderPass? renderPass;
+
+    readonly List<SwapchainImage> images = new();
+    readonly List<Fence> waitFences = new();
 
     int currentImageIndex;
     readonly List<Framebuffer> framebuffers = new();
     readonly List<SwapchainCommandBuffer> commandBuffers = new();
-    readonly SwapchainSemaphores semaphores;
+    SwapchainSemaphores semaphores;
 
 
     // Was uint_32
     public int Width { get; private set; }
+
     public int Height { get; private set; }
-    public int ImageCount { get; private set; }
+    // public int ImageCount { get; private set; }
 
     public bool VSync { get; set; }
     public int CurrentBufferIndex { get; private set; }
 
-    public RenderPass VkRenderPass { get; private set; }
+    // public RenderPass VkRenderPass { get; private set; }
     public Format ColorFormat { get; private set; }
 
     public Framebuffer CurrentFramebuffer => GetFrameBuffer(currentImageIndex);
     public CommandBuffer CurrentDrawCommandBuffer => GetDrawCommandBuffer(CurrentBufferIndex);
     public Semaphore? RenderCompleteSemaphore => semaphores.RenderComplete;
 
+    public VulkanSwapChain() {
+        vk = VulkanContext.Vulkan;
+        vkDevice = VulkanContext.CurrentDevice.VkLogicalDevice;
+    }
+
     public unsafe void InitializeSurface(IWindow window) {
-        var vk = VulkanContext.Vulkan;
         var instance = vk.CurrentInstance!.Value;
 
         if (!vk.TryGetInstanceExtension(instance, out vkSurface)) {
@@ -54,8 +62,7 @@ sealed class VulkanSwapChain : IDisposable {
 
         surface = window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
 
-        var device = VulkanContext.CurrentDevice;
-        var physicalDevice = device.PhysicalDevice;
+        var physicalDevice = VulkanContext.CurrentDevice.PhysicalDevice;
         var queueProps = physicalDevice.QueueFamilyProperties;
         var supportsPresent = new bool[queueProps.Count];
 
@@ -91,17 +98,131 @@ sealed class VulkanSwapChain : IDisposable {
             throw new("Failed to find graphics or present queue index");
         }
 
-
         queueNodeIndex = graphicsQueueNodeIndex;
         FindImageFormatAndColorSpace();
         Log.Information("Surface initialized");
     }
 
-    public unsafe void Create(ref int width, ref int height, bool vSync) {
+    public void Create(ref int width, ref int height, bool vSync) {
         VSync = vSync;
 
-        var device = VulkanContext.CurrentDevice;
-        var physicalDevice = device.PhysicalDevice.VkPhysicalDevice;
+        CreateSwapchain(ref width, ref height);
+        CreateImageViews();
+        CreateCommandBuffers();
+        CreateSynchronizationObjects();
+        CreateRenderPass();
+        CreateFramebuffers();
+    }
+
+    // TODO: Not sure if this needs to has also ref params or not
+    public void OnResize(int width, int height) {
+        logger.Verbose("OnResize");
+        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
+
+        vk.DeviceWaitIdle(device);
+        Create(ref width, ref height, VSync);
+        vk.DeviceWaitIdle(device);
+    }
+
+    public void BeginFrame() {
+        Renderer.GetRenderResourceReleaseQueue(CurrentBufferIndex).Execute();
+
+        currentImageIndex = AcquireNextImage();
+        vk.ResetCommandPool(vkDevice, commandBuffers[CurrentBufferIndex].CommandPool, 0);
+    }
+
+    public unsafe void Present() {
+        var waitStages = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
+        var waitSemaphores = stackalloc[] { semaphores.PresentComplete!.Value };
+        var signalSemaphores = stackalloc[] { semaphores.RenderComplete!.Value };
+        var commandBuffer = commandBuffers[CurrentBufferIndex].CommandBuffer;
+
+        var submitInfo = new SubmitInfo(StructureType.SubmitInfo) {
+            PWaitDstStageMask = waitStages,
+            PWaitSemaphores = waitSemaphores,
+            WaitSemaphoreCount = 1,
+            PSignalSemaphores = signalSemaphores,
+            SignalSemaphoreCount = 1,
+            PCommandBuffers = &commandBuffer,
+            CommandBufferCount = 1
+        };
+
+        var graphicsQueue = VulkanContext.CurrentDevice.GraphicsQueue;
+        vk.ResetFences(vkDevice, 1, waitFences[CurrentBufferIndex]);
+        vk.QueueSubmit(graphicsQueue, 1, in submitInfo, waitFences[CurrentBufferIndex]);
+
+        var swapchain = this.swapchain!.Value;
+        fixed (int* currentImageIndexPtr = &currentImageIndex) {
+            var presentInfo = new PresentInfoKHR(StructureType.PresentInfoKhr) {
+                PSwapchains = &swapchain,
+                SwapchainCount = 1,
+                PImageIndices = (uint*)currentImageIndexPtr,
+                PWaitSemaphores = signalSemaphores,
+                WaitSemaphoreCount = 1
+            };
+
+            var result = vkSwapchain.QueuePresent(graphicsQueue, presentInfo);
+            if (result != Result.Success) {
+                if (result is Result.ErrorOutOfDateKhr or Result.SuboptimalKhr) {
+                    OnResize(Width, Height);
+                } else {
+                    throw new("error rendering");
+                }
+            }
+        }
+
+        // TODO: performance timers
+        CurrentBufferIndex = (CurrentBufferIndex + 1) % 3; // TODO: take this from config
+        vk.WaitForFences(vkDevice, 1, waitFences[CurrentBufferIndex], true, uint.MaxValue);
+    }
+
+    public Framebuffer GetFrameBuffer(int index) => framebuffers[index];
+    public CommandBuffer GetDrawCommandBuffer(int index) => commandBuffers[index].CommandBuffer;
+
+    public unsafe void Dispose() {
+        vk.DeviceWaitIdle(vkDevice);
+
+        if (swapchain != null) {
+            vkSwapchain.DestroySwapchain(vkDevice, swapchain.Value, null);
+        }
+
+        foreach (var image in images) {
+            vk.DestroyImageView(vkDevice, image.ImageView, null);
+        }
+
+        foreach (var commandBuffer in commandBuffers) {
+            vk.DestroyCommandPool(vkDevice, commandBuffer.CommandPool, null);
+        }
+
+        if (renderPass.HasValue) {
+            vk.DestroyRenderPass(vkDevice, renderPass.Value, null);
+        }
+
+        foreach (var framebuffer in framebuffers) {
+            vk.DestroyFramebuffer(vkDevice, framebuffer, null);
+        }
+
+        if (semaphores.RenderComplete != null) {
+            vk.DestroySemaphore(vkDevice, semaphores.RenderComplete.Value, null);
+        }
+
+        if (semaphores.PresentComplete != null) {
+            vk.DestroySemaphore(vkDevice, semaphores.PresentComplete.Value, null);
+        }
+
+        foreach (var fence in waitFences) {
+            vk.DestroyFence(vkDevice, fence, null);
+        }
+
+        vkSurface.DestroySurface(VulkanContext.Vulkan.CurrentInstance!.Value, surface, null);
+        vk.DeviceWaitIdle(vkDevice);
+
+        vkSurface.Dispose();
+        vkSwapchain.Dispose();
+    }
+
+    unsafe void CreateSwapchain(ref int width, ref int height) {
+        var physicalDevice = VulkanContext.CurrentDevice.PhysicalDevice.VkPhysicalDevice;
 
         var oldSwapchain = swapchain;
         vkSurface.GetPhysicalDeviceSurfaceCapabilities(physicalDevice, surface, out var surfCaps);
@@ -109,8 +230,8 @@ sealed class VulkanSwapChain : IDisposable {
         // Get available present modes
         uint presentModeCount = 0;
         vkSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, ref presentModeCount, null);
-        using var mem = GlobalMemory.Allocate((int)presentModeCount * sizeof(PresentModeKHR));
-        var presentModes = (PresentModeKHR*)Unsafe.AsPointer(ref mem.GetPinnableReference());
+
+        using var handle = VulkanUtils.Alloc<PresentModeKHR>(presentModeCount, out var presentModes);
         vkSurface.GetPhysicalDeviceSurfacePresentModes(physicalDevice, surface, ref presentModeCount, presentModes);
 
         var swapchainExtent = new Extent2D();
@@ -130,9 +251,8 @@ sealed class VulkanSwapChain : IDisposable {
             throw new("Width or height is set to 0");
         }
 
-        // Present modes
         var swapchainPresentMode = PresentModeKHR.FifoKhr;
-        if (!vSync) {
+        if (!VSync) {
             for (var i = 0; i < presentModeCount; i++) {
                 if (presentModes[i] == PresentModeKHR.MailboxKhr) {
                     swapchainPresentMode = PresentModeKHR.MailboxKhr;
@@ -150,7 +270,7 @@ sealed class VulkanSwapChain : IDisposable {
         if (surfCaps.MaxImageCount > 0 && desiredNumberOfSwapchainImages > surfCaps.MaxImageCount) {
             desiredNumberOfSwapchainImages = surfCaps.MaxImageCount;
         }
-        
+
         // Transformation of the surface
         var preTransform = surfCaps.SupportedTransforms.HasFlag(SurfaceTransformFlagsKHR.IdentityBitKhr)
             ? SurfaceTransformFlagsKHR.IdentityBitKhr
@@ -169,8 +289,7 @@ sealed class VulkanSwapChain : IDisposable {
                 break;
             }
         }
-        
-        // Create swapchain
+
         var swapchainCreateInfo = new SwapchainCreateInfoKHR {
             SType = StructureType.SwapchainCreateInfoKhr,
             Surface = surface,
@@ -192,79 +311,207 @@ sealed class VulkanSwapChain : IDisposable {
         if (surfCaps.SupportedUsageFlags.HasFlag(ImageUsageFlags.TransferSrcBit)) {
             swapchainCreateInfo.ImageUsage |= ImageUsageFlags.TransferSrcBit;
         }
-        
+
         if (surfCaps.SupportedUsageFlags.HasFlag(ImageUsageFlags.TransferDstBit)) {
             swapchainCreateInfo.ImageUsage |= ImageUsageFlags.TransferDstBit;
         }
 
-        var vk = VulkanContext.Vulkan;
-        if (!vk.TryGetDeviceExtension(vk.CurrentInstance!.Value, device.VkLogicalDevice, out vkSwapchain)) {
+        if (!vk.TryGetDeviceExtension(vk.CurrentInstance!.Value, vkDevice, out vkSwapchain)) {
             throw new NotSupportedException("KHR_swapchain extension not found.");
         }
-        
-        vkSwapchain.CreateSwapchain(device.VkLogicalDevice, &swapchainCreateInfo, null, out var newSwapchain);
+
+        vkSwapchain.CreateSwapchain(vkDevice, &swapchainCreateInfo, null, out var newSwapchain);
         swapchain = newSwapchain;
 
         if (oldSwapchain != null) {
-            vkSwapchain.DestroySwapchain(device.VkLogicalDevice, oldSwapchain.Value, null);
+            vkSwapchain.DestroySwapchain(vkDevice, oldSwapchain.Value, null);
         }
-        
-        // TODO: images
-
-
-        
-        // TODO: finish this
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 
-    // TODO: Not sure if this needs to has also ref params or not
-    public void OnResize(int width, int height) {
-        logger.Verbose("OnResize");
+    unsafe void CreateImageViews() {
+        foreach (var image in images) {
+            vk.DestroyImage(vkDevice, image.Image, null);
+        }
 
-        var vk = VulkanContext.Vulkan;
-        var device = VulkanContext.CurrentDevice;
+        // Get new swapchain images
+        uint imagesCount = 0;
+        vkSwapchain.GetSwapchainImages(vkDevice, swapchain!.Value, ref imagesCount, null);
+        using var handle = VulkanUtils.Alloc<Image>(imagesCount, out var swapchainImages);
+        vkSwapchain.GetSwapchainImages(vkDevice, swapchain.Value, ref imagesCount, swapchainImages);
 
-        vk.DeviceWaitIdle(device.VkLogicalDevice);
-        Create(ref width, ref height, VSync);
-        vk.DeviceWaitIdle(device.VkLogicalDevice);
+        Log.Information("Frames in flight: {Variable}", imagesCount);
+        images.Clear();
+        for (var i = 0; i < imagesCount; i++) {
+            var imageViewCreateInfo = new ImageViewCreateInfo {
+                SType = StructureType.ImageViewCreateInfo,
+                Format = ColorFormat,
+                Image = swapchainImages[i],
+                Components = new(ComponentSwizzle.R, ComponentSwizzle.G, ComponentSwizzle.B, ComponentSwizzle.A),
+                SubresourceRange = new(ImageAspectFlags.ColorBit, 0, 1, 0, 1),
+                ViewType = ImageViewType.Type2D,
+                Flags = 0
+            };
+
+            vk.CreateImageView(vkDevice, imageViewCreateInfo, null, out var imageView);
+            VulkanUtils.SetDebugObjectName(ObjectType.ImageView, $"Swapchain ImageView: {i}", imageView.Handle);
+            images.Add(new() { Image = swapchainImages[i], ImageView = imageView });
+        }
     }
 
-    public void BeginFrame() {
-        // TODO
+    unsafe void CreateCommandBuffers() {
+        foreach (var commandBuffer in commandBuffers) {
+            vk.DestroyCommandPool(vkDevice, commandBuffer.CommandPool, null);
+        }
 
-        currentImageIndex = AcquireNextImage();
-        VulkanContext.Vulkan.ResetCommandPool(
-            VulkanContext.CurrentDevice.VkLogicalDevice,
-            commandBuffers[currentImageIndex].CommandPool,
-            0
+        var cmdPoolInfo = new CommandPoolCreateInfo(StructureType.CommandPoolCreateInfo) {
+            QueueFamilyIndex = queueNodeIndex!.Value, Flags = CommandPoolCreateFlags.TransientBit
+        };
+
+        var cmdAllocateInfo = new CommandBufferAllocateInfo(StructureType.CommandBufferAllocateInfo) {
+            Level = CommandBufferLevel.Primary, CommandBufferCount = 1
+        };
+
+        commandBuffers.Clear();
+        for (var i = 0; i < images.Count; i++) {
+            vk.CreateCommandPool(vkDevice, cmdPoolInfo, null, out var commandPool);
+
+            cmdAllocateInfo.CommandPool = commandPool;
+            vk.AllocateCommandBuffers(vkDevice, cmdAllocateInfo, out var commandBuffer);
+
+            commandBuffers.Add(new() { CommandPool = commandPool, CommandBuffer = commandBuffer });
+        }
+    }
+
+    unsafe void CreateSynchronizationObjects() {
+        if (!semaphores.RenderComplete.HasValue || semaphores.PresentComplete.HasValue) {
+            var semaphoreCreateInfo = new SemaphoreCreateInfo(StructureType.SemaphoreCreateInfo);
+
+            vk.CreateSemaphore(vkDevice, semaphoreCreateInfo, null, out var renderComplete);
+            VulkanUtils.SetDebugObjectName(
+                ObjectType.Semaphore,
+                "Swapchain Semaphore RenderComplete",
+                renderComplete.Handle
+            );
+
+            vk.CreateSemaphore(vkDevice, semaphoreCreateInfo, null, out var presentComplete);
+            VulkanUtils.SetDebugObjectName(
+                ObjectType.Semaphore,
+                "Swapchain Semaphore PresentComplete",
+                presentComplete.Handle
+            );
+
+            semaphores = new() { RenderComplete = renderComplete, PresentComplete = presentComplete };
+        }
+
+        if (waitFences.Count != images.Count) {
+            foreach (var fence in waitFences) {
+                vk.DestroyFence(vkDevice, fence, null);
+            }
+
+            waitFences.Clear();
+            var fenceCreateInfo = new FenceCreateInfo(StructureType.FenceCreateInfo) {
+                Flags = FenceCreateFlags.SignaledBit
+            };
+
+            for (var i = 0; i < images.Count; i++) {
+                vk.CreateFence(vkDevice, fenceCreateInfo, null, out var fence);
+                VulkanUtils.SetDebugObjectName(
+                    ObjectType.Fence,
+                    $"Swapchain Fence: {i}",
+                    fence.Handle
+                );
+                waitFences.Add(fence);
+            }
+        }
+    }
+
+    unsafe void CreateRenderPass() {
+        var colorAttachment = new AttachmentDescription {
+            Format = ColorFormat,
+            Samples = SampleCountFlags.Count1Bit,
+            LoadOp = AttachmentLoadOp.Clear,
+            StoreOp = AttachmentStoreOp.Store,
+            StencilLoadOp = AttachmentLoadOp.DontCare,
+            StencilStoreOp = AttachmentStoreOp.DontCare,
+            InitialLayout = ImageLayout.Undefined,
+            FinalLayout = ImageLayout.PresentSrcKhr
+        };
+
+        var colorAttachmentRef = new AttachmentReference {
+            Attachment = 0, Layout = ImageLayout.ColorAttachmentOptimal
+        };
+
+        var subpass = new SubpassDescription {
+            PipelineBindPoint = PipelineBindPoint.Graphics,
+            ColorAttachmentCount = 1,
+            PColorAttachments = &colorAttachmentRef
+        };
+
+        var dependency = new SubpassDependency {
+            SrcSubpass = Vk.SubpassExternal,
+            DstSubpass = 0,
+            SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+            SrcAccessMask = 0,
+            DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+            DstAccessMask = AccessFlags.ColorAttachmentWriteBit
+        };
+
+        var renderPassInfo = new RenderPassCreateInfo(StructureType.RenderPassCreateInfo) {
+            AttachmentCount = 1,
+            PAttachments = &colorAttachment,
+            SubpassCount = 1,
+            PSubpasses = &subpass,
+            DependencyCount = 1,
+            PDependencies = &dependency
+        };
+
+        vk.CreateRenderPass(vkDevice, renderPassInfo, null, out var pass);
+        renderPass = pass;
+        
+        VulkanUtils.SetDebugObjectName(
+            ObjectType.RenderPass,
+            $"Swapchain RenderPass",
+            pass.Handle
         );
     }
 
-    public void Present() {
-        throw new NotImplementedException();
+    unsafe void CreateFramebuffers() {
+        foreach (var framebuffer in framebuffers) {
+            vk.DestroyFramebuffer(vkDevice, framebuffer, null);
+        }
+
+        var framebufferCreateInfo = new FramebufferCreateInfo(StructureType.FramebufferCreateInfo) {
+            RenderPass = renderPass!.Value,
+            AttachmentCount = 1,
+            Width = (uint)Width,
+            Height = (uint)Height,
+            Layers = 1
+        };
+
+        for (var i = 0; i < images.Count; i++) {
+            var imageView = images[i].ImageView;
+            framebufferCreateInfo.PAttachments = &imageView;
+            
+            var result = vk.CreateFramebuffer(vkDevice, framebufferCreateInfo, null, out var framebuffer);
+            if (result != Result.Success) {
+                Log.Fatal("Failed to create framebuffer");
+            }
+            
+            VulkanUtils.SetDebugObjectName(
+                ObjectType.Framebuffer,
+                $"Swapchain Framebuffer [Frame in Flight: {i}]",
+                framebuffer.Handle
+            );
+
+            framebuffers.Add(framebuffer);
+        }
     }
-
-
-    public Framebuffer GetFrameBuffer(int index) => framebuffers[index];
-    public CommandBuffer GetDrawCommandBuffer(int index) => commandBuffers[index].CommandBuffer;
 
     int AcquireNextImage() {
         if (swapchain == null) {
             throw new("Failed to acquire next image. Swapchain not created");
         }
-        
+
         uint imageIndex = 0;
         vkSwapchain.AcquireNextImage(
             VulkanContext.CurrentDevice.VkLogicalDevice,
@@ -280,16 +527,15 @@ sealed class VulkanSwapChain : IDisposable {
     }
 
     unsafe void FindImageFormatAndColorSpace() {
-        var physicalDevice = VulkanContext.CurrentDevice.PhysicalDevice;
+        var physicalDevice = VulkanContext.CurrentDevice.PhysicalDevice.VkPhysicalDevice;
 
         uint formatCount = 0;
-        vkSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice.VkPhysicalDevice, surface, ref formatCount, null);
+        vkSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, ref formatCount, null);
 
         Log.Information("Debug: {Variable}", formatCount);
-        using var mem = GlobalMemory.Allocate((int)formatCount * sizeof(SurfaceFormatKHR));
-        var surfaceFormats = (SurfaceFormatKHR*)Unsafe.AsPointer(ref mem.GetPinnableReference());
+        using var handle = VulkanUtils.Alloc<SurfaceFormatKHR>(formatCount, out var surfaceFormats);
         vkSurface.GetPhysicalDeviceSurfaceFormats(
-            physicalDevice.VkPhysicalDevice,
+            physicalDevice,
             surface,
             ref formatCount,
             surfaceFormats
@@ -333,44 +579,8 @@ sealed class VulkanSwapChain : IDisposable {
         public Semaphore? RenderComplete { get; set; }
     }
 
-    public unsafe void Dispose() {
-        var vk = VulkanContext.Vulkan;
-        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
-
-        vk.DeviceWaitIdle(device);
-
-        if (swapchain != null) {
-            vkSwapchain.DestroySwapchain(device, swapchain.Value, null);
-        }
-
-        // TODO: images
-
-        foreach (var commandBuffer in commandBuffers) {
-            vk.DestroyCommandPool(device, commandBuffer.CommandPool, null);
-        }
-
-        // TODO render pass
-
-        // framebuffers
-
-        if (semaphores.RenderComplete != null) {
-            vk.DestroySemaphore(device, semaphores.RenderComplete.Value, null);
-        }
-
-        if (semaphores.PresentComplete != null) {
-            vk.DestroySemaphore(device, semaphores.PresentComplete.Value, null);
-        }
-        
-        // TODO: fences
-        // foreach (var fence in fences)
-
-
-
-
-        vkSurface.DestroySurface(VulkanContext.Vulkan.CurrentInstance!.Value, surface, null);
-        vk.DeviceWaitIdle(device);
-        
-        vkSurface.Dispose();
-        vkSwapchain.Dispose();
+    struct SwapchainImage {
+        public Image Image { get; set; }
+        public ImageView ImageView { get; set; }
     }
 }

@@ -50,9 +50,8 @@ sealed class VulkanDevice : IDisposable {
         // TODO: initialization Aftermath if requested
 
         var pQueueCreateInfos = PhysicalDevice.queueCreateInfos;
-        using var mem = GlobalMemory.Allocate(pQueueCreateInfos.Count * sizeof(DeviceQueueCreateInfo));
-        var queueCreateInfos = (DeviceQueueCreateInfo*)Unsafe.AsPointer(ref mem.GetPinnableReference());
-
+        using var handle = VulkanUtils.Alloc<DeviceQueueCreateInfo>(pQueueCreateInfos.Count, out var queueCreateInfos);
+        
         for (var i = 0; i < pQueueCreateInfos.Count; i++) {
             queueCreateInfos[i] = pQueueCreateInfos[i];
         }
@@ -109,7 +108,7 @@ sealed class VulkanDevice : IDisposable {
             throw new("Failed to allocate secondary command buffer");
         }
 
-        // TODO: set debug stuff
+        VulkanUtils.SetDebugObjectName(ObjectType.CommandBuffer, debugName, commandBuffer.Handle);
         return commandBuffer;
     }
 
