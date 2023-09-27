@@ -11,7 +11,14 @@ public class Application {
 
     public Application() {
         Current = this;
+        
+        
+        // Setup profiler
+        // Setup Renderer.SetConfig (static)
+        
         MainWindow = new();
+        
+        // Renderer.Initialize();
     }
 
     // ConcurrentQueue<Action> queue = new();

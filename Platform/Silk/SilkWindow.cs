@@ -1,10 +1,15 @@
+using Rin.Core.Abstractions;
 using Rin.Platform.Internal;
+using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Key = Silk.NET.Input.Key;
+using MouseButton = Silk.NET.Input.MouseButton;
+using WindowOptions = Rin.Core.Abstractions.WindowOptions;
 
 [assembly: InternalsVisibleTo("Rin.Core")]
 [assembly: InternalsVisibleTo("Rin.Editor")]
@@ -27,13 +32,14 @@ sealed class SilkWindow : IInternalWindow {
     readonly bool[] keyPressed = new bool[(int)Key.Menu + 1];
     readonly bool[] mouseButtonPressed = new bool[(int)MouseButton.Button12 + 1];
 
+    public RendererContext RendererContext { get; private set; }
     public Vector2 MousePosition { get; private set; } = Vector2.Zero;
 
     internal GL Gl { get; private set; }
 
-    internal SilkWindow() {
+    internal SilkWindow(WindowOptions options) {
         MainWindow = this;
-        Initialize();
+        Initialize(options);
     }
 
     public IInternalGuiRenderer CreateGuiRenderer() => new SilkImGuiRenderer(new(Gl, silkWindow, input));
@@ -54,14 +60,32 @@ sealed class SilkWindow : IInternalWindow {
     public bool GetMouseButtonUp(Core.Abstractions.MouseButton mouseButton) =>
         mouseButtonUp.HasValue && (int)mouseButtonUp.Value == (int)mouseButton;
 
-    void Initialize() {
-        var options = WindowOptions.Default with { };
-        silkWindow = Window.Create(options);
+    void Initialize(WindowOptions options) {
+        silkWindow = Window.Create(
+            global::Silk.NET.Windowing.WindowOptions.DefaultVulkan with {
+                Title = options.Title, Size = new(options.Size.Width, options.Size.Height), VSync = options.VSync
+            }
+        );
 
         silkWindow.Load += OnLoad;
         silkWindow.Render += OnRender;
         silkWindow.Closing += OnClosing;
         silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
+        silkWindow.Initialize();
+
+        RendererContext = ObjectFactory.CreateRendererContext();
+        // var swapChain = new VulkanSwapChain(VulkanContext.)
+        var swapChain = new VulkanSwapChain();
+        swapChain.InitializeSurface(silkWindow);
+
+        var width = 800;
+        var height = 600;
+        
+        swapChain.Create(ref width, ref height, false);
+        
+        
+        // swapChain.Dispose();
+        swapChain.BeginFrame();
     }
 
     void OnClosing() {
@@ -78,7 +102,7 @@ sealed class SilkWindow : IInternalWindow {
     }
 
     void OnLoad() {
-        Gl = silkWindow.CreateOpenGL();
+        // Gl = silkWindow.CreateOpenGL();
         input = silkWindow.CreateInput();
 
         foreach (var keyboard in input.Keyboards) {
@@ -94,7 +118,9 @@ sealed class SilkWindow : IInternalWindow {
         }
 
         Log.Information("OpenGL Context initialized");
-        Load?.Invoke();
+        // Load?.Invoke();
+
+        Log.Information("VK {vk}", silkWindow.VkSurface);
     }
 
     void OnMouseMove(IMouse arg1, Vector2 arg2) {

@@ -40,6 +40,7 @@ sealed class GuiRenderer : IDisposable {
         AddPane<ScenePane>();
         AddPane<DebugTransformViewMatrixPane>();
         AddPane<TagPane>();
+        AddPane<GamePane>();
 
         // TODO: Load/Save of opened windows
 
@@ -50,6 +51,7 @@ sealed class GuiRenderer : IDisposable {
         OpenPane<ConsolePane>();
         OpenPane<LightningPane>();
         OpenPane<ScenePane>();
+        OpenPane<GamePane>();
     }
 
     public void Dispose() {
@@ -120,7 +122,7 @@ sealed class GuiRenderer : IDisposable {
                 | ImGuiWindowFlags.NoNavFocus;
         }
 
-        if ((dockNodeFlags & ImGuiDockNodeFlags.PassthruCentralNode) == ImGuiDockNodeFlags.PassthruCentralNode) {
+        if (dockNodeFlags.HasFlag(ImGuiDockNodeFlags.PassthruCentralNode)) {
             windowFlags |= ImGuiWindowFlags.NoBackground;
         }
 
@@ -142,7 +144,7 @@ sealed class GuiRenderer : IDisposable {
         var minWindowSizeX = style.WindowMinSize.X;
         style.WindowMinSize.X = 370;
 
-        if ((io.ConfigFlags & ImGuiConfigFlags.DockingEnable) == ImGuiConfigFlags.DockingEnable) {
+        if (io.ConfigFlags.HasFlag(ImGuiConfigFlags.DockingEnable)) {
             var dockSpaceId = ImGui.GetID("DockSpace");
             ImGui.DockSpace(dockSpaceId, Vector2.Zero, dockNodeFlags);
         }
@@ -185,6 +187,10 @@ sealed class GuiRenderer : IDisposable {
             }
 
             if (ImGui.BeginMenu("Game Object")) {
+                if (ImGui.MenuItem("Create Empty")) {
+                    // TODO: create empty object in the current scene
+                }
+
                 ImGui.EndMenu();
             }
 
@@ -192,7 +198,16 @@ sealed class GuiRenderer : IDisposable {
                 ImGui.EndMenu();
             }
 
-            if (ImGui.BeginMenu("View")) {
+            if (ImGui.BeginMenu("Window")) {
+                if (ImGui.BeginMenu("Layouts")) {
+                    if (ImGui.MenuItem("Basic")) {
+                        ImGui.LoadIniSettingsFromDisk(Path.Combine(settingsPath, "Layouts", "Basic.ini"));
+                    }
+
+                    ImGui.EndMenu();
+                }
+
+                ImGui.Separator();
                 if (ImGui.BeginMenu("General")) {
                     if (ImGui.MenuItem("Scene")) {
                         OpenPane<ScenePane>();
@@ -237,6 +252,9 @@ sealed class GuiRenderer : IDisposable {
             }
 
             if (ImGui.BeginMenu("Help")) {
+                if (ImGui.MenuItem("Demo Window")) {
+                }
+
                 ImGui.EndMenu();
             }
 

@@ -23,7 +23,7 @@ Create game engine with requirements:
 - Image loading and font rendering https://github.com/SixLabors/ImageSharp
 - FBX Loader https://github.com/izrik/FbxSharp
 - YAML Serializer/Deserializer https://github.com/aaubry/YamlDotNet
-- Use PhysX for 3D https://github.com/Cysharp/MagicPhysX
+- Use Jolt Physics for both 2D and 3D https://github.com/amerkoleci/JoltPhysicsSharp/tree/main
 
 
 ## References
@@ -32,6 +32,7 @@ Create game engine with requirements:
 - Interesting reference how to implement openGL Buffers https://github.com/frederikja163/Silk.NET/blob/tutorials/examples/CSharp/OpenGL/Tutorial%201.3%20-%20Abstractions/BufferObject.cs
 - ImGui Table references https://github.com/ocornut/imgui/issues/3740
 - Model loading https://github.com/dotnet/Silk.NET/blob/main/examples/CSharp/OpenGL%20Tutorials/Tutorial%204.1%20-%20Model%20Loading/Program.cs
+- Implementation of Jolt Physics https://github.com/TheSpectreZ/Nexus/blob/master/Source/Engine/NxPhysicsEngine/src/PhysicsEngine.cpp
 
 ### Game Engines
 
@@ -50,8 +51,7 @@ Create game engine with requirements:
 - Entity Component as base objects
 - DOTS/ECS
 - Addressable (bundling)
-- 2D/3D Physics
-    - Study how https://github.com/erincatto/box2c works and implement similar physics engine
+- 2D/3D Physics (Jolt)
 - Input System
 - Shader compilation system
 - PBR/BSDF shader program

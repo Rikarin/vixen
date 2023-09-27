@@ -3,7 +3,7 @@ using Rin.Platform.Silk;
 namespace Rin.Platform.Renderer;
 
 public abstract class VertexBuffer : IDisposable {
-    /*internal*/ public BufferLayout Layout { get; set; }
+    /*internal*/ public VertexBufferLayout Layout { get; set; }
 
     public abstract void Bind();
     public abstract void Unbind();

@@ -1,14 +1,14 @@
 namespace Rin.Platform.Renderer;
 
-public sealed class BufferLayout {
-    readonly List<BufferElement> elements = new();
+public sealed class VertexBufferLayout {
+    readonly List<VertexBufferElement> elements = new();
 
     public uint Stride { get; private set; }
-    public IReadOnlyList<BufferElement> Elements => elements.AsReadOnly();
+    public IReadOnlyList<VertexBufferElement> Elements => elements.AsReadOnly();
 
-    public BufferLayout() { }
+    public VertexBufferLayout() { }
 
-    public BufferLayout(IEnumerable<BufferElement> elements) {
+    public VertexBufferLayout(IEnumerable<VertexBufferElement> elements) {
         this.elements.AddRange(elements);
         CalculateOffsetsAndStride();
     }

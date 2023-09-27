@@ -39,7 +39,7 @@ public class Mesh {
         }
 
         vertexBuffer = VertexBuffer.Create(vertices);
-        vertexBuffer.Layout = new(new[] { new BufferElement(ShaderDataType.Float3, "a_Position") });
+        vertexBuffer.Layout = new(new[] { new VertexBufferElement(ShaderDataType.Float3, "a_Position") });
         vertexArray.AddVertexBuffer(vertexBuffer);
         
         indexBuffer = IndexBuffer.Create(Triangles);

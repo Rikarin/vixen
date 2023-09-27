@@ -1,6 +1,6 @@
 namespace Rin.Platform.Renderer;
 
-public sealed class BufferElement {
+public sealed class VertexBufferElement {
     public string Name { get; }
     public ShaderDataType Type { get; }
     public uint Size { get; }
@@ -13,8 +13,8 @@ public sealed class BufferElement {
             ShaderDataType.Float2 => 2,
             ShaderDataType.Float3 => 3,
             ShaderDataType.Float4 => 4,
-            ShaderDataType.Mat3 => 3, // 3 * float3
-            ShaderDataType.Mat4 => 4, // 4 * float4
+            ShaderDataType.Mat3 => 3 * 3, // 3 * float3
+            ShaderDataType.Mat4 => 4 * 4, // 4 * float4
             ShaderDataType.Int => 1,
             ShaderDataType.Int2 => 2,
             ShaderDataType.Int3 => 3,
@@ -24,7 +24,7 @@ public sealed class BufferElement {
         };
 
 
-    public BufferElement(ShaderDataType type, string name, bool normalized = false) {
+    public VertexBufferElement(ShaderDataType type, string name, bool normalized = false) {
         Type = type;
         Name = name;
         Normalized = normalized;

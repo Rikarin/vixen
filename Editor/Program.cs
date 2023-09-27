@@ -3,7 +3,9 @@ using Rin.Core.General;
 using Rin.Editor;
 using Serilog;
 using Serilog.Exceptions;
+using Silk.NET.Vulkan;
 using System.Drawing;
+using System.Runtime.InteropServices;
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -32,18 +34,43 @@ SceneManager.SetActiveScene(scene);
 var boxObj = new GameObject();
 boxObj.AddComponent<MeshFilter>();
 
-
-// VertexArray? vertexArray = null;
 Mesh? box = null;
 Material? material = null;
 
+// string[] CommonExtensions = {
+//     "VK_KHR_surface",
+// };
 
 app.MainWindow.Load += () => {
     Log.Information("Application Loading");
-    RenderCommand.Initialize();
+    //
+    // unsafe {
+    //     var platformExtensions = new[] { "VK_KHR_portability_enumeration" };
+    //     
+    //     InstanceCreateInfo createInfo = default;
+    //     createInfo.SType = StructureType.InstanceCreateInfo;
+    //     createInfo.PApplicationInfo = &appInfo;
+    //     var extensions = CommonExtensions.Concat(platformExtensions).ToArray();
+    //     var extensionsToBytesArray = stackalloc IntPtr[extensions.Length];
+    //     for (var i = 0; i < extensions.Length; i++) {
+    //         extensionsToBytesArray[i] = Marshal.StringToHGlobalAnsi(extensions[i]);
+    //     }
+    //
+    //     createInfo.EnabledExtensionCount = (uint)extensions.Length;
+    //     createInfo.PpEnabledExtensionNames = (byte**)extensionsToBytesArray;
+    //
+    //     createInfo.Flags = extensions.Contains("VK_KHR_portability_enumeration")
+    //         ? InstanceCreateFlags.EnumeratePortabilityBitKhr
+    //         : InstanceCreateFlags.None;
+    //
+    //     // createInfo.Flags = InstanceCreateFlags.EnumeratePortabilityBitKhr;
+    //     createInfo.EnabledLayerCount = 0;
+    //     createInfo.PNext = null;
+    //
+    //     var vk = Vk.GetApi(createInfo, out var instance);
+    // }
 
-    box = Mesh.CreateBox();
-    box.SetupMesh();
+    RenderCommand.Initialize();
 
     // vertexArray = VertexArray.Create();
     // float[] vertices = {

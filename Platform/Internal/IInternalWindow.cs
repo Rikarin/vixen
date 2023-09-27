@@ -5,6 +5,7 @@ namespace Rin.Platform.Internal;
 
 interface IInternalWindow {
     Vector2 MousePosition { get; }
+    RendererContext RendererContext { get; }
 
     IInternalGuiRenderer CreateGuiRenderer();
     void Run();

@@ -9,7 +9,8 @@ public static class SceneManager {
     public static Scene CreateScene(string name) {
         var scene = new Scene(name, string.Empty);
         // TODO: what if multiple scenes have the same name?
-        loadedScenes[name] = scene;
+        // Also we can create scene object on the disk without loading it (I think)
+        // loadedScenes[name] = scene;
 
         return scene;
     }

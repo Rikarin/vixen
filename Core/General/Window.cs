@@ -1,3 +1,4 @@
+using Rin.Core.Abstractions;
 using Rin.Platform.Internal;
 
 namespace Rin.Core.General;
@@ -5,8 +6,17 @@ namespace Rin.Core.General;
 public class Window {
     internal readonly IInternalWindow Handle;
 
-    public Window() {
-        Handle = ObjectFactory.CreateWindow();
+    public Window(Action<WindowOptions>? configureOptions = null) {
+        var options = new WindowOptions {
+            Title = "Rin",
+            Size = new(1600, 900),
+            Decorated = true,
+            VSync = true
+        };
+        
+        configureOptions?.Invoke(options);
+        
+        Handle = ObjectFactory.CreateWindow(options);
         Handle.Load += () => Load?.Invoke();
         Handle.Closing += () => Closing?.Invoke();
         Handle.Render += deltaTime => Render?.Invoke(deltaTime);
