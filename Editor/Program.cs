@@ -24,8 +24,9 @@ editor.Watch();
 
 Log.Information("Bar");
 
-// var compiler = new ShaderCompiler();
-// compiler.Test();
+var compiler = new ShaderCompiler();
+compiler.Compile();
+return 0;
 
 // LoadRuntime, ...
 var app = Application.CreateDefault(
@@ -131,7 +132,7 @@ app.MainWindow.Render += deltaTime => {
 
     material?.Render();
     if (box != null) {
-        RenderCommand.Draw(box);
+        // RenderCommand.Draw(box);
     }
 };
 

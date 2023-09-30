@@ -6,36 +6,23 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanVertexBuffer : VertexBuffer {
-    readonly byte[] localBuffer;
+sealed class VulkanIndexBuffer : IndexBuffer {
+    // readonly byte[] localBuffer;
     Allocation allocation;
 
     public Buffer VkBuffer { get; private set; }
 
-    public unsafe VulkanVertexBuffer(int size, VertexBufferUsage usage) {
-        RendererId = new(0);
-        localBuffer = new byte[size];
+    public override int Count => Size / sizeof(int);
+    public override int Size { get; }
+
+    public unsafe VulkanIndexBuffer(ReadOnlySpan<byte> data) {
+        var localBuffer = data.ToArray();
+        Size = localBuffer.Length;
 
         Renderer.Submit(
             () => {
                 var bufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
-                    Size = (uint)size, Usage = BufferUsageFlags.VertexBufferBit
-                };
-
-                allocation = VulkanAllocator.AllocateBuffer(bufferCreateInfo, MemoryUsage.CPU_To_GPU, out var buffer);
-                VkBuffer = buffer;
-            }
-        );
-    }
-
-    public unsafe VulkanVertexBuffer(ReadOnlySpan<byte> data, VertexBufferUsage usage) {
-        RendererId = new(0);
-        localBuffer = data.ToArray();
-
-        Renderer.Submit(
-            () => {
-                var bufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
-                    Size = (uint)localBuffer.Length,
+                    Size = (uint)Size,
                     Usage = BufferUsageFlags.TransferSrcBit,
                     SharingMode = SharingMode.Exclusive
                 };
@@ -45,17 +32,18 @@ sealed class VulkanVertexBuffer : VertexBuffer {
                     MemoryUsage.CPU_To_GPU,
                     out var stagingBuffer
                 );
+                
                 var destData = new Span<byte>(stagingAllocation.Map().ToPointer(), localBuffer.Length);
                 localBuffer.CopyTo(destData);
                 stagingAllocation.Unmap();
 
-                var vertexBufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
-                    Size = (uint)localBuffer.Length,
-                    Usage = BufferUsageFlags.TransferDstBit | BufferUsageFlags.VertexBufferBit
+                var indexBufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
+                    Size = (uint)Size,
+                    Usage = BufferUsageFlags.TransferDstBit | BufferUsageFlags.IndexBufferBit
                 };
 
                 allocation = VulkanAllocator.AllocateBuffer(
-                    vertexBufferCreateInfo,
+                    indexBufferCreateInfo,
                     MemoryUsage.GPU_Only,
                     out var buffer
                 );
@@ -63,7 +51,7 @@ sealed class VulkanVertexBuffer : VertexBuffer {
 
                 var device = VulkanContext.CurrentDevice;
                 var copyCommand = device.GetCommandBuffer(true);
-                var copyRegion = new BufferCopy { Size = (uint)localBuffer.Length };
+                var copyRegion = new BufferCopy { Size = (uint)Size };
 
                 VulkanContext.Vulkan.CmdCopyBuffer(copyCommand, stagingBuffer, buffer, 1, copyRegion);
                 device.FlushCommandBuffer(copyCommand);
@@ -73,16 +61,17 @@ sealed class VulkanVertexBuffer : VertexBuffer {
     }
 
     public override void SetData(ReadOnlySpan<byte> data) {
-        data.CopyTo(localBuffer);
-        Renderer.Submit(() => SetData_RT(localBuffer));
+        // data.CopyTo(localBuffer);
+        // Renderer.Submit(() => SetData_RT(localBuffer));
+        throw new NotImplementedException();
     }
 
-    public override unsafe void SetData_RT(ReadOnlySpan<byte> data) {
+    // public override unsafe void SetData_RT(ReadOnlySpan<byte> data) {
         // TODO: this will probably fail when used with GPU_ONLY buffer
-        var destData = new Span<byte>(allocation.Map().ToPointer(), data.Length);
-        data.CopyTo(destData);
-        allocation.Unmap();
-    }
+        // var destData = new Span<byte>(allocation.Map().ToPointer(), data.Length);
+        // data.CopyTo(destData);
+        // allocation.Unmap();
+    // }
 
     public override void Dispose() {
         Renderer.SubmitDisposal(() => VulkanAllocator.DestroyBuffer(VkBuffer, allocation));

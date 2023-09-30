@@ -8,5 +8,5 @@ interface IRendererApi {
     void SetViewport(Point point, Size size);
     void SetClearColor(Color color);
     void Clear();
-    void Draw(VertexArray vertexArray, int? count);
+    // void Draw(VertexArray vertexArray, int? count);
 }

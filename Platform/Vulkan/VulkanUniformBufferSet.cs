@@ -1,7 +1,7 @@
 using Rin.Core.Abstractions;
 using Rin.Platform.Rendering;
 
-namespace Rin.Platform.Vulkan; 
+namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanUniformBufferSet : UniformBufferSet {
     readonly List<UniformBuffer> uniformBuffers;
@@ -10,7 +10,7 @@ public sealed class VulkanUniformBufferSet : UniformBufferSet {
         if (framesInFlight == 0) {
             framesInFlight = Renderer.Options.FramesInFlight;
         }
-        
+
         uniformBuffers = new(framesInFlight);
         for (var i = 0; i < framesInFlight; i++) {
             uniformBuffers.Add(UniformBuffer.Create(size));

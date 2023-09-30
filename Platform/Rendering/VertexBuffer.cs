@@ -12,9 +12,10 @@ public abstract class VertexBuffer : IDisposable {
     
     public abstract void SetData(ReadOnlySpan<byte> data);
     public abstract void SetData_RT(ReadOnlySpan<byte> data);
+    public abstract void Dispose();
 
-    // TODO: usage is not used anywhere
     
+    // TODO: "usage" parameter is not used anywhere
     public static VertexBuffer Create(int size, VertexBufferUsage usage = VertexBufferUsage.Dynamic) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.None: throw new NotImplementedException();
@@ -30,6 +31,4 @@ public abstract class VertexBuffer : IDisposable {
             default: throw new ArgumentOutOfRangeException();
         }
     }
-
-    public virtual void Dispose() { }
 }

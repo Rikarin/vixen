@@ -7,13 +7,13 @@ namespace Rin.Platform.Vulkan;
 
 static class VulkanUtils {
     public static unsafe MemoryHandle Alloc<T>(int size, out T* buffer) where T : unmanaged {
-        var handle = new ReadOnlyMemory<byte>(new byte[size * sizeof(T)]).Pin();
+        var handle = new Memory<byte>(new byte[size * sizeof(T)]).Pin();
         buffer = (T *)handle.Pointer;
         return handle;
     }
     
     public static unsafe MemoryHandle Alloc<T>(uint size, out T* buffer) where T : unmanaged {
-        var handle = new ReadOnlyMemory<byte>(new byte[size * sizeof(T)]).Pin();
+        var handle = new Memory<byte>(new byte[size * sizeof(T)]).Pin();
         buffer = (T *)handle.Pointer;
         return handle;
     }

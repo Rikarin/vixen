@@ -4,7 +4,7 @@ using System.Numerics;
 namespace Rin.Core.General;
 
 public class Mesh {
-    internal readonly VertexArray vertexArray = VertexArray.Create();
+    // internal readonly VertexArray vertexArray = VertexArray.Create();
     VertexBuffer vertexBuffer;
     IndexBuffer indexBuffer;
 
@@ -40,9 +40,9 @@ public class Mesh {
 
         // vertexBuffer = VertexBuffer.Create(vertices);
         // vertexBuffer.Layout = new(new[] { new VertexBufferElement(ShaderDataType.Float3, "a_Position") });
-        vertexArray.AddVertexBuffer(vertexBuffer);
+        // vertexArray.AddVertexBuffer(vertexBuffer);
         
-        indexBuffer = IndexBuffer.Create(Triangles);
-        vertexArray.SetIndexBuffer(indexBuffer);
+        // indexBuffer = IndexBuffer.Create(Triangles);
+        // vertexArray.SetIndexBuffer(indexBuffer);
     }
 }

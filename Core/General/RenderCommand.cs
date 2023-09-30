@@ -14,6 +14,6 @@ public static class RenderCommand {
     public static void Clear() => api.Clear();
     
     // TODO: we need to have VertexArray and buffers public due to this
-    public static void Draw(VertexArray vertexArray, int? count = null) => api.Draw(vertexArray, count);
-    public static void Draw(Mesh mesh) => api.Draw(mesh.vertexArray, null);
+    // public static void Draw(VertexArray vertexArray, int? count = null) => api.Draw(vertexArray, count);
+    // public static void Draw(Mesh mesh) => api.Draw(mesh.vertexArray, null);
 }
