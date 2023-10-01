@@ -6,13 +6,17 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanVertexBuffer : VertexBuffer {
+sealed class VulkanVertexBuffer : IVertexBuffer {
     readonly byte[] localBuffer;
     Allocation allocation;
 
     public Buffer VkBuffer { get; private set; }
 
+    public RendererId RendererId { get; }
+    public int Size { get; }
+
     public unsafe VulkanVertexBuffer(int size, VertexBufferUsage usage) {
+        Size = size;
         RendererId = new(0);
         localBuffer = new byte[size];
 
@@ -29,6 +33,7 @@ sealed class VulkanVertexBuffer : VertexBuffer {
     }
 
     public unsafe VulkanVertexBuffer(ReadOnlySpan<byte> data, VertexBufferUsage usage) {
+        Size = data.Length;
         RendererId = new(0);
         localBuffer = data.ToArray();
 
@@ -72,19 +77,19 @@ sealed class VulkanVertexBuffer : VertexBuffer {
         );
     }
 
-    public override void SetData(ReadOnlySpan<byte> data) {
+    public void SetData(ReadOnlySpan<byte> data) {
         data.CopyTo(localBuffer);
         Renderer.Submit(() => SetData_RT(localBuffer));
     }
 
-    public override unsafe void SetData_RT(ReadOnlySpan<byte> data) {
+    public unsafe void SetData_RT(ReadOnlySpan<byte> data) {
         // TODO: this will probably fail when used with GPU_ONLY buffer
         var destData = new Span<byte>(allocation.Map().ToPointer(), data.Length);
         data.CopyTo(destData);
         allocation.Unmap();
     }
 
-    public override void Dispose() {
+    public void Dispose() {
         Renderer.SubmitDisposal(() => VulkanAllocator.DestroyBuffer(VkBuffer, allocation));
     }
 }

@@ -6,14 +6,14 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanIndexBuffer : IndexBuffer {
+sealed class VulkanIndexBuffer : IIndexBuffer {
     // readonly byte[] localBuffer;
     Allocation allocation;
 
     public Buffer VkBuffer { get; private set; }
 
-    public override int Count => Size / sizeof(int);
-    public override int Size { get; }
+    public int Count => Size / sizeof(int);
+    public int Size { get; }
 
     public unsafe VulkanIndexBuffer(ReadOnlySpan<byte> data) {
         var localBuffer = data.ToArray();
@@ -60,7 +60,7 @@ sealed class VulkanIndexBuffer : IndexBuffer {
         );
     }
 
-    public override void SetData(ReadOnlySpan<byte> data) {
+    public void SetData(ReadOnlySpan<byte> data) {
         // data.CopyTo(localBuffer);
         // Renderer.Submit(() => SetData_RT(localBuffer));
         throw new NotImplementedException();
@@ -73,7 +73,7 @@ sealed class VulkanIndexBuffer : IndexBuffer {
         // allocation.Unmap();
     // }
 
-    public override void Dispose() {
+    public void Dispose() {
         Renderer.SubmitDisposal(() => VulkanAllocator.DestroyBuffer(VkBuffer, allocation));
     }
 }

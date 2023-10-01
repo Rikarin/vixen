@@ -6,7 +6,7 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanStorageBuffer : StorageBuffer {
+public sealed class VulkanStorageBuffer : IStorageBuffer {
     readonly StorageBufferOptions options;
 
     int size;
@@ -23,23 +23,23 @@ public sealed class VulkanStorageBuffer : StorageBuffer {
         Renderer.Submit(Invalidate_RT);
     }
 
-    public override void SetData(ReadOnlySpan<byte> data) {
+    public void SetData(ReadOnlySpan<byte> data) {
         data.CopyTo(localBuffer);
         Renderer.Submit(() => SetData_RT(localBuffer));
     }
 
-    public override unsafe void SetData_RT(ReadOnlySpan<byte> data) {
+    public unsafe void SetData_RT(ReadOnlySpan<byte> data) {
         var destData = new Span<byte>(allocation!.Map().ToPointer(), data.Length);
         data.CopyTo(destData);
         allocation.Unmap();
     }
 
-    public override void Resize(int newSize) {
+    public void Resize(int newSize) {
         size = newSize;
         Renderer.Submit(Invalidate_RT);
     }
 
-    public override void Dispose() {
+    public void Dispose() {
         Release();
     }
 

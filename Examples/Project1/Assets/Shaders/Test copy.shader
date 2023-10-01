@@ -8,6 +8,9 @@ shader "Common/FoobarShader" {
         LOD 100
         
         pass {
+            vertexEntry vertex
+            fragmentEntry frament
+            
             HLSLPROGRAM
             #include "Common/Base"
 

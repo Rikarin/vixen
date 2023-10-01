@@ -172,7 +172,7 @@ sealed class VulkanSwapChain : IDisposable {
         }
 
         // TODO: performance timers
-        CurrentBufferIndex = (CurrentBufferIndex + 1) % 3; // TODO: take this from config
+        CurrentBufferIndex = (CurrentBufferIndex + 1) % Renderer.Options.FramesInFlight;
         vk.WaitForFences(vkDevice, 1, waitFences[CurrentBufferIndex], true, uint.MaxValue);
     }
 

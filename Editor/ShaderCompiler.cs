@@ -11,17 +11,15 @@ using System.Runtime.InteropServices;
 
 namespace Rin.Editor;
 
-// reference: https://github.com/LWJGL/lwjgl3-demos/blob/main/src/org/lwjgl/demo/vulkan/VKUtil.java#L62-L63
 public class ShaderCompiler {
+    readonly ILogger logger = Log.ForContext<ShaderCompiler>();
     readonly string shaderPath;
-    string? programSource;
     string? name;
 
-    static string CacheDirectory => Path.Combine(Project.OpenProject!.CacheDirectory, "Shaders");
+    internal ShaderResource.ReflectionData ReflectionData { get; } = new();
+    public string? ProgramSource { get; private set; }
 
-    readonly ILogger logger = Log.ForContext<ShaderCompiler>();
-    // TODO: these are generic reflection data of the spir-v file not vulcan-only
-    readonly VulkanShader.ReflectionData reflectionData = new();
+    static string CacheDirectory => Path.Combine(Project.OpenProject!.CacheDirectory, "Shaders");
 
     ShaderCompiler(string shaderPath) {
         this.shaderPath = shaderPath;
@@ -30,44 +28,27 @@ public class ShaderCompiler {
     public static Shader Compile(string shaderPath, bool forceCompile, bool debug) {
         var compiler = new ShaderCompiler(Path.Combine(Project.OpenProject!.RootDirectory, shaderPath));
         compiler.Reload(forceCompile);
-        
-        // TODO: load this from our shader compiler
-        var shader = new Shader(null!, compiler.name, shaderPath);
-        
+
+        var shader = new Shader(null!, compiler.name!, shaderPath);
+
 
         Log.Information("Debug: {Variable}", compiler.name);
-        
-        
+
+        ShaderCache.Serialize(compiler);
+
         return shader;
     }
 
     public void Reload(bool forceCompile) {
         name = null;
-        programSource = null;
+        ProgramSource = null;
 
         Directory.CreateDirectory(CacheDirectory);
-        
+
         var source = File.ReadAllText(shaderPath);
         Preprocess(source);
     }
-    
-    // static Compile and TryRecompile(Shader)
 
-    void Preprocess(string source) {
-        var tokenRange = new TokenRange(source);
-        var ast = new Parser().Parse(tokenRange);
-
-        var builder = new ShaderBuilder();
-        builder.Visit(ast);
-
-        name = builder.Name;
-        programSource = builder.ProgramSource;
-    }
-    
-    
-    
-    
-    
 
     public unsafe void Compile(string shader, bool debug) {
         var api = Shaderc.GetApi();
@@ -85,7 +66,7 @@ public class ShaderCompiler {
         } else {
             api.CompileOptionsSetOptimizationLevel(options, OptimizationLevel.Performance);
         }
-        
+
         api.CompileOptionsSetIncludeCallbacks(
             options,
             PfnIncludeResolveFn.From(IncludeResolver),
@@ -94,8 +75,8 @@ public class ShaderCompiler {
         );
 
         var content = Marshal.StringToHGlobalAnsi(shader);
-        var fileName = Marshal.StringToHGlobalAnsi("foo/bar.hlsl");
-        var entryPoint = Marshal.StringToHGlobalAnsi("main");
+        var fileName = Marshal.StringToHGlobalAnsi(shaderPath);
+        var entryPoint = Marshal.StringToHGlobalAnsi("vert");
 
         var result = api.CompileIntoSpv(
             compiler,
@@ -123,11 +104,25 @@ public class ShaderCompiler {
         api.CompilerRelease(compiler);
     }
 
+    // static Compile and TryRecompile(Shader)
+
+    void Preprocess(string source) {
+        var tokenRange = new TokenRange(source);
+        var ast = new Parser().Parse(tokenRange);
+
+        var builder = new ShaderBuilder();
+        builder.Visit(ast);
+
+        name = builder.Name;
+        ProgramSource = builder.ProgramSource;
+
+        Compile(ProgramSource, true);
+    }
+
     unsafe void IncludeReleaser(void* userData, IncludeResult* includeResult) {
         Marshal.FreeHGlobal((nint)includeResult->Content);
         Marshal.FreeHGlobal((nint)includeResult->SourceName);
         Marshal.FreeHGlobal((nint)includeResult);
-        Log.Information("Releaser");
     }
 
     unsafe IncludeResult* IncludeResolver(
@@ -138,31 +133,20 @@ public class ShaderCompiler {
         UIntPtr includePath
     ) {
         var result = (IncludeResult*)Marshal.AllocHGlobal(sizeof(IncludeResult));
-        var reqested = Marshal.PtrToStringAnsi((nint)requestedResource);
+        var requesting = Marshal.PtrToStringAnsi((nint)requestingResource);
+        var requested = Marshal.PtrToStringAnsi((nint)requestedResource);
 
-        var name = "asdfasdf.hlsl";
-        var content = """
-                      [[vk::image_format("rgba8")]]
-                      RWBuffer<float4> Buf;
+        var relativePath = Path.Combine(Path.GetDirectoryName(requesting)!, requested!) + ".hlsl";
+        if (!File.Exists(relativePath)) {
+            throw new FileNotFoundException($"File '{relativePath}' not found");
+        }
 
-                      Texture2D texture2D42l;
+        var program = File.ReadAllText(relativePath);
 
-                      [[vk::image_format("rg16f")]]
-                      RWTexture2D<float2> Tex;
-
-                      RWTexture2D<float2> Tex2; // Works like before
-
-                      struct aasdf {
-                        float4x4 foobar;
-                      };
-                      [[vk::binding(2,2)]] ConstantBuffer<aasdf> u_aasdf;
-                      """;
-        result->SourceName = (byte*)Marshal.StringToHGlobalAnsi(name);
-        result->SourceNameLength = (nuint)name.Length;
-        result->Content = (byte*)Marshal.StringToHGlobalAnsi(content);
-        result->ContentLength = (nuint)content.Length;
-
-        // Log.Information("Resolver {str}", str);
+        result->SourceName = (byte*)Marshal.StringToHGlobalAnsi(relativePath);
+        result->SourceNameLength = (nuint)relativePath.Length;
+        result->Content = (byte*)Marshal.StringToHGlobalAnsi(program);
+        result->ContentLength = (nuint)program.Length;
 
         return result;
     }
@@ -172,20 +156,20 @@ public class ShaderCompiler {
         var compiler = cross.CreateCompiler(irCode);
         var shaderResources = compiler.CreateShaderResources();
 
-        for (var i = 1; i < 15; i++) {
-            var res = shaderResources.GetResourceListForType((ResourceType)i);
-            foreach (var resource in res) {
-                Log.Information("Debug: {a} {Variable}", (ResourceType)i, resource.Name);
-            }
-        }
+        // for (var i = 1; i < 15; i++) {
+        //     var res = shaderResources.GetResourceListForType((ResourceType)i);
+        //     foreach (var resource in res) {
+        //         Log.Information("Debug: {a} {Variable}", (ResourceType)i, resource.Name);
+        //     }
+        // }
 
         // ============= Uniform Buffers =============
         logger.Information("Uniform Buffers:");
         var uniformBuffers = shaderResources.GetResourceListForType(ResourceType.UniformBuffer);
         foreach (var resource in uniformBuffers) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .UniformBuffers[resource.BindingPoint] = new() {
@@ -195,25 +179,23 @@ public class ShaderCompiler {
                 ShaderStage = ShaderStageFlags.All
             };
 
-            Log.Information(
-                "{Name} ({DescriptorSet}, {Binding})",
+            logger.Information(
+                "{Name} ({DescriptorSet}, {Binding}) | Member Count: {Members} | Size: {Size}",
                 resource.Name,
                 resource.DescriptorSet,
-                resource.BindingPoint
+                resource.BindingPoint,
+                resource.MemberCount,
+                resource.DeclaredStructSize
             );
-
-            Log.Information("Member Count: {MemberCount}", resource.MemberCount);
-            Log.Information("Size: {Size}", resource.DeclaredStructSize);
-            Log.Information("---------------------");
         }
 
         // ============= Storage Buffers =============
         logger.Information("Storage Buffers:");
         var storageBuffers = shaderResources.GetResourceListForType(ResourceType.StorageBuffer);
         foreach (var resource in storageBuffers) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .StorageBuffers[resource.BindingPoint] = new() {
@@ -223,31 +205,29 @@ public class ShaderCompiler {
                 ShaderStage = ShaderStageFlags.All
             };
 
-            Log.Information(
-                "{Name} ({DescriptorSet}, {Binding})",
+            logger.Information(
+                "{Name} ({DescriptorSet}, {Binding}) | Member Count: {Members} | Size: {Size}",
                 resource.Name,
                 resource.DescriptorSet,
-                resource.BindingPoint
+                resource.BindingPoint,
+                resource.MemberCount,
+                resource.DeclaredStructSize
             );
-
-            Log.Information("Member Count: {MemberCount}", resource.MemberCount);
-            Log.Information("Size: {Size}", resource.DeclaredStructSize);
-            Log.Information("---------------------");
         }
 
         // ============= Push Constants Buffers =============
         logger.Information("Push Constant Buffers:");
         var pushConstantBuffers = shaderResources.GetResourceListForType(ResourceType.PushConstant);
         foreach (var resource in pushConstantBuffers) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
             var bufferOffset = 0;
-            if (reflectionData.PushConstantRanges.Count > 0) {
-                var last = reflectionData.PushConstantRanges[^1];
+            if (ReflectionData.PushConstantRanges.Count > 0) {
+                var last = ReflectionData.PushConstantRanges[^1];
                 bufferOffset = last.Offset + last.Size;
             }
 
-            reflectionData.PushConstantRanges.Add(
+            ReflectionData.PushConstantRanges.Add(
                 new() {
                     ShaderStage = shaderStage, Size = resource.DeclaredStructSize - bufferOffset, Offset = bufferOffset
                 }
@@ -271,27 +251,27 @@ public class ShaderCompiler {
                     memberData.Size,
                     memberData.Offset
                 );
-
-                Log.Information("Debug: {Variable} {DAta}", uniformName, memberData);
             }
 
-            reflectionData.ConstantBuffers[resource.Name] = shaderBuffer;
+            ReflectionData.ConstantBuffers[resource.Name] = shaderBuffer;
 
-            Log.Information("{Name}", resource.Name);
-            Log.Information("Member Count: {MemberCount}", resource.MemberCount);
-            Log.Information("Size: {Size}", resource.DeclaredStructSize);
-            Log.Information("---------------------");
+            logger.Information(
+                "{Name} | Member Count: {Members} | Size: {Size}",
+                resource.Name,
+                resource.MemberCount,
+                resource.DeclaredStructSize
+            );
         }
 
         // ============= Sampled Images =============
         logger.Information("Sampled Images:");
         var sampledImages = shaderResources.GetResourceListForType(ResourceType.SampledImage);
         foreach (var resource in sampledImages) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
             var arraySize = 42;
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .ImageSamplers[resource.BindingPoint] = new() {
@@ -302,14 +282,14 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            Log.Information(
+            logger.Information(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint
             );
 
-            reflectionData.Resources[resource.Name] = new(
+            ReflectionData.Resources[resource.Name] = new(
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint,
@@ -321,10 +301,10 @@ public class ShaderCompiler {
         logger.Information("Separate Images:");
         var separateImages = shaderResources.GetResourceListForType(ResourceType.SeparateImage);
         foreach (var resource in separateImages) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
             var arraySize = 42;
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .SeparateTextures[resource.BindingPoint] = new() {
@@ -335,14 +315,14 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            Log.Information(
+            logger.Information(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint
             );
-            
-            reflectionData.Resources[resource.Name] = new(
+
+            ReflectionData.Resources[resource.Name] = new(
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint,
@@ -354,11 +334,11 @@ public class ShaderCompiler {
         logger.Information("Separate Samplers:");
         var separateSamplers = shaderResources.GetResourceListForType(ResourceType.SeparateSamplers);
         foreach (var resource in separateSamplers) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
             var arraySize = 42;
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .SeparateSamplers[resource.BindingPoint] = new() {
@@ -369,14 +349,14 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            Log.Information(
+            logger.Information(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint
             );
-            
-            reflectionData.Resources[resource.Name] = new(
+
+            ReflectionData.Resources[resource.Name] = new(
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint,
@@ -388,11 +368,11 @@ public class ShaderCompiler {
         logger.Information("Storage Images:");
         var storageImages = shaderResources.GetResourceListForType(ResourceType.StorageImage);
         foreach (var resource in storageImages) {
-            Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
+            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
 
             var arraySize = 42;
 
-            reflectionData
+            ReflectionData
                 .ShaderDescriptorSets
                 .GetOrCreateDefault(resource.DescriptorSet)
                 .StorageImages[resource.BindingPoint] = new() {
@@ -403,14 +383,14 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            Log.Information(
+            logger.Information(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint
             );
-            
-            reflectionData.Resources[resource.Name] = new(
+
+            ReflectionData.Resources[resource.Name] = new(
                 resource.Name,
                 resource.DescriptorSet,
                 resource.BindingPoint,
@@ -429,16 +409,4 @@ public class ShaderCompilationException : Exception {
     public ShaderCompilationException() { }
     public ShaderCompilationException(string message) : base(message) { }
     public ShaderCompilationException(string message, Exception inner) : base(message, inner) { }
-}
-
-static class DictionaryExtensions {
-    public static TValue GetOrCreateDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
-        where TValue : new() where TKey : notnull {
-        if (!dictionary.TryGetValue(key, out var value)) {
-            value = new();
-            dictionary[key] = value;
-        }
-
-        return value;
-    }
 }

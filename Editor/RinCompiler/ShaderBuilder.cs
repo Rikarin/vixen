@@ -33,7 +33,7 @@ public class ShaderBuilder : IVisitor {
 
     public void Visit(SubShaderPassDeclaration declaration) {
         ProgramSource = declaration.ShaderProgram.Value;
-        Log.Information("Debug: {Variable}", declaration.ShaderProgram.Value);
+        // Log.Information("Debug: {Variable}", declaration.ShaderProgram.Value);
     }
 
     public void Visit(TypeDeclaration declaration) {

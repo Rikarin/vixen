@@ -1,10 +1,11 @@
 using Rin.Core.Abstractions;
+using Rin.Platform.Internal;
 using Rin.Platform.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanUniformBufferSet : UniformBufferSet {
-    readonly List<UniformBuffer> uniformBuffers;
+public sealed class VulkanUniformBufferSet : IUniformBufferSet {
+    readonly List<IUniformBuffer> uniformBuffers;
 
     public VulkanUniformBufferSet(int size, int framesInFlight) {
         if (framesInFlight == 0) {
@@ -13,15 +14,15 @@ public sealed class VulkanUniformBufferSet : UniformBufferSet {
 
         uniformBuffers = new(framesInFlight);
         for (var i = 0; i < framesInFlight; i++) {
-            uniformBuffers.Add(UniformBuffer.Create(size));
+            uniformBuffers.Add(ObjectFactory.CreateUniformBuffer(size));
         }
     }
 
-    public override UniformBuffer Get() => Get(Renderer.CurrentFrameIndex);
-    public override UniformBuffer Get_RT() => Get(Renderer.CurrentFrameIndex_RT);
-    public override UniformBuffer Get(int frame) => uniformBuffers[frame];
+    public IUniformBuffer Get() => Get(Renderer.CurrentFrameIndex);
+    public IUniformBuffer Get_RT() => Get(Renderer.CurrentFrameIndex_RT);
+    public IUniformBuffer Get(int frame) => uniformBuffers[frame];
 
-    public override void Set(UniformBuffer uniformBuffer, int frame) {
+    public void Set(IUniformBuffer uniformBuffer, int frame) {
         uniformBuffers[frame] = uniformBuffer;
     }
 }

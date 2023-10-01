@@ -5,8 +5,8 @@ namespace Rin.Core.General;
 
 public class Mesh {
     // internal readonly VertexArray vertexArray = VertexArray.Create();
-    VertexBuffer vertexBuffer;
-    IndexBuffer indexBuffer;
+    IVertexBuffer vertexBuffer;
+    IIndexBuffer indexBuffer;
 
     public Vector3[] Vertices { get; set; }
     public Vector2[] UV { get; set; }
