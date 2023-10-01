@@ -1,5 +1,7 @@
-using Rin.Core.Abstractions;
 using Rin.Core.Abstractions.Shaders;
+using Rin.Core.General;
+using Rin.Editor.RinCompiler;
+using Rin.Editor.RinCompiler.Parser;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Shaderc;
@@ -11,11 +13,63 @@ namespace Rin.Editor;
 
 // reference: https://github.com/LWJGL/lwjgl3-demos/blob/main/src/org/lwjgl/demo/vulkan/VKUtil.java#L62-L63
 public class ShaderCompiler {
+    readonly string shaderPath;
+    string? programSource;
+    string? name;
+
+    static string CacheDirectory => Path.Combine(Project.OpenProject!.CacheDirectory, "Shaders");
+
     readonly ILogger logger = Log.ForContext<ShaderCompiler>();
+    // TODO: these are generic reflection data of the spir-v file not vulcan-only
     readonly VulkanShader.ReflectionData reflectionData = new();
 
+    ShaderCompiler(string shaderPath) {
+        this.shaderPath = shaderPath;
+    }
 
-    public unsafe void Compile() {
+    public static Shader Compile(string shaderPath, bool forceCompile, bool debug) {
+        var compiler = new ShaderCompiler(Path.Combine(Project.OpenProject!.RootDirectory, shaderPath));
+        compiler.Reload(forceCompile);
+        
+        // TODO: load this from our shader compiler
+        var shader = new Shader(null!, compiler.name, shaderPath);
+        
+
+        Log.Information("Debug: {Variable}", compiler.name);
+        
+        
+        return shader;
+    }
+
+    public void Reload(bool forceCompile) {
+        name = null;
+        programSource = null;
+
+        Directory.CreateDirectory(CacheDirectory);
+        
+        var source = File.ReadAllText(shaderPath);
+        Preprocess(source);
+    }
+    
+    // static Compile and TryRecompile(Shader)
+
+    void Preprocess(string source) {
+        var tokenRange = new TokenRange(source);
+        var ast = new Parser().Parse(tokenRange);
+
+        var builder = new ShaderBuilder();
+        builder.Visit(ast);
+
+        name = builder.Name;
+        programSource = builder.ProgramSource;
+    }
+    
+    
+    
+    
+    
+
+    public unsafe void Compile(string shader, bool debug) {
         var api = Shaderc.GetApi();
         var compiler = api.CompilerInitialize();
         var options = api.CompileOptionsInitialize();
@@ -24,114 +78,20 @@ public class ShaderCompiler {
         api.CompileOptionsSetTargetSpirv(options, SpirvVersion.Shaderc15);
         api.CompileOptionsSetSourceLanguage(options, SourceLanguage.Hlsl);
 
-        // Due to cross
-        // api.CompileOptionsSetAutoBindUniforms(options, true);
-        api.CompileOptionsSetGenerateDebugInfo(options);
-        api.CompileOptionsSetOptimizationLevel(options, OptimizationLevel.Zero);
-        api.CompileOptionsSetPreserveBindings(options, true);
+        if (debug) {
+            api.CompileOptionsSetGenerateDebugInfo(options);
+            api.CompileOptionsSetOptimizationLevel(options, OptimizationLevel.Zero);
+            api.CompileOptionsSetPreserveBindings(options, true);
+        } else {
+            api.CompileOptionsSetOptimizationLevel(options, OptimizationLevel.Performance);
+        }
+        
         api.CompileOptionsSetIncludeCallbacks(
             options,
             PfnIncludeResolveFn.From(IncludeResolver),
             PfnIncludeResultReleaseFn.From(IncludeReleaser),
             null
         );
-
-
-        var shader2 = """
-                      layout(set=3,binding=5) tbuffer tbufName {
-                          layout(offset = 16) float4 v1;
-                      };
-
-                      layout ( push_constant ) cbuffer PushConstants
-                      {
-                      	uint calculateNormals;
-                      } pushConstants;
-
-                      layout(push_constant) tbuffer tbufName2 : layout(set=2,binding=2) {
-                          float4 v5;
-                      };
-
-                      layout(constant_id=17) const int specConst = 10;
-
-                      tbuffer tbufName2 : layout(set=4,binding=7) {
-                          layout(offset = 16) float4 v1PostLayout;
-                      };
-
-                      float4 main(float4 input) : COLOR0
-                      {
-                          float4 layout = 2.0;
-                          return input + v1 + v5 + v1PostLayout * layout;// + pushConstants.calculateNormals;
-                      }
-                      """;
-
-        var shader = """
-                     #include "foobar"
-
-                     struct Particle {
-                     	float4 pos;
-                     	float4 vel;
-                     	float4 uv;
-                     	float4 normal;
-                     	float pinned;
-                     };
-
-                     [[vk::binding(0)]]
-                     StructuredBuffer<Particle> particleIn;
-                     [[vk::binding(1)]]
-                     RWStructuredBuffer<Particle> particleOut;
-
-
-                     struct PushConstants
-                     {
-                     	uint calculateNormals;
-                     	float someVariable;
-                     	float4x4 someMatrix;
-                     };
-
-
-
-                     struct ScreenData
-                     {
-                         float2 InvFullResolution;
-                         float2 FullResolution;
-                         float2 InvHalfResolution;
-                         float2 HalfResolution;
-                     };
-                     [[vk::binding(2,2)]] ConstantBuffer<ScreenData> u_ScreenData;
-                      
-                     cbuffer MyContantBuffer : register(b2, space6)
-                     {
-                     	float4x4 matW;
-                     }
-                      
-                     struct VSInput
-                     {
-                     	[[vk::location(0)]]float2 Pos : POSITION0;
-                     	[[vk::location(1)]]float2 UV : TEXCOORD0;
-                     };
-
-                     struct VSOutput
-                     {
-                         float4 Pos : SV_POSITION;
-                         float2 test;
-                     	 [[vk::location(4)]]float2 UV : TEXCOORD0;
-                     };
-
-                     [[vk::push_constant]]
-                     ConstantBuffer<PushConstants> pushConstants;
-
-                     void compute() {}
-
-                     VSOutput main(VSInput input)
-                     {
-                     	VSOutput output = (VSOutput)0;
-                     	output.Pos = float4(input.Pos, pushConstants.calculateNormals, 1.0);
-                     	output.UV = input.UV;
-                     	output.test = u_ScreenData.FullResolution;
-                     	
-                     	return output;
-                     }
-                     """;
 
         var content = Marshal.StringToHGlobalAnsi(shader);
         var fileName = Marshal.StringToHGlobalAnsi("foo/bar.hlsl");
@@ -178,6 +138,7 @@ public class ShaderCompiler {
         UIntPtr includePath
     ) {
         var result = (IncludeResult*)Marshal.AllocHGlobal(sizeof(IncludeResult));
+        var reqested = Marshal.PtrToStringAnsi((nint)requestedResource);
 
         var name = "asdfasdf.hlsl";
         var content = """
@@ -201,8 +162,7 @@ public class ShaderCompiler {
         result->Content = (byte*)Marshal.StringToHGlobalAnsi(content);
         result->ContentLength = (nuint)content.Length;
 
-        var str = Marshal.PtrToStringAnsi((nint)requestedResource);
-        Log.Information("Resolver {str}", str);
+        // Log.Information("Resolver {str}", str);
 
         return result;
     }

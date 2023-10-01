@@ -156,3 +156,28 @@ How to instantiate GameObject into the Scene?
 
 How to load whole project with assets, scenes and wire it up in the Editor?
 
+
+## Shaders - Loading, Compilation, Execution, Bundling
+
+ShaderImporter --(ShaderCompiler)-> Shader
+
+
+ShaderImporter (Editor only) should be triggered each time *.shader file is changed.
+
+It passes shader file down to shader compiler and creates/updates Shader object
+cache file for spirv and reflections (single file, messagepack?)
+
+During build, shaders are rebuilt with release configuration and packed according
+to asset pack configuration
+
+During runtime initialization shaders are loaded from compiled spirv+reflection data
+file
+
+Caching:
+- cache directory: $PROJECT/Cache/Shaders/<SHADER_NAME>-<SHADER_METADATA_ID>/<SHADER_FILE_HASH>.bin
+
+### Questions
+
+- When and how to load metadata files?
+- Should they be deserialized info ShaderImporter class?
+- Or create default metadata serializable POCO class?

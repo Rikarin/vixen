@@ -23,6 +23,6 @@ public class ShaderImporter {
     }
 
     void LoadShader() {
-        var shaderProgram = File.ReadAllText(path);
+        var compiler = ShaderCompiler.Compile(path, false, true);
     }
 }

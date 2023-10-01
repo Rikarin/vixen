@@ -258,107 +258,107 @@ public class Material {
     }
 
     public void SetColor(string name, Color value) {
-        nameBuffer[name] = new(MaterialType.Color, value, () => Shader.Handle.SetColor(name, value));
+        // nameBuffer[name] = new(MaterialType.Color, value, () => Shader.Handle.SetColor(name, value));
     }
 
     public void SetColor(int id, Color value) {
-        idBuffer[id] = new(MaterialType.Color, value, () => Shader.Handle.SetColor(id, value));
+        // idBuffer[id] = new(MaterialType.Color, value, () => Shader.Handle.SetColor(id, value));
     }
 
     public void SetColorArray(string name, ReadOnlyMemory<Color> values) {
-        nameBuffer[name] = new(MaterialType.ColorArray, values, () => Shader.Handle.SetColorArray(name, values));
+        // nameBuffer[name] = new(MaterialType.ColorArray, values, () => Shader.Handle.SetColorArray(name, values));
     }
 
     public void SetColorArray(int id, ReadOnlyMemory<Color> values) {
-        idBuffer[id] = new(MaterialType.ColorArray, values, () => Shader.Handle.SetColorArray(id, values));
+        // idBuffer[id] = new(MaterialType.ColorArray, values, () => Shader.Handle.SetColorArray(id, values));
     }
 
     public void SetInteger(string name, int value) {
-        nameBuffer[name] = new(MaterialType.Integer, value, () => Shader.Handle.SetInteger(name, value));
+        // nameBuffer[name] = new(MaterialType.Integer, value, () => Shader.Handle.SetInteger(name, value));
     }
 
     public void SetInteger(int id, int value) {
-        idBuffer[id] = new(MaterialType.Integer, value, () => Shader.Handle.SetInteger(id, value));
+        // idBuffer[id] = new(MaterialType.Integer, value, () => Shader.Handle.SetInteger(id, value));
     }
 
     public void SetFloat(string name, float value) {
-        nameBuffer[name] = new(MaterialType.Float, value, () => Shader.Handle.SetFloat(name, value));
+        // nameBuffer[name] = new(MaterialType.Float, value, () => Shader.Handle.SetFloat(name, value));
     }
 
     public void SetFloat(int id, float value) {
-        idBuffer[id] = new(MaterialType.Float, value, () => Shader.Handle.SetFloat(id, value));
+        // idBuffer[id] = new(MaterialType.Float, value, () => Shader.Handle.SetFloat(id, value));
     }
 
     public void SetFloatArray(string name, ReadOnlyMemory<float> values) {
-        nameBuffer[name] = new(MaterialType.FloatArray, values, () => Shader.Handle.SetFloatArray(name, values));
+        // nameBuffer[name] = new(MaterialType.FloatArray, values, () => Shader.Handle.SetFloatArray(name, values));
     }
 
     public void SetFloatArray(int id, ReadOnlyMemory<float> values) {
-        idBuffer[id] = new(MaterialType.FloatArray, values, () => Shader.Handle.SetFloatArray(id, values));
+        // idBuffer[id] = new(MaterialType.FloatArray, values, () => Shader.Handle.SetFloatArray(id, values));
     }
 
     public void SetMatrix(string name, Matrix4x4 value) {
-        nameBuffer[name] = new(MaterialType.Matrix, value, () => Shader.Handle.SetMatrix(name, value));
+        // nameBuffer[name] = new(MaterialType.Matrix, value, () => Shader.Handle.SetMatrix(name, value));
     }
 
     public void SetMatrix(int id, Matrix4x4 value) {
-        idBuffer[id] = new(MaterialType.Matrix, value, () => Shader.Handle.SetMatrix(id, value));
+        // idBuffer[id] = new(MaterialType.Matrix, value, () => Shader.Handle.SetMatrix(id, value));
     }
 
     public void SetMatrixArray(string name, ReadOnlyMemory<Matrix4x4> values) {
-        nameBuffer[name] = new(MaterialType.MatrixArray, values, () => Shader.Handle.SetMatrixArray(name, values));
+        // nameBuffer[name] = new(MaterialType.MatrixArray, values, () => Shader.Handle.SetMatrixArray(name, values));
     }
 
     public void SetMatrixArray(int id, ReadOnlyMemory<Matrix4x4> values) {
-        idBuffer[id] = new(MaterialType.MatrixArray, values, () => Shader.Handle.SetMatrixArray(id, values));
+        // idBuffer[id] = new(MaterialType.MatrixArray, values, () => Shader.Handle.SetMatrixArray(id, values));
     }
 
     public void SetTexture(string name, Texture value) {
-        nameBuffer[name] = new(MaterialType.Texture, value, () => Shader.Handle.SetTexture(name, value.handle));
+        // nameBuffer[name] = new(MaterialType.Texture, value, () => Shader.Handle.SetTexture(name, value.handle));
     }
 
     public void SetTexture(int id, Texture value) {
-        idBuffer[id] = new(MaterialType.Texture, value, () => Shader.Handle.SetTexture(id, value.handle));
+        // idBuffer[id] = new(MaterialType.Texture, value, () => Shader.Handle.SetTexture(id, value.handle));
     }
 
     public void SetTexture(string name, RenderTexture value) {
-        nameBuffer[name] = new(MaterialType.RenderTexture, value, () => Shader.Handle.SetTexture(name, value.handle));
+        // nameBuffer[name] = new(MaterialType.RenderTexture, value, () => Shader.Handle.SetTexture(name, value.handle));
     }
 
     public void SetTexture(int id, RenderTexture value) {
-        idBuffer[id] = new(MaterialType.RenderTexture, value, () => Shader.Handle.SetTexture(id, value.handle));
+        // idBuffer[id] = new(MaterialType.RenderTexture, value, () => Shader.Handle.SetTexture(id, value.handle));
     }
 
     public void SetTextureOffset(string name, Vector2 value) {
-        nameBuffer[name] = new(MaterialType.TextureOffset, value, () => Shader.Handle.SetTextureOffset(name, value));
+        // nameBuffer[name] = new(MaterialType.TextureOffset, value, () => Shader.Handle.SetTextureOffset(name, value));
     }
 
     public void SetTextureOffset(int id, Vector2 value) {
-        idBuffer[id] = new(MaterialType.TextureOffset, value, () => Shader.Handle.SetTextureOffset(id, value));
+        // idBuffer[id] = new(MaterialType.TextureOffset, value, () => Shader.Handle.SetTextureOffset(id, value));
     }
 
     public void SetTextureScale(string name, Vector2 value) {
-        nameBuffer[name] = new(MaterialType.TextureScale, value, () => Shader.Handle.SetTextureScale(name, value));
+        // nameBuffer[name] = new(MaterialType.TextureScale, value, () => Shader.Handle.SetTextureScale(name, value));
     }
 
     public void SetTextureScale(int id, Vector2 value) {
-        idBuffer[id] = new(MaterialType.TextureScale, value, () => Shader.Handle.SetTextureScale(id, value));
+        // idBuffer[id] = new(MaterialType.TextureScale, value, () => Shader.Handle.SetTextureScale(id, value));
     }
 
     public void SetVector(string name, Vector4 value) {
-        nameBuffer[name] = new(MaterialType.Vector, value, () => Shader.Handle.SetVector(name, value));
+        // nameBuffer[name] = new(MaterialType.Vector, value, () => Shader.Handle.SetVector(name, value));
     }
 
     public void SetVector(int id, Vector4 value) {
-        idBuffer[id] = new(MaterialType.Vector, value, () => Shader.Handle.SetVector(id, value));
+        // idBuffer[id] = new(MaterialType.Vector, value, () => Shader.Handle.SetVector(id, value));
     }
 
     public void SetVectorArray(string name, ReadOnlyMemory<Vector4> values) {
-        nameBuffer[name] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(name, values));
+        // nameBuffer[name] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(name, values));
     }
 
     public void SetVectorArray(int id, ReadOnlyMemory<Vector4> values) {
-        idBuffer[id] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(id, values));
+        // idBuffer[id] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(id, values));
     }
 
     bool HasType(MaterialType type, int id) {
@@ -379,7 +379,7 @@ public class Material {
 
     // internal
     public void Render() {
-        Shader.Handle.Bind();
+        // Shader.Handle.Bind();
         // Shader.Render();
         // TODO: Bind shader and then render??
 

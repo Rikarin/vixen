@@ -74,7 +74,6 @@ sealed class SilkWindow : IInternalWindow {
         silkWindow.Initialize();
 
         RendererContext = ObjectFactory.CreateRendererContext();
-        // var swapChain = new VulkanSwapChain(VulkanContext.)
         var swapChain = new VulkanSwapChain();
         swapChain.InitializeSurface(silkWindow);
 

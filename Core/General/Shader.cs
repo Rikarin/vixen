@@ -6,9 +6,13 @@ public sealed class Shader {
     static readonly Dictionary<string, Shader> shaders = new();
 
     internal IInternalShader Handle { get; }
+    public string Name { get; }
+    public string AssetPath { get; } // TODO: move this to Asset class and inherit from it
 
-    Shader(IInternalShader handle) {
+    internal Shader(IInternalShader handle, string name, string assetPath) {
         Handle = handle;
+        Name = name;
+        AssetPath = assetPath;
     }
 
     // Testing purpose
@@ -16,12 +20,6 @@ public sealed class Shader {
 
     // public int PropertyToId(string name) => Handle.PropertyToId(name);
 
-    // TODO: This method is used for testing purpose only! Replace with Silk.SPIR-V compiler in Editor and load IL runtime
-    public static Shader Create(string name, string vertexPath, string fragmentPath) =>
-        throw
-            // var shader = new Shader(new OpenGLShader(vertexPath, fragmentPath));
-            // loadedShaders[name] = shader;
-            new NotImplementedException();
 
     // return shader;
     public static Shader? Find(string name) => shaders.TryGetValue(name, out var shader) ? shader : null;

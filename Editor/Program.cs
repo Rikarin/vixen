@@ -1,6 +1,8 @@
 ﻿using Rin.Core.Abstractions;
 using Rin.Core.General;
 using Rin.Editor;
+using Rin.Editor.RinCompiler;
+using Rin.Editor.RinCompiler.Parser;
 using Serilog;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
@@ -17,6 +19,7 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 var project = Project.CreateProject("Example 1", "../Examples/Project1");
+Project.OpenProject = project;
 project.Save();
 var editor = new EditorManager(project);
 
@@ -24,15 +27,17 @@ editor.Watch();
 
 Log.Information("Bar");
 
-var compiler = new ShaderCompiler();
-compiler.Compile();
+var shaderImporter = new ShaderImporter("Assets/Shaders/Test.shader");
+shaderImporter.GetShader();
+
 return 0;
 
 // LoadRuntime, ...
 var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
-    });
+    }
+);
 
 // Test API
 var scene = SceneManager.CreateScene("Main Scene");
@@ -100,11 +105,11 @@ app.MainWindow.Load += () => {
     // var indexBuffer = IndexBuffer.Create(indices);
     // vertexArray.SetIndexBuffer(indexBuffer);
 
-    Shader.Create(
-        "Basic/Shader1",
-        "../Examples/Project1/Assets/Shaders/Shader.vert",
-        "../Examples/Project1/Assets/Shaders/Shader.frag"
-    );
+    // Shader.Create(
+    //     "Basic/Shader1",
+    //     "../Examples/Project1/Assets/Shaders/Shader.vert",
+    //     "../Examples/Project1/Assets/Shaders/Shader.frag"
+    // );
 
     material = new(Shader.Find("Basic/Shader1")!);
     material.SetColor("u_Color", Color.Bisque);
@@ -160,12 +165,11 @@ app.Run();
 return 0;
 
 
-
 // TODO: use this to show in editor EventSource metrics
 sealed class EventSourceCreatedListener : EventListener {
     protected override void OnEventSourceCreated(EventSource eventSource) {
         base.OnEventSourceCreated(eventSource);
-        
+
         // EnableEvents(eventSource, EventLevel.Verbose, EventKeywords.All);
         Console.WriteLine($"New event source: {eventSource.Name}");
     }

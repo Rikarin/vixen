@@ -5,7 +5,10 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Rin.Editor;
 
-class Project {
+public class Project {
+    // TODO: temporary
+    public static Project? OpenProject;
+    
     static readonly ISerializer serializer = new SerializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();
@@ -17,6 +20,7 @@ class Project {
 
     public string Name { get; private set; }
     public string RootDirectory { get; private set; }
+    public string CacheDirectory => Path.Combine(RootDirectory, "Cache");
 
     public List<string> Layers { get; } = new();
     public List<string> Tags { get; } = new();
