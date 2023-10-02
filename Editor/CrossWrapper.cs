@@ -16,7 +16,7 @@ sealed unsafe class CrossWrapper : IDisposable {
         }
     }
 
-    public CompilerWrapper CreateCompiler(ReadOnlySpan<byte> irCode) => new(this, irCode);
+    public CompilerWrapper CreateCompiler(ReadOnlyMemory<byte> irCode) => new(this, irCode);
 
 
     public void Dispose() {
@@ -33,11 +33,11 @@ sealed unsafe class CrossWrapper : IDisposable {
         internal readonly CrossWrapper cross;
         internal Compiler* compiler;
 
-        public CompilerWrapper(CrossWrapper cross, ReadOnlySpan<byte> irCode) {
+        public CompilerWrapper(CrossWrapper cross, ReadOnlyMemory<byte> irCode) {
             this.cross = cross;
 
             fixed (Compiler** compilerPtr = &compiler)
-            fixed (byte* irCodePtr = irCode) {
+            fixed (byte* irCodePtr = irCode.Span) {
                 ParsedIr* parsedIr;
 
                 cross.cross.ContextParseSpirv(

@@ -3,7 +3,6 @@ using Rin.Platform.Internal;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Input;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -44,6 +43,7 @@ sealed class SilkWindow : IInternalWindow {
         // new SilkImGuiRenderer(new(Gl, silkWindow, input));
 
     public void Run() {
+        Load?.Invoke();
         silkWindow.Run();
     }
 
@@ -71,8 +71,9 @@ sealed class SilkWindow : IInternalWindow {
         silkWindow.Closing += OnClosing;
         // TODO
         // silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
+        
+        
         silkWindow.Initialize();
-
         RendererContext = ObjectFactory.CreateRendererContext();
         var swapChain = new VulkanSwapChain();
         swapChain.InitializeSurface(silkWindow);
@@ -81,12 +82,10 @@ sealed class SilkWindow : IInternalWindow {
         var height = 600;
         
         swapChain.Create(ref width, ref height, false);
-        
-        
-        // swapChain.Dispose();
-        swapChain.BeginFrame();
-        
-        swapChain.Present();
+         
+    //     // swapChain.Dispose();
+    //     swapChain.BeginFrame();
+    //     swapChain.Present();
     }
 
     void OnClosing() {
@@ -103,7 +102,6 @@ sealed class SilkWindow : IInternalWindow {
     }
 
     void OnLoad() {
-        // Gl = silkWindow.CreateOpenGL();
         input = silkWindow.CreateInput();
 
         foreach (var keyboard in input.Keyboards) {
@@ -118,10 +116,7 @@ sealed class SilkWindow : IInternalWindow {
             // click, scroll, double click??
         }
 
-        Log.Information("OpenGL Context initialized");
-        // Load?.Invoke();
-
-        Log.Information("VK {vk}", silkWindow.VkSurface);
+        Log.Information("Vulkan Context initialized");
     }
 
     void OnMouseMove(IMouse arg1, Vector2 arg2) {

@@ -10,6 +10,7 @@ shader "Common/FoobarShader" {
         pass {
             vertexEntry vertex
             fragmentEntry frament
+            computeEntry compute
             
             HLSLPROGRAM
             #include "Common/Base"

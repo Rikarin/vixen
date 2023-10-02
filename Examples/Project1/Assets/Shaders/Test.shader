@@ -64,7 +64,7 @@ shader "Common/FoobarShader" {
 
             void compute() {}
 
-            VSOutput main(VSInput input)
+            VSOutput vert(VSInput input)
             {
                 VSOutput output = (VSOutput)0;
                 output.Pos = float4(input.Pos, pushConstants.calculateNormals, 1.0);
@@ -73,6 +73,18 @@ shader "Common/FoobarShader" {
 
                 return output;
             }
+
+
+            struct InputFromFrag
+            {
+                float3 color : COLOR;
+            };
+
+            float4 frag(in InputFromFrag input) : COLOR {
+                return float4(input.color, 1.0);
+            }
+
+            
             ENDHLSL
         }
     }

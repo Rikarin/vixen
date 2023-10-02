@@ -1,8 +1,6 @@
 ﻿using Rin.Core.Abstractions;
 using Rin.Core.General;
 using Rin.Editor;
-using Rin.Editor.RinCompiler;
-using Rin.Editor.RinCompiler.Parser;
 using Serilog;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
@@ -27,10 +25,8 @@ editor.Watch();
 
 Log.Information("Bar");
 
-var shaderImporter = new ShaderImporter("Assets/Shaders/Test.shader");
-shaderImporter.GetShader();
 
-return 0;
+
 
 // LoadRuntime, ...
 var app = Application.CreateDefault(
@@ -40,49 +36,20 @@ var app = Application.CreateDefault(
 );
 
 // Test API
-var scene = SceneManager.CreateScene("Main Scene");
-SceneManager.SetActiveScene(scene);
-
-var boxObj = new GameObject();
-boxObj.AddComponent<MeshFilter>();
-
-Mesh? box = null;
-Material? material = null;
-
-// string[] CommonExtensions = {
-//     "VK_KHR_surface",
-// };
+// var scene = SceneManager.CreateScene("Main Scene");
+// SceneManager.SetActiveScene(scene);
+//
+// var boxObj = new GameObject();
+// boxObj.AddComponent<MeshFilter>();
+//
+// Mesh? box = null;
+// Material? material = null;
 
 app.MainWindow.Load += () => {
     Log.Information("Application Loading");
-    //
-    // unsafe {
-    //     var platformExtensions = new[] { "VK_KHR_portability_enumeration" };
-    //     
-    //     InstanceCreateInfo createInfo = default;
-    //     createInfo.SType = StructureType.InstanceCreateInfo;
-    //     createInfo.PApplicationInfo = &appInfo;
-    //     var extensions = CommonExtensions.Concat(platformExtensions).ToArray();
-    //     var extensionsToBytesArray = stackalloc IntPtr[extensions.Length];
-    //     for (var i = 0; i < extensions.Length; i++) {
-    //         extensionsToBytesArray[i] = Marshal.StringToHGlobalAnsi(extensions[i]);
-    //     }
-    //
-    //     createInfo.EnabledExtensionCount = (uint)extensions.Length;
-    //     createInfo.PpEnabledExtensionNames = (byte**)extensionsToBytesArray;
-    //
-    //     createInfo.Flags = extensions.Contains("VK_KHR_portability_enumeration")
-    //         ? InstanceCreateFlags.EnumeratePortabilityBitKhr
-    //         : InstanceCreateFlags.None;
-    //
-    //     // createInfo.Flags = InstanceCreateFlags.EnumeratePortabilityBitKhr;
-    //     createInfo.EnabledLayerCount = 0;
-    //     createInfo.PNext = null;
-    //
-    //     var vk = Vk.GetApi(createInfo, out var instance);
-    // }
-
-    RenderCommand.Initialize();
+    
+    var shaderImporter = new ShaderImporter("Assets/Shaders/Test.shader");
+    shaderImporter.GetShader();
 
     // vertexArray = VertexArray.Create();
     // float[] vertices = {
@@ -111,38 +78,38 @@ app.MainWindow.Load += () => {
     //     "../Examples/Project1/Assets/Shaders/Shader.frag"
     // );
 
-    material = new(Shader.Find("Basic/Shader1")!);
-    material.SetColor("u_Color", Color.Bisque);
+    // material = new(Shader.Find("Basic/Shader1")!);
+    // material.SetColor("u_Color", Color.Bisque);
 
     Log.Information("Application Loaded");
 };
 
 app.MainWindow.Render += deltaTime => {
-    RenderCommand.SetClearColor(Color.Gray);
-    RenderCommand.Clear();
+    // RenderCommand.SetClearColor(Color.Gray);
+    // RenderCommand.Clear();
     // This can be called from SilkWindow
     // RenderCommand.SetViewport(Point.Empty, new Size(128, 128));
-
-    if (Input.GetKey(Key.A)) {
-        Log.Information("Key A pressed");
-    }
-
-    if (Input.GetKeyDown(Key.W)) {
-        Log.Information("Key W Down");
-    }
-
-    if (Input.GetKeyUp(Key.W)) {
-        Log.Information("Key W Up");
-    }
-
-    material?.Render();
-    if (box != null) {
-        // RenderCommand.Draw(box);
-    }
+    //
+    // if (Input.GetKey(Key.A)) {
+    //     Log.Information("Key A pressed");
+    // }
+    //
+    // if (Input.GetKeyDown(Key.W)) {
+    //     Log.Information("Key W Down");
+    // }
+    //
+    // if (Input.GetKeyUp(Key.W)) {
+    //     Log.Information("Key W Up");
+    // }
+    //
+    // material?.Render();
+    // if (box != null) {
+    //     // RenderCommand.Draw(box);
+    // }
 };
 
 // This needs to be set after the RenderCommand.Clear() is called
-var guiRenderer = new GuiRenderer(app, project);
+// var guiRenderer = new GuiRenderer(app, project);
 
 
 // TODO: Example of creating a few objects

@@ -2,6 +2,7 @@ using Rin.Core.Abstractions.Shaders;
 using Rin.Core.General;
 using Rin.Editor.RinCompiler;
 using Rin.Editor.RinCompiler.Parser;
+using Rin.Platform.Rendering;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Shaderc;
@@ -16,7 +17,20 @@ public class ShaderCompiler {
     readonly string shaderPath;
     string? name;
 
+    // These are default entry points of *.shader file
+    // If shader contains compute or geometry shader it needs to set it explicitly in the shader file
+    // as  TODO compute <entry_point>
+    Dictionary<ShaderStageFlags, string> shaderEntryPoints = new() {
+        { ShaderStageFlags.VertexBit, "vert" },
+        { ShaderStageFlags.FragmentBit, "frag" }
+    };
+
+    // Compiled shaders
+    readonly ShaderCollection shaderData = new();
+    readonly ShaderCollection shaderDebugData = new();
+    
     internal ShaderResource.ReflectionData ReflectionData { get; } = new();
+    
     public string? ProgramSource { get; private set; }
 
     static string CacheDirectory => Path.Combine(Project.OpenProject!.CacheDirectory, "Shaders");
@@ -26,13 +40,23 @@ public class ShaderCompiler {
     }
 
     public static Shader Compile(string shaderPath, bool forceCompile, bool debug) {
+        Log.Information("Compiling shader");
         var compiler = new ShaderCompiler(Path.Combine(Project.OpenProject!.RootDirectory, shaderPath));
         compiler.Reload(forceCompile);
+        
+        // Vulkan Shader
+        var vulkanShader = new VulkanShader();
+        vulkanShader.LoadAndCreateShaders(compiler.shaderData);
+        // set reflection data
+        // create descriptors
 
-        var shader = new Shader(null!, compiler.name!, shaderPath);
+        var shader = new Shader(vulkanShader, compiler.name!, shaderPath);
+
+        // Renderer acknowledge parsed global marcros
+        // on shader reloaded
 
 
-        Log.Information("Debug: {Variable}", compiler.name);
+        Log.Information("Debug asdf: {Variable}", compiler.name);
 
         ShaderCache.Serialize(compiler);
 
@@ -47,10 +71,22 @@ public class ShaderCompiler {
 
         var source = File.ReadAllText(shaderPath);
         Preprocess(source);
+        
+        
+        // TODO: caching and stuff
+
+        foreach (var entryPoint in shaderEntryPoints) {
+            Compile(ProgramSource, entryPoint.Key, true, shaderDebugData);
+            Compile(ProgramSource, entryPoint.Key, false, shaderData);
+        }
+        
+        // TODO
+        if (forceCompile || true) {
+            ReflectAllShaderStages(shaderDebugData);
+        }
     }
 
-
-    public unsafe void Compile(string shader, bool debug) {
+    public unsafe void Compile(string shader, ShaderStageFlags stage, bool debug, ShaderCollection dataStorage) {
         var api = Shaderc.GetApi();
         var compiler = api.CompilerInitialize();
         var options = api.CompileOptionsInitialize();
@@ -76,29 +112,28 @@ public class ShaderCompiler {
 
         var content = Marshal.StringToHGlobalAnsi(shader);
         var fileName = Marshal.StringToHGlobalAnsi(shaderPath);
-        var entryPoint = Marshal.StringToHGlobalAnsi("vert");
+        var entryPointPtr = Marshal.StringToHGlobalAnsi(shaderEntryPoints[stage]);
 
         var result = api.CompileIntoSpv(
             compiler,
             (byte*)content,
             (UIntPtr)shader.Length,
-            ShaderKind.FragmentShader,
+            ShaderStageToShaderC(stage),
             (byte*)fileName,
-            (byte*)entryPoint,
+            (byte*)entryPointPtr,
             options
         );
 
         Marshal.FreeHGlobal(content);
         Marshal.FreeHGlobal(fileName);
-        Marshal.FreeHGlobal(entryPoint);
+        Marshal.FreeHGlobal(entryPointPtr);
 
         if (api.ResultGetCompilationStatus(result) != CompilationStatus.Success) {
             throw new ShaderCompilationException(api.ResultGetErrorMessageS(result));
         }
 
         var compiled = new Span<byte>(api.ResultGetBytes(result), (int)api.ResultGetLength(result));
-        // TODO: test only
-        Reflect(compiled, ShaderStageFlags.FragmentBit);
+        dataStorage[stage] = compiled.ToArray();
 
         api.ResultRelease(result);
         api.CompilerRelease(compiler);
@@ -115,8 +150,21 @@ public class ShaderCompiler {
 
         name = builder.Name;
         ProgramSource = builder.ProgramSource;
+    }
 
-        Compile(ProgramSource, true);
+    void ReflectAllShaderStages(ShaderCollection data) {
+        ClearReflectionData();
+        
+        foreach (var entry in data) {
+            Reflect(entry.Key, entry.Value);
+        }
+    }
+
+    void ClearReflectionData() {
+        ReflectionData.ShaderDescriptorSets.Clear();
+        ReflectionData.Resources.Clear();
+        ReflectionData.ConstantBuffers.Clear();
+        ReflectionData.PushConstantRanges.Clear();
     }
 
     unsafe void IncludeReleaser(void* userData, IncludeResult* includeResult) {
@@ -151,7 +199,7 @@ public class ShaderCompiler {
         return result;
     }
 
-    void Reflect(ReadOnlySpan<byte> irCode, ShaderStageFlags shaderStage) {
+    void Reflect(ShaderStageFlags shaderStage, ReadOnlyMemory<byte> irCode) {
         using var cross = new CrossWrapper();
         var compiler = cross.CreateCompiler(irCode);
         var shaderResources = compiler.CreateShaderResources();
@@ -402,6 +450,14 @@ public class ShaderCompiler {
     ShaderUniformType SpirTypeToShaderUniformType(int type) =>
         // TODO
         ShaderUniformType.None;
+
+    ShaderKind ShaderStageToShaderC(ShaderStageFlags flags) =>
+        flags switch {
+            ShaderStageFlags.VertexBit => ShaderKind.VertexShader,
+            ShaderStageFlags.FragmentBit => ShaderKind.FragmentShader,
+            ShaderStageFlags.ComputeBit => ShaderKind.ComputeShader,
+            _ => throw new NotImplementedException()
+        };
 }
 
 // TODO: include shader in ctor
