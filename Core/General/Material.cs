@@ -361,6 +361,21 @@ public class Material {
         // idBuffer[id] = new(MaterialType.VectorArray, values, () => Shader.Handle.SetVectorArray(id, values));
     }
 
+    // internal
+    public void Render() {
+        // Shader.Handle.Bind();
+        // Shader.Render();
+        // TODO: Bind shader and then render??
+
+        foreach (var x in nameBuffer.Values) {
+            x.Callback();
+        }
+
+        foreach (var x in idBuffer.Values) {
+            x.Callback();
+        }
+    }
+
     bool HasType(MaterialType type, int id) {
         if (idBuffer.TryGetValue(id, out var value)) {
             return value.Type == type;
@@ -375,21 +390,6 @@ public class Material {
         }
 
         return false;
-    }
-
-    // internal
-    public void Render() {
-        // Shader.Handle.Bind();
-        // Shader.Render();
-        // TODO: Bind shader and then render??
-
-        foreach (var x in nameBuffer.Values) {
-            x.Callback();
-        }
-
-        foreach (var x in idBuffer.Values) {
-            x.Callback();
-        }
     }
 
     record struct MaterialValue(MaterialType Type, object Value, Action Callback);

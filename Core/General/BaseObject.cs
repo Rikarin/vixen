@@ -1,10 +1,9 @@
 namespace Rin.Core.General;
 
 public abstract class BaseObject {
-
     // Used in editor when referenced object is missing
     public static BaseObject MissingObject = new MissingObject();
-    
+
     // TODO: should be nullable?
     public string? Name { get; set; }
 

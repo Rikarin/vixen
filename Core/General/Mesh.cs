@@ -17,17 +17,13 @@ public class Mesh {
     public static Mesh CreateBox() {
         // TODO: finish this
         return new() {
-            Vertices = new[] {
-                new Vector3(-0.5f, -0.5f, 0),
-                new Vector3(0.5f, -0.5f, 0),
-                new Vector3(0, 0.5f, 0)
-            },
+            Vertices = new[] { new Vector3(-0.5f, -0.5f, 0), new Vector3(0.5f, -0.5f, 0), new Vector3(0, 0.5f, 0) },
             UV = new[] { new Vector2(0, 0) },
             Triangles = new[] { 0, 1, 2 }
         };
     }
 
-    
+
     // TODO: this method is exposed for testing purpose only
 
     public void SetupMesh() {
@@ -41,7 +37,7 @@ public class Mesh {
         // vertexBuffer = VertexBuffer.Create(vertices);
         // vertexBuffer.Layout = new(new[] { new VertexBufferElement(ShaderDataType.Float3, "a_Position") });
         // vertexArray.AddVertexBuffer(vertexBuffer);
-        
+
         // indexBuffer = IndexBuffer.Create(Triangles);
         // vertexArray.SetIndexBuffer(indexBuffer);
     }

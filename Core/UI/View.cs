@@ -5,23 +5,15 @@ using System.Drawing;
 namespace Rin.Core.UI;
 
 public partial class View {
-    public View Hidden() {
-        return this;
-    }
+    public View Hidden() => this;
 }
 
 public class Button : View {
-    public Button Background(Color color) {
-        return this;
-    }
+    public Button Background(Color color) => this;
 
-    public Button Font(Font font) {
-        return this;
-    }
+    public Button Font(Font font) => this;
 
-    public Button OnSubmit(Action action) {
-        return this;
-    }
+    public Button OnSubmit(Action action) => this;
 }
 
 public class TestLayout : View { }

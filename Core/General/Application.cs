@@ -9,20 +9,20 @@ namespace Rin.Core.General;
 public class Application {
     internal static Application Current = null!;
 
-    Performance performance = new();
+    readonly Performance performance = new();
 
     public Window MainWindow { get; }
 
     public Application(ApplicationOptions options) {
         ApplicationEventSource.Log.Startup();
         Current = this;
-        
-        
+
+
         // Setup profiler
         // Setup Renderer.SetConfig (static)
-        
+
         MainWindow = new();
-        
+
         // Renderer.Initialize();
     }
 
@@ -34,18 +34,13 @@ public class Application {
     }
 
     public void Run() {
-        
-        
         performance.MainThreadWaitTime.Reset();
-        
+
         // block till render is complete
-        
+
         ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
-        
-        
-        
-        
-        
+
+
         MainWindow.Run();
     }
 
@@ -64,14 +59,14 @@ public class Application {
     public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
         var options = new ApplicationOptions { Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded };
         configureOptions?.Invoke(options);
-        
+
         return new(options);
     }
 
     struct Performance {
         public Stopwatch MainThreadWorkTime { get; } = new();
         public Stopwatch MainThreadWaitTime { get; } = new();
-        
+
         public Performance() { }
     }
 }

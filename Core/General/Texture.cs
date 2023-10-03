@@ -1,5 +1,4 @@
 using Rin.Platform.Internal;
-using Rin.Platform.Silk;
 
 namespace Rin.Core.General;
 

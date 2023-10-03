@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace Rin.Core.Math; 
+namespace Rin.Core.Math;
 
 public static class Matrix {
     public static Matrix4x4 TRS(Vector3 position, Quaternion rotation, Vector3 scale) =>

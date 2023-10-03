@@ -2,23 +2,24 @@ namespace Rin.Core.General;
 
 public class GameObject : BaseObject {
     protected readonly Dictionary<Type, List<Component>> components = new();
-    // readonly List<Component> components = new() { new Transform() };
 
-    internal Guid Id { get; private set; }
     // TODO: consider using code generator to generate enum based on values specified in the editor
     public int Layer { get; set; }
     public string Tag { get; set; }
     public bool IsActive { get; private set; }
     public bool IsActiveInHierarchy => throw new NotImplementedException();
-    
+
     public Transform Transform { get; } = new();
+    // readonly List<Component> components = new() { new Transform() };
+
+    internal Guid Id { get; private set; }
 
     public void SetActive(bool active) {
         IsActive = active;
     }
 
     public T AddComponent<T>() where T : Component => (T)AddComponent(typeof(T));
-    
+
     public virtual Component AddComponent(Type component) {
         if (!component.IsAssignableTo(typeof(Component))) {
             throw new("TODO");
@@ -35,7 +36,7 @@ public class GameObject : BaseObject {
 
         return instance;
     }
-    
+
     public T GetComponent<T>() where T : Component {
         if (components.TryGetValue(typeof(T), out var value)) {
             return (T)value.First();

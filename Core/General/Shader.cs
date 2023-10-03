@@ -4,10 +4,10 @@ namespace Rin.Core.General;
 
 public sealed class Shader {
     static readonly Dictionary<string, Shader> shaders = new();
-
-    internal IShader Handle { get; }
     public string Name { get; }
     public string AssetPath { get; } // TODO: move this to Asset class and inherit from it
+
+    internal IShader Handle { get; }
 
     internal Shader(IShader handle, string name, string assetPath) {
         Handle = handle;
