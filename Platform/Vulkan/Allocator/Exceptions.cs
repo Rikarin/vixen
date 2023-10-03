@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public class VulkanResultException : ApplicationException {
     public readonly Result? Result;

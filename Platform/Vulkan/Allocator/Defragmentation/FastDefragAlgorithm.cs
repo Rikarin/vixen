@@ -1,7 +1,7 @@
 ﻿using Rin.Platform.Vulkan.Allocator.Metadata;
 using Silk.NET.Vulkan;
 
-namespace Rin.Platform.Vulkan.Allocator.Defragmentation; 
+namespace Rin.Platform.Vulkan.Allocator.Defragmentation;
 
 sealed class FastDefragAlgorithm : DefragmentationAlgorithm {
     readonly bool overlappingMoveSupported;

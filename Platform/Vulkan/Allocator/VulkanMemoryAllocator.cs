@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public sealed unsafe class VulkanMemoryAllocator : IDisposable {
     const long SmallHeapMaxSize = 1024L * 1024 * 1024;

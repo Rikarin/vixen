@@ -40,7 +40,7 @@ sealed class SilkWindow : IInternalWindow {
     }
 
     public IInternalGuiRenderer CreateGuiRenderer() => throw new NotImplementedException();
-        // new SilkImGuiRenderer(new(Gl, silkWindow, input));
+    // new SilkImGuiRenderer(new(Gl, silkWindow, input));
 
     public void Run() {
         Load?.Invoke();
@@ -71,8 +71,8 @@ sealed class SilkWindow : IInternalWindow {
         silkWindow.Closing += OnClosing;
         // TODO
         // silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
-        
-        
+
+
         silkWindow.Initialize();
         RendererContext = ObjectFactory.CreateRendererContext();
         var swapChain = new VulkanSwapChain();
@@ -80,12 +80,12 @@ sealed class SilkWindow : IInternalWindow {
 
         var width = 800;
         var height = 600;
-        
+
         swapChain.Create(ref width, ref height, false);
-         
-    //     // swapChain.Dispose();
-    //     swapChain.BeginFrame();
-    //     swapChain.Present();
+
+        //     // swapChain.Dispose();
+        //     swapChain.BeginFrame();
+        //     swapChain.Present();
     }
 
     void OnClosing() {

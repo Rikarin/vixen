@@ -4,13 +4,13 @@ using Rin.Platform.Vulkan.Allocator;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace Rin.Platform.Vulkan; 
+namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanUniformBuffer : IUniformBuffer {
     readonly byte[] localBuffer;
     readonly Allocation? allocation;
     readonly Buffer vkBuffer;
-    
+
     public DescriptorBufferInfo DescriptorBufferInfo { get; }
 
     public unsafe VulkanUniformBuffer(int size) {
@@ -22,7 +22,7 @@ public sealed class VulkanUniformBuffer : IUniformBuffer {
         allocation = VulkanAllocator.AllocateBuffer(bufferCreateInfo, MemoryUsage.CPU_To_GPU, out vkBuffer);
         DescriptorBufferInfo = new() { Buffer = vkBuffer, Range = (uint)size };
     }
-    
+
     public void SetData(ReadOnlySpan<byte> data) {
         data.CopyTo(localBuffer);
         Renderer.Submit(() => SetData_RT(localBuffer));

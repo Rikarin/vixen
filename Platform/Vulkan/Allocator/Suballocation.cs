@@ -1,4 +1,4 @@
-﻿namespace Rin.Platform.Vulkan.Allocator; 
+﻿namespace Rin.Platform.Vulkan.Allocator;
 
 struct Suballocation {
     public long Offset, Size;

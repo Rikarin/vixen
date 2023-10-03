@@ -79,6 +79,8 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
         Release();
     }
 
+    public void Invalidate() => Renderer.Submit(Invalidate_RT);
+
 
     void Resize(Size newSize, bool forceRecreate) {
         // TODO
@@ -87,8 +89,6 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     void Release() {
         // TODO
     }
-
-    public void Invalidate() => Renderer.Submit(Invalidate_RT);
 
     void Invalidate_RT() {
         // TODO

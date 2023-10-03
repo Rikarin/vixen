@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Diagnostics;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 /// <summary>
 ///     The object containing details on a suballocation of Vulkan Memory

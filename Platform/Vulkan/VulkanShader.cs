@@ -3,15 +3,14 @@ using Serilog;
 using Silk.NET.Vulkan;
 using System.Runtime.InteropServices;
 
-namespace Rin.Platform.Vulkan; 
-
+namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanShader : IShader {
     ShaderCollection shaderData;
 
-    List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
-    
-    
+    readonly List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
+
+
     public unsafe void LoadAndCreateShaders(ShaderCollection data) {
         shaderData = data;
         pipelineShaderStageCreateInfos.Clear();
@@ -32,18 +31,18 @@ public sealed class VulkanShader : IShader {
                 $"Name:{data.Keys}",
                 module.Handle
             );
-            
-            pipelineShaderStageCreateInfos.Add(new(StructureType.PipelineShaderStageCreateInfo) {
-                Stage = entry.Key,
-                Module = module,
-                PName = (byte*)name
-            });
+
+            pipelineShaderStageCreateInfos.Add(
+                new(StructureType.PipelineShaderStageCreateInfo) {
+                    Stage = entry.Key, Module = module, PName = (byte*)name
+                }
+            );
 
             Log.Information("Debug: {Variable}", entry.Key);
         }
 
         // Marshal.FreeHGlobal(name);
     }
-    
+
     // TODO: finish this
 }

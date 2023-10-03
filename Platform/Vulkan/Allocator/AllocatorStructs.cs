@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 
 #pragma warning disable CA1815
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public struct VulkanMemoryAllocatorCreateInfo {
     /// <summary>

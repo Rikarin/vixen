@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System.Diagnostics;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public struct AllocationBudget {
     public long BlockBytes;

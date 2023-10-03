@@ -1,12 +1,11 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Vulkan;
 
 namespace Rin.Platform.Rendering;
 
 public interface IVertexBuffer : IDisposable {
     public RendererId RendererId { get; }
     public int Size { get; }
-    
+
     // TODO: consider using this API instead
     // public abstract void SetData<T>(ReadOnlySpan<T> data) where T : unmanaged;
     public void SetData(ReadOnlySpan<byte> data);

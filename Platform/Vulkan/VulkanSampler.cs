@@ -1,6 +1,6 @@
 using Silk.NET.Vulkan;
 
-namespace Rin.Platform.Vulkan; 
+namespace Rin.Platform.Vulkan;
 
 public static class VulkanSampler {
     public static ResourceAllocationCounts Resources { get; } = new();
@@ -8,7 +8,7 @@ public static class VulkanSampler {
     public static unsafe Sampler CreateSampler(SamplerCreateInfo createInfo) {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         VulkanContext.Vulkan.CreateSampler(device, createInfo, null, out var sampler);
-        
+
         Resources.Samplers++;
         return sampler;
     }

@@ -7,7 +7,7 @@ namespace Rin.Platform.Vulkan;
 public class VulkanImageView : IImageView, IDisposable {
     readonly ImageViewOptions options;
     ImageView imageView;
-    
+
     public DescriptorImageInfo DescriptorImageInfo { get; private set; }
 
     public VulkanImageView(ImageViewOptions options) {
@@ -29,7 +29,7 @@ public class VulkanImageView : IImageView, IDisposable {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         var image = options.Image as VulkanImage2D;
         var imageOptions = image!.Options;
-        
+
         var imageViewCreateInfo = new ImageViewCreateInfo(StructureType.ImageViewCreateInfo) {
             ViewType = imageOptions.Layers > 1 ? ImageViewType.Type2DArray : ImageViewType.Type2D,
             Format = imageOptions.Format.ToVulkanImageFormat(),

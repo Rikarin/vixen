@@ -1,5 +1,3 @@
 namespace Rin.Platform.Rendering;
 
-public interface IImageView {
-    
-}
+public interface IImageView { }

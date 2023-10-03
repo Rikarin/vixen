@@ -11,9 +11,9 @@ public class VulkanImage2D : IImage2D, IDisposable {
 
     DescriptorImageInfo descriptorImageInfo;
 
-    public DescriptorImageInfo DescriptorImageInfo => descriptorImageInfo;
-
     static readonly Dictionary<Image, VulkanImage2D> imageReferences = new();
+
+    public DescriptorImageInfo DescriptorImageInfo => descriptorImageInfo;
 
     public ImageOptions Options { get; }
     public VulkanImageInfo ImageInfo { get; } = new();

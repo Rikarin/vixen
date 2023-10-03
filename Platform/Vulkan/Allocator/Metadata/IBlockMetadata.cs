@@ -1,4 +1,4 @@
-﻿namespace Rin.Platform.Vulkan.Allocator.Metadata; 
+﻿namespace Rin.Platform.Vulkan.Allocator.Metadata;
 
 /// <summary>
 ///     Allocation book-keeping for individual Device Memory Blocks.

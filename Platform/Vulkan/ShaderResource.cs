@@ -6,12 +6,12 @@ namespace Rin.Platform.Vulkan;
 // TODO: consider moving this outside of platform as there aren't many references on vulkan
 static class ShaderResource {
     public sealed class ReflectionData {
-        public Dictionary<int, ShaderResource.ShaderDescriptorSet> ShaderDescriptorSets { get; set; } = new();
+        public Dictionary<int, ShaderDescriptorSet> ShaderDescriptorSets { get; set; } = new();
         public Dictionary<string, ShaderResourceDeclaration> Resources { get; set; } = new();
         public Dictionary<string, ShaderBuffer> ConstantBuffers { get; set; } = new();
         public List<PushConstantRange> PushConstantRanges { get; set; } = new();
     }
-    
+
     public sealed class UniformBuffer {
         public DescriptorBufferInfo Descriptor { get; set; }
         public int Size { get; set; }

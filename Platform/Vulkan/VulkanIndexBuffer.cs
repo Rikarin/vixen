@@ -22,9 +22,7 @@ sealed class VulkanIndexBuffer : IIndexBuffer {
         Renderer.Submit(
             () => {
                 var bufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
-                    Size = (uint)Size,
-                    Usage = BufferUsageFlags.TransferSrcBit,
-                    SharingMode = SharingMode.Exclusive
+                    Size = (uint)Size, Usage = BufferUsageFlags.TransferSrcBit, SharingMode = SharingMode.Exclusive
                 };
 
                 var stagingAllocation = VulkanAllocator.AllocateBuffer(
@@ -32,14 +30,13 @@ sealed class VulkanIndexBuffer : IIndexBuffer {
                     MemoryUsage.CPU_To_GPU,
                     out var stagingBuffer
                 );
-                
+
                 var destData = new Span<byte>(stagingAllocation.Map().ToPointer(), localBuffer.Length);
                 localBuffer.CopyTo(destData);
                 stagingAllocation.Unmap();
 
                 var indexBufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
-                    Size = (uint)Size,
-                    Usage = BufferUsageFlags.TransferDstBit | BufferUsageFlags.IndexBufferBit
+                    Size = (uint)Size, Usage = BufferUsageFlags.TransferDstBit | BufferUsageFlags.IndexBufferBit
                 };
 
                 allocation = VulkanAllocator.AllocateBuffer(
@@ -67,10 +64,10 @@ sealed class VulkanIndexBuffer : IIndexBuffer {
     }
 
     // public override unsafe void SetData_RT(ReadOnlySpan<byte> data) {
-        // TODO: this will probably fail when used with GPU_ONLY buffer
-        // var destData = new Span<byte>(allocation.Map().ToPointer(), data.Length);
-        // data.CopyTo(destData);
-        // allocation.Unmap();
+    // TODO: this will probably fail when used with GPU_ONLY buffer
+    // var destData = new Span<byte>(allocation.Map().ToPointer(), data.Length);
+    // data.CopyTo(destData);
+    // allocation.Unmap();
     // }
 
     public void Dispose() {

@@ -1,5 +1,3 @@
-namespace Rin.Platform.Rendering; 
+namespace Rin.Platform.Rendering;
 
-public interface IShader {
-    
-}
+public interface IShader { }

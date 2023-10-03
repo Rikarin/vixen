@@ -6,52 +6,50 @@ public sealed class RenderPassInput {
     public RenderPassResourceType Type { get; private set; }
     public List<object> Input { get; } = new();
 
-    public RenderPassInput() {
-        
-    }
+    public RenderPassInput() { }
 
     public RenderPassInput(IUniformBuffer uniformBuffer) {
         Type = RenderPassResourceType.UniformBuffer;
         Input.Add(uniformBuffer);
     }
-    
+
     public RenderPassInput(IUniformBufferSet uniformBufferSet) {
         Type = RenderPassResourceType.UniformBufferSet;
         Input.Add(uniformBufferSet);
     }
-    
+
     public RenderPassInput(IStorageBuffer storageBuffer) {
         Type = RenderPassResourceType.StorageBuffer;
         Input.Add(storageBuffer);
     }
-    
+
     public RenderPassInput(IStorageBufferSet storageBufferSet) {
         Type = RenderPassResourceType.StorageBufferSet;
         Input.Add(storageBufferSet);
     }
-    
+
     // TODO: Texture2D, TextureCube, Image2D
-    
+
     public void Set(IUniformBuffer uniformBuffer, int index = 0) {
         Type = RenderPassResourceType.UniformBuffer;
         Input[index] = uniformBuffer;
     }
-    
+
     public void Set(IUniformBufferSet uniformBufferSet, int index = 0) {
         Type = RenderPassResourceType.UniformBufferSet;
         Input[index] = uniformBufferSet;
     }
-    
+
     public void Set(IStorageBuffer storageBuffer, int index = 0) {
         Type = RenderPassResourceType.StorageBuffer;
         Input[index] = storageBuffer;
     }
-    
+
     public void Set(IStorageBufferSet storageBufferSet, int index = 0) {
         Type = RenderPassResourceType.StorageBufferSet;
         Input[index] = storageBufferSet;
-    } 
-    
+    }
+
     // TODO: Texture2D, TextureCube, Image2D, ImageView
 }
 

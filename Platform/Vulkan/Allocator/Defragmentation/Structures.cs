@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace Rin.Platform.Vulkan.Allocator.Defragmentation; 
+namespace Rin.Platform.Vulkan.Allocator.Defragmentation;
 
 public struct DefragmentationInfo2 {
     public DefragmentationFlags Flags;

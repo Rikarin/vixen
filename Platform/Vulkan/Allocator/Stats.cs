@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public struct StatInfo {
     public int BlockCount, AllocationCount, UnusedRangeCount;

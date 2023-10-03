@@ -1,4 +1,4 @@
-namespace Rin.Platform.Rendering; 
+namespace Rin.Platform.Rendering;
 
 public interface IImage {
     void Invalidate();

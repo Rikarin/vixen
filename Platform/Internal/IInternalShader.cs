@@ -1,6 +1,3 @@
-using System.Drawing;
-using System.Numerics;
-
 namespace Rin.Platform.Internal;
 
 // TODO: Some of the methods may be reduced. eg. Material should convert Texture into buffer as well as offset and scale into Vector2
@@ -34,10 +31,9 @@ namespace Rin.Platform.Internal;
 //     void SetVectorArray(int id, ReadOnlyMemory<Vector4> values);
 // }
 
-
 interface IInternalShader {
     string Name { get; }
-    
+
     void Reload(bool forceCompile = false);
     void Reload_RT(bool forceCompile);
 }

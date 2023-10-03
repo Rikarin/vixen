@@ -1,4 +1,4 @@
-﻿namespace Rin.Platform.Vulkan.Allocator; 
+﻿namespace Rin.Platform.Vulkan.Allocator;
 
 [Flags]
 public enum AllocatorCreateFlags {

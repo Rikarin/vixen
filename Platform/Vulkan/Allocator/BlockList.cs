@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 class BlockList : IDisposable {
     const int AllocationTryCount = 32;

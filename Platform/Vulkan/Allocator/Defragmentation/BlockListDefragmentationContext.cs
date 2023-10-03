@@ -1,6 +1,6 @@
 ﻿using Silk.NET.Vulkan;
 
-namespace Rin.Platform.Vulkan.Allocator.Defragmentation; 
+namespace Rin.Platform.Vulkan.Allocator.Defragmentation;
 
 class BlockListDefragmentationContext {
     public Result Result;

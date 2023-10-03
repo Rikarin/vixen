@@ -70,16 +70,11 @@ public sealed class DescriptorSetManager {
         // TODO: validate
 
         DescriptorPoolSize[] poolSizes = {
-            new(DescriptorType.Sampler, 1000),
-            new(DescriptorType.CombinedImageSampler, 1000),
-            new(DescriptorType.SampledImage, 1000),
-            new(DescriptorType.StorageImage, 1000),
-            new(DescriptorType.UniformTexelBuffer, 1000),
-            new(DescriptorType.StorageTexelBuffer, 1000),
-            new(DescriptorType.UniformBuffer, 1000),
-            new(DescriptorType.StorageBuffer, 1000),
-            new(DescriptorType.UniformBufferDynamic, 1000),
-            new(DescriptorType.StorageBufferDynamic, 1000),
+            new(DescriptorType.Sampler, 1000), new(DescriptorType.CombinedImageSampler, 1000),
+            new(DescriptorType.SampledImage, 1000), new(DescriptorType.StorageImage, 1000),
+            new(DescriptorType.UniformTexelBuffer, 1000), new(DescriptorType.StorageTexelBuffer, 1000),
+            new(DescriptorType.UniformBuffer, 1000), new(DescriptorType.StorageBuffer, 1000),
+            new(DescriptorType.UniformBufferDynamic, 1000), new(DescriptorType.StorageBufferDynamic, 1000),
             new(DescriptorType.InputAttachment, 1000)
         };
 
@@ -94,7 +89,7 @@ public sealed class DescriptorSetManager {
             var device = VulkanContext.CurrentDevice.VkLogicalDevice;
             VulkanContext.Vulkan.CreateDescriptorPool(device, poolInfo, null, out var pool);
         }
-        
+
         // TODO: finish this
     }
 

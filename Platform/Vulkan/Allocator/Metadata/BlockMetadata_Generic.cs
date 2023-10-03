@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Rin.Platform.Vulkan.Allocator.Metadata; 
+namespace Rin.Platform.Vulkan.Allocator.Metadata;
 
 sealed class BlockMetadata_Generic : IBlockMetadata {
     int freeCount;

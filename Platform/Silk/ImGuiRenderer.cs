@@ -28,7 +28,7 @@ class SilkImGuiRenderer : IInternalGuiRenderer {
         // Multi-Viewport
         createWindow = Callback_CreateWindow;
         // destroyWindow = Callback_DestroyWindow;
-        
+
         var platformIo = ImGui.GetPlatformIO();
         platformIo.Platform_CreateWindow = Marshal.GetFunctionPointerForDelegate(createWindow);
         // platformIo.Platform_DestroyWindow = Marshal.GetFunctionPointerForDelegate(destroyWindow);
@@ -51,7 +51,6 @@ class SilkImGuiRenderer : IInternalGuiRenderer {
         Log.Warning("{Name} not implemented", nameof(Callback_CreateWindow));
     }
 }
-
 
 delegate void Platform_CreateWindow(ImGuiViewportPtr vp);
 

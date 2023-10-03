@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 using System.Diagnostics;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 class VulkanMemoryBlock : IDisposable {
     internal readonly IBlockMetadata MetaData;

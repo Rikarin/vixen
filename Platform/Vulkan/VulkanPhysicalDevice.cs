@@ -8,10 +8,10 @@ namespace Rin.Platform.Vulkan;
 
 sealed class VulkanPhysicalDevice {
     internal readonly List<DeviceQueueCreateInfo> queueCreateInfos = new();
-    
+
     // This reference needs to be retained so GC will not free up the memory
-    static GlobalMemory defaultQueuePriority;
-    
+    static readonly GlobalMemory defaultQueuePriority;
+
     readonly PhysicalDeviceFeatures features; // TODO: not used, yet?
     readonly List<QueueFamilyProperties> queueFamilyProperties = new();
     readonly List<string> supportedExtensions = new();
@@ -167,11 +167,11 @@ sealed class VulkanPhysicalDevice {
 
         return indices;
     }
-    
+
     unsafe void LoadCreateInfos(QueueFlags flags) {
         var queuePriority = (float*)Unsafe.AsPointer(ref defaultQueuePriority.GetPinnableReference());
         *queuePriority = 0f;
-        
+
         if (flags.HasFlag(QueueFlags.GraphicsBit) && QueueFamilyIndices.Graphics.HasValue) {
             var queueInfo = new DeviceQueueCreateInfo {
                 SType = StructureType.DeviceQueueCreateInfo,

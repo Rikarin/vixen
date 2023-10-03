@@ -17,7 +17,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
     DebugUtilsMessengerEXT debugMessenger;
     PipelineCache pipelineCache;
 
-    
+
     VulkanPhysicalDevice physicalDevice;
 
     public static Vk Vulkan { get; private set; }
@@ -88,7 +88,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             SamplerAnisotropy = true,
             // WideLines = true,
             FillModeNonSolid = true,
-            IndependentBlend = true,
+            IndependentBlend = true
             // PipelineStatisticsQuery = true
         };
 
@@ -102,7 +102,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
 
     public unsafe void Dispose() {
         VulkanAllocator.Shutdown();
-        
+
         var instance = Vulkan.CurrentInstance!.Value;
         if (EnableValidationLayers) {
             debugUtils?.DestroyDebugUtilsMessenger(instance, debugMessenger, null);

@@ -1,4 +1,4 @@
-namespace Rin.Platform.Internal; 
+namespace Rin.Platform.Internal;
 
 public interface IInternalGuiRenderer {
     void Update(float deltaTime);

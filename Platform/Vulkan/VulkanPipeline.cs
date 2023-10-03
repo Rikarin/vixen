@@ -43,9 +43,10 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
 
                 var shader = options.Shader as VulkanShader;
                 var framebuffer = options.TargetFramebuffer as VulkanFramebuffer;
-                
+
                 // var descriptorSetLayouts = shader.desc
                 // TODO: finish this after VkShader is done
-            });
+            }
+        );
     }
 }

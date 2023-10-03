@@ -4,7 +4,6 @@ using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.EXT;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Vulkan.Extensions.NV;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Rin.Platform.Vulkan;
@@ -51,7 +50,7 @@ sealed class VulkanDevice : IDisposable {
 
         var pQueueCreateInfos = PhysicalDevice.queueCreateInfos;
         using var handle = VulkanUtils.Alloc<DeviceQueueCreateInfo>(pQueueCreateInfos.Count, out var queueCreateInfos);
-        
+
         for (var i = 0; i < pQueueCreateInfos.Count; i++) {
             queueCreateInfos[i] = pQueueCreateInfos[i];
         }

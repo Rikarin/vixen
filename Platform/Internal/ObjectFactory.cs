@@ -67,21 +67,21 @@ static class ObjectFactory {
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IFramebuffer CreateFramebuffer(FramebufferOptions options) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.Vulkan: return new VulkanFramebuffer(options);
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IImage2D CreateImage2D(ImageOptions options) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.Vulkan: return new VulkanImage2D(options);
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IImageView CreateImageView(ImageViewOptions options) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.Vulkan: return new VulkanImageView(options);

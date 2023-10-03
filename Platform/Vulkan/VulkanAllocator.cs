@@ -24,7 +24,11 @@ static class VulkanAllocator {
         allocator = null!;
     }
 
-    public static Allocation AllocateBuffer(BufferCreateInfo bufferCreateInfo, MemoryUsage memoryUsage, out Buffer buffer) {
+    public static Allocation AllocateBuffer(
+        BufferCreateInfo bufferCreateInfo,
+        MemoryUsage memoryUsage,
+        out Buffer buffer
+    ) {
         var allocationCreateInfo = new AllocationCreateInfo { Usage = memoryUsage };
 
         buffer = allocator.CreateBuffer(bufferCreateInfo, allocationCreateInfo, out var allocation);
@@ -32,10 +36,10 @@ static class VulkanAllocator {
         // TODO: tracking and logging stuff
         return allocation;
     }
-    
+
     public static Allocation AllocateImage(ImageCreateInfo imageCreateInfo, MemoryUsage memoryUsage, out Image image) {
         var allocationCreateInfo = new AllocationCreateInfo { Usage = memoryUsage };
-        
+
         image = allocator.CreateImage(imageCreateInfo, allocationCreateInfo, out var allocation);
         // TODO: can allocation be null?
         // TODO: tracking and logging stuff
@@ -51,13 +55,13 @@ static class VulkanAllocator {
         VulkanContext.Vulkan.DestroyImage(allocation.Allocator.Device, image, null);
         allocation.Dispose();
     }
-    
+
     public static unsafe void DestroyBuffer(Buffer buffer, Allocation allocation) {
         VulkanContext.Vulkan.DestroyBuffer(allocation.Allocator.Device, buffer, null);
         allocation.Dispose();
     }
 
-    
+
     // public nint MapMemory(Allocation allocation) {
     //     return allocation.Map();
     // }

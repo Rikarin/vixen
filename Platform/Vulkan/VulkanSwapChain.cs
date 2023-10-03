@@ -467,10 +467,10 @@ sealed class VulkanSwapChain : IDisposable {
 
         vk.CreateRenderPass(vkDevice, renderPassInfo, null, out var pass);
         renderPass = pass;
-        
+
         VulkanUtils.SetDebugObjectName(
             ObjectType.RenderPass,
-            $"Swapchain RenderPass",
+            "Swapchain RenderPass",
             pass.Handle
         );
     }
@@ -491,12 +491,12 @@ sealed class VulkanSwapChain : IDisposable {
         for (var i = 0; i < images.Count; i++) {
             var imageView = images[i].ImageView;
             framebufferCreateInfo.PAttachments = &imageView;
-            
+
             var result = vk.CreateFramebuffer(vkDevice, framebufferCreateInfo, null, out var framebuffer);
             if (result != Result.Success) {
                 Log.Fatal("Failed to create framebuffer");
             }
-            
+
             VulkanUtils.SetDebugObjectName(
                 ObjectType.Framebuffer,
                 $"Swapchain Framebuffer [Frame in Flight: {i}]",

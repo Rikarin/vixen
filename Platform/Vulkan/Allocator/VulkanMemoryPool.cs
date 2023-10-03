@@ -1,7 +1,7 @@
 ﻿using Silk.NET.Vulkan;
 using System.Runtime.CompilerServices;
 
-namespace Rin.Platform.Vulkan.Allocator; 
+namespace Rin.Platform.Vulkan.Allocator;
 
 public sealed class VulkanMemoryPool : IDisposable {
     internal readonly BlockList BlockList;
