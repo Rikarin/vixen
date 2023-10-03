@@ -10,9 +10,9 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     FramebufferOptions options;
     RenderPass renderPass;
     Framebuffer framebuffer;
-    Size size;
+    readonly Size size;
 
-    List<IImage2D> attachmentImages = new();
+    readonly List<IImage2D> attachmentImages = new();
 
     public IImage2D DepthAttachmentImage { get; private set; }
 
@@ -33,17 +33,28 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
         var attachmentIndex = 0;
         if (options.ExistingFramebuffer == null) {
             foreach (var attachment in options.Attachments.Attachments) {
-                // if (options.exi)
-                // TODO
-                
-                //else 
-                if (attachment.Format.IsDepthFormat()) {
+                if (options.ExistingImage != null) {
+                    if (attachment.Format.IsDepthFormat()) {
+                        DepthAttachmentImage = options.ExistingImage;
+                    } else {
+                        attachmentImages.Add(options.ExistingImage);
+                    }
+                } else if (
+                    options.ExistingImages != null
+                    && options.ExistingImages.TryGetValue(attachmentIndex, out var value)
+                ) {
+                    if (attachment.Format.IsDepthFormat()) {
+                        DepthAttachmentImage = value;
+                    } else {
+                        attachmentImages.Add(null); // TODO: not sure about this
+                    }
+                } else if (attachment.Format.IsDepthFormat()) {
                     var imageOptions = new ImageOptions {
                         Format = attachment.Format,
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
                         Size = size, // TODO: check as this is implemented differently
-                        DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-DepthAttachment{attachmentIndex}",
+                        DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-DepthAttachment{attachmentIndex}"
                     };
                     DepthAttachmentImage = ObjectFactory.CreateImage2D(imageOptions);
                 } else {
@@ -52,7 +63,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
                         Size = size, // TODO: check as this is implemented differently
-                        DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-ColorAttachment{attachmentIndex}",
+                        DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-ColorAttachment{attachmentIndex}"
                     };
                     attachmentImages.Add(ObjectFactory.CreateImage2D(imageOptions));
                 }
@@ -60,20 +71,26 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                 attachmentIndex++;
             }
         }
-        
+
         Resize(size, true);
+    }
+
+    public void Dispose() {
+        Release();
     }
 
 
     void Resize(Size newSize, bool forceRecreate) {
-        
+        // TODO
     }
 
     void Release() {
         // TODO
     }
 
-    public void Dispose() {
-        Release();
+    public void Invalidate() => Renderer.Submit(Invalidate_RT);
+
+    void Invalidate_RT() {
+        // TODO
     }
 }
