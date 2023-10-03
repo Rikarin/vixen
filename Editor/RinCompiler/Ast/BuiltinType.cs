@@ -4,6 +4,7 @@ public enum BuiltinType : byte {
     Int,
     Char,
     String
+    
     // None,
     // Void,
     // Bool,

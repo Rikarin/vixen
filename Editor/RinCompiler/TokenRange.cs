@@ -10,12 +10,12 @@ public class TokenRange {
     readonly string content;
     int index;
     Position basePos;
-    Position prevPos;
 
     public Token Front { get; private set; } = new(TokenType.Begin, Name.Empty, Location.Zero);
-    public Position Previous => prevPos;
-    char FrontChar => content[index];
+    public Position Previous { get; private set; }
+
     public bool IsEmpty => Front.Type == TokenType.End;
+    char FrontChar => content[index];
 
     public TokenRange(string content) {
         this.content = content;
@@ -25,11 +25,11 @@ public class TokenRange {
     public void PopChar(int count = 1) => index += count;
 
     public void PopFront() {
-        prevPos = basePos.GetWithOffset(index);
+        Previous = basePos.GetWithOffset(index);
         Front = GetNextToken();
     }
 
-    public TokenRange Clone() => new(content) { index = index, basePos = basePos, prevPos = prevPos, Front = Front };
+    public TokenRange Clone() => new(content) { index = index, basePos = basePos, Previous = Previous, Front = Front };
 
     public void Match(TokenType type) {
         if (Front.Type != type) {

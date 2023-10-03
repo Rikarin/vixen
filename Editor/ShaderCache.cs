@@ -1,4 +1,5 @@
 using MessagePack;
+using MessagePack.Resolvers;
 using Rin.Platform.Vulkan;
 using Silk.NET.Vulkan;
 using System.Security.Cryptography;
@@ -31,9 +32,9 @@ public static class ShaderCache {
             ReflectionData = compiler.ReflectionData
         };
 
-        var bytes = MessagePackSerializer.Serialize(cache, MessagePack.Resolvers.ContractlessStandardResolverAllowPrivate.Options);
+        var bytes = MessagePackSerializer.Serialize(cache, ContractlessStandardResolverAllowPrivate.Options);
         var json = MessagePackSerializer.ConvertToJson(bytes);
-        
+
         File.WriteAllBytes(Path.Combine(CacheDirectory, hash + ".bin"), bytes);
         File.WriteAllText(Path.Combine(CacheDirectory, hash + ".json"), json);
         // TODO: json is for debuging purpose only

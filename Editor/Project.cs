@@ -8,7 +8,7 @@ namespace Rin.Editor;
 public class Project {
     // TODO: temporary
     public static Project? OpenProject;
-    
+
     static readonly ISerializer serializer = new SerializerBuilder()
         .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();

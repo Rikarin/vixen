@@ -1,5 +1,3 @@
-namespace Rin.Core.Abstractions; 
+namespace Rin.Core.Abstractions;
 
-public abstract class RendererContext {
-    
-}
+public abstract class RendererContext { }

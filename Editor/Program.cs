@@ -1,10 +1,8 @@
-﻿using Rin.Core.Abstractions;
-using Rin.Core.General;
+﻿using Rin.Core.General;
 using Rin.Editor;
 using Serilog;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
-using System.Drawing;
 
 var eventSourceListener = new EventSourceCreatedListener();
 
@@ -26,8 +24,6 @@ editor.Watch();
 Log.Information("Bar");
 
 
-
-
 // LoadRuntime, ...
 var app = Application.CreateDefault(
     options => {
@@ -47,7 +43,7 @@ var app = Application.CreateDefault(
 
 app.MainWindow.Load += () => {
     Log.Information("Application Loading");
-    
+
     var shaderImporter = new ShaderImporter("Assets/Shaders/Test.shader");
     shaderImporter.GetShader();
 

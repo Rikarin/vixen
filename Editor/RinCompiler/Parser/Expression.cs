@@ -13,9 +13,9 @@ public partial class Parser {
                 return ParseCharacterLiteral();
             case TokenType.StringLiteral:
                 return ParseStringLiteral();
-            
+
             // TODO: vectors, colors....
-            
+
             default: throw new NotImplementedException();
         }
     }

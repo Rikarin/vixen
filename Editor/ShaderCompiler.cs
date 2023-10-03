@@ -20,18 +20,17 @@ public class ShaderCompiler {
     // These are default entry points of *.shader file
     // If shader contains compute or geometry shader it needs to set it explicitly in the shader file
     // as  TODO compute <entry_point>
-    Dictionary<ShaderStageFlags, string> shaderEntryPoints = new() {
-        { ShaderStageFlags.VertexBit, "vert" },
-        { ShaderStageFlags.FragmentBit, "frag" }
+    readonly Dictionary<ShaderStageFlags, string> shaderEntryPoints = new() {
+        { ShaderStageFlags.VertexBit, "vert" }, { ShaderStageFlags.FragmentBit, "frag" }
     };
 
     // Compiled shaders
     readonly ShaderCollection shaderData = new();
     readonly ShaderCollection shaderDebugData = new();
-    
-    internal ShaderResource.ReflectionData ReflectionData { get; } = new();
-    
+
     public string? ProgramSource { get; private set; }
+
+    internal ShaderResource.ReflectionData ReflectionData { get; } = new();
 
     static string CacheDirectory => Path.Combine(Project.OpenProject!.CacheDirectory, "Shaders");
 
@@ -43,7 +42,7 @@ public class ShaderCompiler {
         Log.Information("Compiling shader");
         var compiler = new ShaderCompiler(Path.Combine(Project.OpenProject!.RootDirectory, shaderPath));
         compiler.Reload(forceCompile);
-        
+
         // Vulkan Shader
         var vulkanShader = new VulkanShader();
         vulkanShader.LoadAndCreateShaders(compiler.shaderData);
@@ -71,15 +70,15 @@ public class ShaderCompiler {
 
         var source = File.ReadAllText(shaderPath);
         Preprocess(source);
-        
-        
+
+
         // TODO: caching and stuff
 
         foreach (var entryPoint in shaderEntryPoints) {
             Compile(ProgramSource, entryPoint.Key, true, shaderDebugData);
             Compile(ProgramSource, entryPoint.Key, false, shaderData);
         }
-        
+
         // TODO
         if (forceCompile || true) {
             ReflectAllShaderStages(shaderDebugData);
@@ -154,7 +153,7 @@ public class ShaderCompiler {
 
     void ReflectAllShaderStages(ShaderCollection data) {
         ClearReflectionData();
-        
+
         foreach (var entry in data) {
             Reflect(entry.Key, entry.Value);
         }

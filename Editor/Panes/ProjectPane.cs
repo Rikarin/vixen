@@ -1,5 +1,4 @@
 using ImGuiNET;
-using Serilog;
 
 namespace Rin.Editor.Panes;
 
@@ -7,6 +6,8 @@ namespace Rin.Editor.Panes;
 // Use File watcher instead
 sealed class ProjectPane : Pane {
     string selectedPath = string.Empty;
+
+    string search = string.Empty;
 
     public ProjectPane() : base("Project") { }
 
@@ -30,33 +31,20 @@ sealed class ProjectPane : Pane {
             if (Path.GetExtension(file) == ".meta") {
                 continue;
             }
-            
+
             var selected = file == selectedPath;
             var clicked = ImGui.Selectable(Path.GetFileName(file), ref selected);
             ContextMenuRender(file);
-            
+
             if (clicked) {
                 selectedPath = file;
             }
         }
     }
 
-    protected override void OnRender() {
-        if (ImGui.TreeNodeEx("Project", ImGuiTreeNodeFlags.DefaultOpen)) {
-            if (ImGui.BeginPopupContextItem()) {
-                ImGui.MenuItem("Asdf");
-                ImGui.EndPopup();
-            }
-
-            RenderDictionary(Gui.Project.RootDirectory);
-            ImGui.TreePop();
-        }
-    }
-
-    string search = string.Empty;
     void ContextMenuRender(string path) {
         var directory = File.Exists(path) ? Path.GetDirectoryName(path)! : path;
-                
+
         if (ImGui.BeginPopupContextItem()) {
             ImGui.InputText("##Search", ref search, 128);
             ImGui.Separator();
@@ -65,7 +53,7 @@ sealed class ProjectPane : Pane {
                 if (ImGui.MenuItem("Folder")) {
                     Directory.CreateDirectory(Path.Combine(directory, "New Directory"));
                 }
-                
+
                 ImGui.Separator();
                 if (ImGui.MenuItem("C# Script")) {
                     // TODO
@@ -81,19 +69,19 @@ sealed class ProjectPane : Pane {
                 if (ImGui.MenuItem("Prefab")) {
                     // TODO
                 }
-                
+
                 if (ImGui.MenuItem("Prefab Variant")) {
                     // TODO
                 }
-                
+
                 if (ImGui.MenuItem("Material")) {
                     // TODO
                 }
-                
+
                 if (ImGui.MenuItem("Material Variant")) {
                     // TODO
                 }
-                
+
                 ImGui.EndMenu();
             }
 
@@ -101,11 +89,21 @@ sealed class ProjectPane : Pane {
                 // TODO
             }
 
-            if (ImGui.MenuItem("Delete")) {
-                
-            }
-            
+            if (ImGui.MenuItem("Delete")) { }
+
             ImGui.EndPopup();
+        }
+    }
+
+    protected override void OnRender() {
+        if (ImGui.TreeNodeEx("Project", ImGuiTreeNodeFlags.DefaultOpen)) {
+            if (ImGui.BeginPopupContextItem()) {
+                ImGui.MenuItem("Asdf");
+                ImGui.EndPopup();
+            }
+
+            RenderDictionary(Gui.Project.RootDirectory);
+            ImGui.TreePop();
         }
     }
 }

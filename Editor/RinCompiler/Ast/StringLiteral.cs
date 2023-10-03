@@ -8,6 +8,6 @@ public sealed class StringLiteral : CompileTimeExpression {
         Value = value;
         Type = type;
     }
-    
+
     public override void Accept(IVisitor visitor) => visitor.Visit(this);
 }

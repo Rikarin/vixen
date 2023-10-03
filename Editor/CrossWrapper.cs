@@ -145,21 +145,6 @@ sealed unsafe class CrossWrapper : IDisposable {
             }
         }
 
-        public (int Type, string Name, int Size, int Offset) GetMemoryInfo(int index) {
-            // TODO: not sure which one to use
-            // var lol = cross.TypeGetBasetype(bufferType);
-            var typeId = cross.TypeGetBaseTypeId(bufferType);
-            var type = cross.TypeGetMemberType(bufferType, (uint)index);
-            var memberName = cross.CompilerGetMemberNameS(compiler.compiler, typeId, (uint)index);
-            
-            UIntPtr size = 0;
-            cross.CompilerGetDeclaredStructMemberSize(compiler.compiler, bufferType, (uint)index, &size);
-
-            uint offset = 0;
-            cross.CompilerTypeStructMemberOffset(compiler.compiler, BufferType, (uint)index, &offset);
-            return ((int)type, memberName, (int)size, (int)offset);
-        }
-
         public ResourceWrapper(CompilerWrapper compiler, ReflectedResource resource) {
             cross = compiler.cross.cross;
             this.compiler = compiler;
@@ -168,6 +153,21 @@ sealed unsafe class CrossWrapper : IDisposable {
             BaseTypeId = resource.BaseTypeId;
             TypeId = resource.TypeId;
             Name = Marshal.PtrToStringAnsi((nint)resource.Name)!;
+        }
+
+        public (int Type, string Name, int Size, int Offset) GetMemoryInfo(int index) {
+            // TODO: not sure which one to use
+            // var lol = cross.TypeGetBasetype(bufferType);
+            var typeId = cross.TypeGetBaseTypeId(bufferType);
+            var type = cross.TypeGetMemberType(bufferType, (uint)index);
+            var memberName = cross.CompilerGetMemberNameS(compiler.compiler, typeId, (uint)index);
+
+            UIntPtr size = 0;
+            cross.CompilerGetDeclaredStructMemberSize(compiler.compiler, bufferType, (uint)index, &size);
+
+            uint offset = 0;
+            cross.CompilerTypeStructMemberOffset(compiler.compiler, BufferType, (uint)index, &offset);
+            return ((int)type, memberName, (int)size, (int)offset);
         }
     }
 }

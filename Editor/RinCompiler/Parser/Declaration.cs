@@ -1,16 +1,21 @@
 using Rin.Editor.RinCompiler.Ast;
-using Rin.Platform.Vulkan.Allocator.Defragmentation;
-using Serilog;
 
-namespace Rin.Editor.RinCompiler.Parser; 
+namespace Rin.Editor.RinCompiler.Parser;
 
 public partial class Parser {
     TokenRange range;
-    
+
+    public ShaderDeclaration Parse(TokenRange tokenRange) {
+        range = tokenRange;
+        range.Match(TokenType.Begin);
+
+        return ParseShaderDeclaration();
+    }
+
     ShaderDeclaration ParseShaderDeclaration() {
         range.Match(TokenType.Shader);
         var loc = range.Front.Location;
-        
+
         var name = range.Front.Name;
         range.Match(TokenType.StringLiteral);
 
@@ -35,17 +40,21 @@ public partial class Parser {
                 return ParseProperties();
             case TokenType.SubShader:
                 return ParseSubShader();
-            
+
             default: throw new($"Unknown identifier {range.Front.Name.Value}");
         }
     }
-    
-    void ParseSubShaderDeclaration(ref Dictionary<string, string> tags, ref int? lod, ref SubShaderPassDeclaration? program) {
+
+    void ParseSubShaderDeclaration(
+        ref Dictionary<string, string> tags,
+        ref int? lod,
+        ref SubShaderPassDeclaration? program
+    ) {
         switch (range.Front.Type) {
             case TokenType.Tags:
                 range.PopFront();
                 range.Match(TokenType.OpenBrace);
-                
+
                 while (!range.IsEmpty) {
                     var key = range.Front.Name;
                     range.Match(TokenType.StringLiteral);
@@ -54,7 +63,7 @@ public partial class Parser {
                     range.Match(TokenType.StringLiteral);
 
                     tags[key.Value] = value.Value;
-                    
+
                     if (range.Front.Type == TokenType.Comma) {
                         range.PopFront();
                     } else {
@@ -62,18 +71,19 @@ public partial class Parser {
                         break;
                     }
                 }
+
                 break;
-                
+
             case TokenType.Lod:
                 range.PopFront();
                 lod = Convert.ToInt32(range.Front.Name.Value);
                 range.Match(TokenType.IntegerLiteral);
                 break;
-            
+
             case TokenType.Pass:
                 program = ParseSubShaderPass();
                 break;
-            
+
             default: throw new($"Unknown identifier {range.Front.Name.Value}");
         }
     }
@@ -82,7 +92,7 @@ public partial class Parser {
         var loc = range.Front.Location;
         range.PopFront();
         range.Match(TokenType.OpenBrace);
-        
+
         var program = range.Front.Name;
         range.Match(TokenType.HlslProgram);
         range.Match(TokenType.CloseBrace);
@@ -98,11 +108,11 @@ public partial class Parser {
         var tags = new Dictionary<string, string>();
         int? lod = null;
         SubShaderPassDeclaration? shaderProgram = null;
-        
+
         while (range.Front.Type != TokenType.CloseBrace && !range.IsEmpty) {
             ParseSubShaderDeclaration(ref tags, ref lod, ref shaderProgram);
         }
-        
+
         range.Match(TokenType.CloseBrace);
         return new SubShaderDeclaration(loc.SpanTo(range.Previous), tags, lod, shaderProgram);
     }
@@ -116,7 +126,7 @@ public partial class Parser {
         while (range.Front.Type != TokenType.CloseBrace && !range.IsEmpty) {
             declarations.Add(ParseMaterialPropertyDeclaration());
         }
-        
+
         range.Match(TokenType.CloseBrace);
         return new(loc.SpanTo(range.Previous), declarations);
     }
@@ -126,26 +136,26 @@ public partial class Parser {
         var loc = range.Front.Location;
         var identifier = range.Front.Name;
         range.Match(TokenType.Identifier);
-        
+
         range.Match(TokenType.OpenParen);
         var name = range.Front.Name;
         range.Match(TokenType.StringLiteral);
         range.Match(TokenType.Comma);
         var typeDecl = ParseTypeDeclaration();
         range.Match(TokenType.CloseParen);
-        
+
         // TODO: are default values mandatory or optional?
         range.Match(TokenType.Equal);
         var value = ParsePrimaryExpression();
 
         return new(loc.SpanTo(range.Previous), identifier, name, typeDecl, value);
     }
-    
+
     TypeDeclaration ParseTypeDeclaration() {
         var loc = range.Front.Location;
         var baseTypes = new[] {
             TokenType.Tex2D, TokenType.Tex3D, TokenType.Tex2DArray, TokenType.Int, TokenType.Float, TokenType.Cube,
-            TokenType.CubeArray, TokenType.Color, TokenType.Vector,
+            TokenType.CubeArray, TokenType.Color, TokenType.Vector
         };
 
         // Try to match basic types
@@ -154,7 +164,7 @@ public partial class Parser {
             range.PopFront();
             return new(loc, token.Type);
         }
-        
+
         // Match Range
         range.Match(TokenType.Range);
         range.Match(TokenType.OpenParen);
@@ -166,12 +176,5 @@ public partial class Parser {
         range.Match(TokenType.CloseParen);
 
         return new RangeTypeDeclaration(loc.SpanTo(range.Previous), from, to);
-    }
-
-    public ShaderDeclaration Parse(TokenRange tokenRange) {
-        range = tokenRange;
-        range.Match(TokenType.Begin);
-        
-        return ParseShaderDeclaration();
     }
 }

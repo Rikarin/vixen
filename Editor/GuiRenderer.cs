@@ -252,8 +252,7 @@ sealed class GuiRenderer : IDisposable {
             }
 
             if (ImGui.BeginMenu("Help")) {
-                if (ImGui.MenuItem("Demo Window")) {
-                }
+                if (ImGui.MenuItem("Demo Window")) { }
 
                 ImGui.EndMenu();
             }
