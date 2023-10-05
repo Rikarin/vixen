@@ -1,13 +1,15 @@
 using Rin.Core.Abstractions;
+using Rin.Platform.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
 using Silk.NET.Windowing;
+using AttachmentLoadOp = Silk.NET.Vulkan.AttachmentLoadOp;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanSwapChain : IDisposable {
+sealed class VulkanSwapChain : ISwapchain, IDisposable {
     readonly ILogger logger = Log.ForContext<VulkanSwapChain>();
     readonly Vk vk;
     readonly Device vkDevice;
@@ -125,7 +127,7 @@ sealed class VulkanSwapChain : IDisposable {
     }
 
     public void BeginFrame() {
-        Renderer.GetRenderResourceReleaseQueue(CurrentBufferIndex).Execute();
+        Renderer.GetRenderDisposeQueue(CurrentBufferIndex).Execute();
 
         currentImageIndex = AcquireNextImage();
         vk.ResetCommandPool(vkDevice, commandBuffers[CurrentBufferIndex].CommandPool, 0);
@@ -172,6 +174,7 @@ sealed class VulkanSwapChain : IDisposable {
         }
 
         // TODO: performance timers
+        Log.Information("Debug: {Variable} {lol}", CurrentBufferIndex, Renderer.Options.FramesInFlight);
         CurrentBufferIndex = (CurrentBufferIndex + 1) % Renderer.Options.FramesInFlight;
         vk.WaitForFences(vkDevice, 1, waitFences[CurrentBufferIndex], true, uint.MaxValue);
     }

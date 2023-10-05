@@ -1,6 +1,6 @@
-namespace Rin.Editor;
+namespace Rin.Core.Abstractions;
 
-static class DictionaryExtensions {
+public static class DictionaryExtensions {
     public static TValue GetOrCreateDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         where TValue : new() where TKey : notnull {
         if (!dictionary.TryGetValue(key, out var value)) {

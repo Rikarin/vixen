@@ -1,3 +1,4 @@
+using Rin.Core.Abstractions;
 using Rin.Core.Diagnostics;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -6,22 +7,33 @@ using System.Runtime.CompilerServices;
 
 namespace Rin.Core.General;
 
-public class Application {
+public class Application : IDisposable {
     internal static Application Current = null!;
 
     readonly Performance performance = new();
+    readonly IRenderThread renderThread;
 
+    public bool IsRunning { get; private set; }
     public Window MainWindow { get; }
 
     public Application(ApplicationOptions options) {
         ApplicationEventSource.Log.Startup();
         Current = this;
+        
+        Renderer.Options.FramesInFlight = 3; // TODO
+        
+        renderThread = new RenderThread(options.ThreadingPolicy);
+        renderThread.Run();
 
+        // TODO: stuff
+        
+        MainWindow = new();
+        Renderer.Initialize(MainWindow.Handle.Swapchain);
+        renderThread.Pump();
 
         // Setup profiler
         // Setup Renderer.SetConfig (static)
 
-        MainWindow = new();
 
         // Renderer.Initialize();
     }
@@ -34,14 +46,28 @@ public class Application {
     }
 
     public void Run() {
-        performance.MainThreadWaitTime.Reset();
+        IsRunning = true;
 
-        // block till render is complete
+        while (IsRunning) {
+            // TODO: consider creating disposable struct/class to track these states
+            performance.MainThreadWaitTime.Reset();
+            renderThread.BlockUntilRenderComplete();
+            ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
 
-        ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
+            renderThread.NextFrame();
+            renderThread.Kick();
+            
+            // TODO: if not minimized
+            
+            Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
+            
+            Renderer.Submit(MainWindow.Handle.Swapchain.Present);
+            
+            Renderer.IncreaseCurrentFrameIndex();
+            
+        }
 
-
-        MainWindow.Run();
+        // MainWindow.Run();
     }
 
     // public void Run() {
@@ -68,5 +94,9 @@ public class Application {
         public Stopwatch MainThreadWaitTime { get; } = new();
 
         public Performance() { }
+    }
+
+    public void Dispose() {
+        renderThread.Terminate();
     }
 }

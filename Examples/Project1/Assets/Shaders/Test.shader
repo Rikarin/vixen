@@ -19,7 +19,7 @@ shader "Common/FoobarShader" {
                 float pinned;
             };
 
-            [[vk::binding(0)]]
+            [[vk::binding(8)]]
             StructuredBuffer<Particle> particleIn;
             [[vk::binding(1)]]
             RWStructuredBuffer<Particle> particleOut;
@@ -48,7 +48,7 @@ shader "Common/FoobarShader" {
 
             struct VSInput
             {
-                [[vk::location(0)]]float2 Pos : POSITION0;
+                [[vk::location(7)]]float2 Pos : POSITION0;
                 [[vk::location(1)]]float2 UV : TEXCOORD0;
             };
 

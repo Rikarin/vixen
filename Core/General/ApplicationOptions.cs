@@ -1,3 +1,5 @@
+using Rin.Core.Abstractions;
+
 namespace Rin.Core.General;
 
 public sealed class ApplicationOptions {

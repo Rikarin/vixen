@@ -1,3 +1,4 @@
+using Rin.Core.Abstractions;
 using Rin.Core.Abstractions.Shaders;
 using Rin.Core.General;
 using Rin.Editor.RinCompiler;
@@ -46,8 +47,8 @@ public class ShaderCompiler {
         // Vulkan Shader
         var vulkanShader = new VulkanShader();
         vulkanShader.LoadAndCreateShaders(compiler.shaderData);
-        // set reflection data
-        // create descriptors
+        vulkanShader.ReflectionData = compiler.ReflectionData;
+        vulkanShader.CreateDescriptors();
 
         var shader = new Shader(vulkanShader, compiler.name!, shaderPath);
 

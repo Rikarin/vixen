@@ -1,5 +1,6 @@
 using Rin.Core.Abstractions.Shaders;
 using Silk.NET.Vulkan;
+using System.Runtime.Serialization;
 
 namespace Rin.Platform.Vulkan;
 
@@ -55,5 +56,9 @@ static class ShaderResource {
         public Dictionary<int, ImageSampler> StorageImages { get; set; } = new();
         public Dictionary<int, ImageSampler> SeparateTextures { get; set; } = new();
         public Dictionary<int, ImageSampler> SeparateSamplers { get; set; } = new();
+
+
+        [IgnoreDataMember]
+        public Dictionary<string, WriteDescriptorSet> WriteDescriptorSets { get; set; } = new();
     }
 }

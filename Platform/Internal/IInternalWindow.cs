@@ -1,4 +1,5 @@
 using Rin.Core.Abstractions;
+using Rin.Platform.Rendering;
 using System.Numerics;
 
 namespace Rin.Platform.Internal;
@@ -6,6 +7,7 @@ namespace Rin.Platform.Internal;
 interface IInternalWindow {
     Vector2 MousePosition { get; }
     RendererContext RendererContext { get; }
+    ISwapchain Swapchain { get; }
 
     IInternalGuiRenderer CreateGuiRenderer();
     void Run();

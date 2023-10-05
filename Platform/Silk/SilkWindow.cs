@@ -1,5 +1,6 @@
 using Rin.Core.Abstractions;
 using Rin.Platform.Internal;
+using Rin.Platform.Rendering;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Input;
@@ -32,6 +33,7 @@ sealed class SilkWindow : IInternalWindow {
     readonly bool[] mouseButtonPressed = new bool[(int)MouseButton.Button12 + 1];
 
     public RendererContext RendererContext { get; private set; }
+    public ISwapchain Swapchain { get; private set; }
     public Vector2 MousePosition { get; private set; } = Vector2.Zero;
 
     internal SilkWindow(WindowOptions options) {
@@ -82,6 +84,7 @@ sealed class SilkWindow : IInternalWindow {
         var height = 600;
 
         swapChain.Create(ref width, ref height, false);
+        Swapchain = swapChain;
 
         //     // swapChain.Dispose();
         //     swapChain.BeginFrame();

@@ -1,4 +1,4 @@
-namespace Rin.Core.General;
+namespace Rin.Core.Abstractions;
 
 public enum ThreadingPolicy {
     SingleThreaded,
