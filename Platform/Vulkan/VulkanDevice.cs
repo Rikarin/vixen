@@ -64,7 +64,6 @@ sealed class VulkanDevice : IDisposable {
         };
 
         if (deviceExtensions.Count > 0) {
-            Log.Information("Debug: {Variable}", deviceExtensions.ToArray());
             deviceCreateInfo.EnabledExtensionCount = (uint)deviceExtensions.Count;
             deviceCreateInfo.PpEnabledExtensionNames = (byte**)SilkMarshal.StringArrayToPtr(deviceExtensions.ToArray());
         }

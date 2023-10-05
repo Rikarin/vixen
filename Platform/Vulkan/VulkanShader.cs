@@ -6,21 +6,37 @@ using System.Runtime.InteropServices;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanShader : IShader, IDisposable {
-    ShaderCollection shaderData;
+public sealed class VulkanShader : IShader, IDisposable {
+    readonly string name;
     readonly List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
 
     readonly Dictionary<int, List<DescriptorPoolSize>> typeCounts = new();
+    readonly Dictionary<int, DescriptorSetLayout> descriptorSetLayouts = new();
 
     public ShaderResource.ReflectionData ReflectionData { get; internal set; }
+    public IReadOnlyDictionary<int, DescriptorSetLayout> DescriptorSetLayouts => descriptorSetLayouts.AsReadOnly();
 
+    public IReadOnlyDictionary<int, ShaderResource.ShaderDescriptorSet> ShaderDescriptorSets =>
+        ReflectionData.ShaderDescriptorSets.AsReadOnly();
+
+    public IReadOnlyList<ShaderResource.PushConstantRange> PushConstantRanges =>
+        ReflectionData.PushConstantRanges.AsReadOnly();
+
+    public IReadOnlyList<PipelineShaderStageCreateInfo> PipelineShaderStageCreateInfos =>
+        pipelineShaderStageCreateInfos;
+
+
+    public VulkanShader(string name) {
+        this.name = name;
+    }
 
     public unsafe void LoadAndCreateShaders(ShaderCollection data) {
-        shaderData = data;
         pipelineShaderStageCreateInfos.Clear();
 
         // TODO: not deallocated yet
-        var name = Marshal.StringToHGlobalAnsi("main");
+        // TODO: extend ShaderCollection and load these from compiler
+        var vertName = Marshal.StringToHGlobalAnsi("vert");
+        var fragName = Marshal.StringToHGlobalAnsi("frag");
 
         foreach (var entry in data) {
             using var ptr = entry.Value.Pin();
@@ -32,20 +48,17 @@ sealed class VulkanShader : IShader, IDisposable {
             VulkanContext.Vulkan.CreateShaderModule(device, shaderModuleCreateInfo, null, out var module);
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ShaderModule,
-                $"Name:{data.Keys}",
+                $"{name}:{entry.Key}",
                 module.Handle
             );
 
+            var entryPoint = entry.Key == ShaderStageFlags.VertexBit ? vertName : fragName;
             pipelineShaderStageCreateInfos.Add(
                 new(StructureType.PipelineShaderStageCreateInfo) {
-                    Stage = entry.Key, Module = module, PName = (byte*)name
+                    Stage = entry.Key, Module = module, PName = (byte*)entryPoint
                 }
             );
-
-            Log.Information("Debug: {Variable}", entry.Key);
         }
-
-        // Marshal.FreeHGlobal(name);
     }
 
     // TODO: finish this
@@ -201,7 +214,8 @@ sealed class VulkanShader : IShader, IDisposable {
                 };
 
                 VulkanContext.Vulkan.CreateDescriptorSetLayout(device, descriptorLayout, null, out var setLayout);
-                
+                descriptorSetLayouts[set.Key] = setLayout;
+
                 Log.Information(
                     "Creating descriptor set {Set} with {UniformBuffers} ubo's, {StorageBuffers} ssbo's, {ImageSamplers} samplers, {SeparateTextures} separate textures, {SeparateSamplers} separate samplers and {StorageImages} storage images",
                     set.Key,
@@ -215,7 +229,7 @@ sealed class VulkanShader : IShader, IDisposable {
             }
         }
     }
-    
+
     // TODO: create descriptors
 
     unsafe void Release() {

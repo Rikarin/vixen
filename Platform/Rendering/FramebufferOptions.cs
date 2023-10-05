@@ -4,7 +4,7 @@ using System.Drawing;
 namespace Rin.Platform.Rendering;
 
 public sealed class FramebufferOptions {
-    public float Scale { get; set; }
+    public float Scale { get; set; } = 1;
     public Size? Size { get; set; }
     public Color ClearColor { get; set; } = Color.Black;
     public float DepthClearValue { get; set; }
@@ -15,6 +15,7 @@ public sealed class FramebufferOptions {
 
     public FramebufferAttachmentOptions Attachments { get; set; }
 
+    public bool IsSwapChainTarget { get; set; }
     public bool Transfer { get; set; }
 
     public IImage2D? ExistingImage { get; set; }

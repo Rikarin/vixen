@@ -19,14 +19,14 @@ public class Application : IDisposable {
     public Application(ApplicationOptions options) {
         ApplicationEventSource.Log.Startup();
         Current = this;
-        
+
         Renderer.Options.FramesInFlight = 3; // TODO
-        
+
         renderThread = new RenderThread(options.ThreadingPolicy);
         renderThread.Run();
 
         // TODO: stuff
-        
+
         MainWindow = new();
         Renderer.Initialize(MainWindow.Handle.Swapchain);
         renderThread.Pump();
@@ -46,6 +46,7 @@ public class Application : IDisposable {
     }
 
     public void Run() {
+        MainWindow.Test_InvokeLoad();
         IsRunning = true;
 
         while (IsRunning) {
@@ -56,15 +57,14 @@ public class Application : IDisposable {
 
             renderThread.NextFrame();
             renderThread.Kick();
-            
+
             // TODO: if not minimized
-            
+
             Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
-            
+
             Renderer.Submit(MainWindow.Handle.Swapchain.Present);
-            
+
             Renderer.IncreaseCurrentFrameIndex();
-            
         }
 
         // MainWindow.Run();
@@ -89,14 +89,14 @@ public class Application : IDisposable {
         return new(options);
     }
 
+    public void Dispose() {
+        renderThread.Terminate();
+    }
+
     struct Performance {
         public Stopwatch MainThreadWorkTime { get; } = new();
         public Stopwatch MainThreadWaitTime { get; } = new();
 
         public Performance() { }
-    }
-
-    public void Dispose() {
-        renderThread.Terminate();
     }
 }

@@ -24,4 +24,8 @@ public class Window {
     public event Action? Load;
     public event Action? Closing;
     public event Action<float>? Render;
+
+    public void Test_InvokeLoad() {
+        Load?.Invoke();
+    }
 }

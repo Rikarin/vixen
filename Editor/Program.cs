@@ -1,8 +1,12 @@
-﻿using Rin.Core.General;
+﻿using Rin.Core.Abstractions;
+using Rin.Core.General;
 using Rin.Editor;
+using Rin.Platform.Internal;
+using Rin.Platform.Rendering;
 using Serilog;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
+using System.Drawing;
 
 var eventSourceListener = new EventSourceCreatedListener();
 
@@ -44,8 +48,46 @@ var app = Application.CreateDefault(
 app.MainWindow.Load += () => {
     Log.Information("Application Loading");
 
-    var shaderImporter = new ShaderImporter("Assets/Shaders/Test.shader");
-    shaderImporter.GetShader();
+    var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
+    var testShader = shaderImporter.GetShader();
+
+
+    // TODO: this is based on RuntimeLayer.OnAttach()
+    var framebuffer = ObjectFactory.CreateFramebuffer(
+        new() {
+            DebugName = "SceneComposite",
+            ClearColor = Color.Aqua,
+            IsSwapChainTarget = true,
+            Attachments = new(ImageFormat.Rgba),
+            Size = new Size(1920, 1080) // TODO: pass real values
+        }
+    );
+
+    var pipelineOptions = new PipelineOptions {
+        Layout = new(
+            new VertexBufferElement(ShaderDataType.Float3, "a_Position"),
+            new VertexBufferElement(ShaderDataType.Float2, "a_TexCoord")
+        ),
+        BackfaceCulling = false,
+        Shader = testShader.Handle, // TODO
+        TargetFramebuffer = framebuffer,
+        DebugName = "SceneComposite",
+        DepthWrite = false
+    };
+
+    // Render Pass
+    var swapchainRenderPass = ObjectFactory.CreateRenderPass(
+        new() { DebugName = "SceneComposite", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions) }
+    );
+
+    // TODO: stuff
+    
+    // TODO: finish DescriptorSetManager, VulkanPipeline, VulkanRenderCommandBuffer
+
+    swapchainRenderPass.Bake();
+
+    var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
+
 
     // vertexArray = VertexArray.Create();
     // float[] vertices = {

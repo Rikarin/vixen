@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Editor", "Editor\Rin.Ed
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Core.Abstractions", "Core.Abstractions\Rin.Core.Abstractions.csproj", "{619FC8CD-4968-453A-B776-173A2DAF99F7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{CA38F926-9827-4168-97EE-8975D5B98AEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,8 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CA38F926-9827-4168-97EE-8975D5B98AEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA38F926-9827-4168-97EE-8975D5B98AEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C4F1A325-EB42-46FE-AAFB-564B7F7BCC71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C4F1A325-EB42-46FE-AAFB-564B7F7BCC71}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C4F1A325-EB42-46FE-AAFB-564B7F7BCC71}.Release|Any CPU.ActiveCfg = Release|Any CPU

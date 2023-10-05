@@ -16,7 +16,6 @@ namespace Rin.Editor;
 public class ShaderCompiler {
     readonly ILogger logger = Log.ForContext<ShaderCompiler>();
     readonly string shaderPath;
-    string? name;
 
     // These are default entry points of *.shader file
     // If shader contains compute or geometry shader it needs to set it explicitly in the shader file
@@ -29,6 +28,7 @@ public class ShaderCompiler {
     readonly ShaderCollection shaderData = new();
     readonly ShaderCollection shaderDebugData = new();
 
+    public string? Name { get; private set; }
     public string? ProgramSource { get; private set; }
 
     internal ShaderResource.ReflectionData ReflectionData { get; } = new();
@@ -45,18 +45,18 @@ public class ShaderCompiler {
         compiler.Reload(forceCompile);
 
         // Vulkan Shader
-        var vulkanShader = new VulkanShader();
+        var vulkanShader = new VulkanShader(compiler.Name ?? throw new ArgumentNullException("Shader Name"));
         vulkanShader.LoadAndCreateShaders(compiler.shaderData);
         vulkanShader.ReflectionData = compiler.ReflectionData;
         vulkanShader.CreateDescriptors();
 
-        var shader = new Shader(vulkanShader, compiler.name!, shaderPath);
+        var shader = new Shader(vulkanShader, compiler.Name, shaderPath);
 
         // Renderer acknowledge parsed global marcros
         // on shader reloaded
 
 
-        Log.Information("Debug asdf: {Variable}", compiler.name);
+        Log.Information("Debug asdf: {Variable}", compiler.Name);
 
         ShaderCache.Serialize(compiler);
 
@@ -64,7 +64,7 @@ public class ShaderCompiler {
     }
 
     public void Reload(bool forceCompile) {
-        name = null;
+        Name = null;
         ProgramSource = null;
 
         Directory.CreateDirectory(CacheDirectory);
@@ -148,7 +148,7 @@ public class ShaderCompiler {
         var builder = new ShaderBuilder();
         builder.Visit(ast);
 
-        name = builder.Name;
+        Name = builder.Name;
         ProgramSource = builder.ProgramSource;
     }
 

@@ -7,21 +7,16 @@ public interface IRenderPass {
     public IFramebuffer TargetFramebuffer { get; }
     public int FirstSetIndex { get; }
 
-    void SetIndex(string name, IUniformBufferSet uniformBufferSet);
-    void SetIndex(string name, IUniformBuffer uniformBuffer);
-    
-    void SetIndex(string name, IStorageBufferSet storageBufferSet);
-    void SetIndex(string name, IStorageBuffer storageBuffer);
-    
-    // void SetIndex(string name, IUniformBufferSet uniformBufferSet);
-    // void SetIndex(string name, IUniformBufferSet uniformBufferSet);
-    // void SetIndex(string name, IUniformBufferSet uniformBufferSet);
-    // virtual void SetInput(std::string_view name, Ref<Texture2D> texture) = 0;
-    // virtual void SetInput(std::string_view name, Ref<TextureCube> textureCube) = 0;
-    // virtual void SetInput(std::string_view name, Ref<Image2D> image) = 0;
-
     IImage2D GetOutput(int index);
     IImage GetDepthOutput();
+
+    void SetInput(string name, IUniformBufferSet uniformBufferSet);
+    void SetInput(string name, IUniformBuffer uniformBuffer);
+    void SetInput(string name, IStorageBufferSet storageBufferSet);
+    void SetInput(string name, IStorageBuffer storageBuffer);
+    void SetInput(string name, ITexture2D texture);
+    void SetInput(string name, ITextureCube textureCube);
+    void SetInput(string name, IImage2D image);
 
     bool Validate();
     void Bake();

@@ -48,8 +48,7 @@ public static class Renderer {
     public static void IncreaseCurrentFrameIndex() {
         CurrentFrameIndex = (CurrentFrameIndex + 1) % Options.FramesInFlight;
     }
-
-
+    
     public static void Submit(Action action) => RenderCommandQueue.Push(action);
 
     public static void SubmitDisposal(Action action) =>

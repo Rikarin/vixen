@@ -23,7 +23,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
 
     SwapchainKHR? swapchain;
     SurfaceKHR surface;
-    RenderPass? renderPass;
 
     readonly List<SwapchainImage> images = new();
     readonly List<Fence> waitFences = new();
@@ -45,6 +44,8 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
 
     // public RenderPass VkRenderPass { get; private set; }
     public Format ColorFormat { get; private set; }
+    
+    public RenderPass? RenderPass { get; private set; }
 
     public Framebuffer CurrentFramebuffer => GetFrameBuffer(currentImageIndex);
     public CommandBuffer CurrentDrawCommandBuffer => GetDrawCommandBuffer(CurrentBufferIndex);
@@ -174,7 +175,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         }
 
         // TODO: performance timers
-        Log.Information("Debug: {Variable} {lol}", CurrentBufferIndex, Renderer.Options.FramesInFlight);
         CurrentBufferIndex = (CurrentBufferIndex + 1) % Renderer.Options.FramesInFlight;
         vk.WaitForFences(vkDevice, 1, waitFences[CurrentBufferIndex], true, uint.MaxValue);
     }
@@ -197,8 +197,8 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             vk.DestroyCommandPool(vkDevice, commandBuffer.CommandPool, null);
         }
 
-        if (renderPass.HasValue) {
-            vk.DestroyRenderPass(vkDevice, renderPass.Value, null);
+        if (RenderPass.HasValue) {
+            vk.DestroyRenderPass(vkDevice, RenderPass.Value, null);
         }
 
         foreach (var framebuffer in framebuffers) {
@@ -469,7 +469,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         };
 
         vk.CreateRenderPass(vkDevice, renderPassInfo, null, out var pass);
-        renderPass = pass;
+        RenderPass = pass;
 
         VulkanUtils.SetDebugObjectName(
             ObjectType.RenderPass,
@@ -484,7 +484,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         }
 
         var framebufferCreateInfo = new FramebufferCreateInfo(StructureType.FramebufferCreateInfo) {
-            RenderPass = renderPass!.Value,
+            RenderPass = RenderPass!.Value,
             AttachmentCount = 1,
             Width = (uint)Width,
             Height = (uint)Height,
@@ -535,7 +535,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         uint formatCount = 0;
         vkSurface.GetPhysicalDeviceSurfaceFormats(physicalDevice, surface, ref formatCount, null);
 
-        Log.Information("Debug: {Variable}", formatCount);
         using var handle = VulkanUtils.Alloc<SurfaceFormatKHR>(formatCount, out var surfaceFormats);
         vkSurface.GetPhysicalDeviceSurfaceFormats(
             physicalDevice,

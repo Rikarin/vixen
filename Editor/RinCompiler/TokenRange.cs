@@ -243,7 +243,6 @@ public class TokenRange {
 
     char LexEscapeChar() {
         var c = FrontChar;
-        Log.Information("Debug: {Variable}", c);
         switch (c) {
             case '\0': throw new("Unexpected EOF");
             case '\\': return LexEscapeSequence();

@@ -4,7 +4,7 @@ using System.Numerics;
 
 namespace Rin.Platform.Internal;
 
-interface IInternalWindow {
+public interface IInternalWindow {
     Vector2 MousePosition { get; }
     RendererContext RendererContext { get; }
     ISwapchain Swapchain { get; }

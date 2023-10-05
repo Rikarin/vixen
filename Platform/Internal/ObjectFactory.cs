@@ -5,7 +5,7 @@ using Rin.Platform.Vulkan;
 
 namespace Rin.Platform.Internal;
 
-static class ObjectFactory {
+public static class ObjectFactory {
     public static IInternalWindow CreateWindow(WindowOptions options) => new SilkWindow(options);
 
     public static RendererContext CreateRendererContext() => new VulkanContext();
@@ -85,6 +85,34 @@ static class ObjectFactory {
     public static IImageView CreateImageView(ImageViewOptions options) {
         switch (RendererApi.CurrentApi) {
             case RendererApi.Api.Vulkan: return new VulkanImageView(options);
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
+    
+    public static IRenderPass CreateRenderPass(RenderPassOptions options) {
+        switch (RendererApi.CurrentApi) {
+            case RendererApi.Api.Vulkan: return new VulkanRenderPass(options);
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
+    
+    public static IPipeline CreatePipeline(PipelineOptions options) {
+        switch (RendererApi.CurrentApi) {
+            case RendererApi.Api.Vulkan: return new VulkanPipeline(options);
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
+    
+    public static IRenderCommandBuffer CreateRenderCommandBuffer(int? count = null, string? name = null) {
+        switch (RendererApi.CurrentApi) {
+            case RendererApi.Api.Vulkan: return new VulkanRenderCommandBuffer(); // TODO: Pass arguments
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
+    
+    public static IRenderCommandBuffer CreateRenderCommandBufferFromSwapChain(string? name = null) {
+        switch (RendererApi.CurrentApi) {
+            case RendererApi.Api.Vulkan: return new VulkanRenderCommandBuffer(); // TODO: Pass arguments
             default: throw new ArgumentOutOfRangeException();
         }
     }

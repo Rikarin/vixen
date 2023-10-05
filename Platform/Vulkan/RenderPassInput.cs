@@ -3,7 +3,7 @@ using Rin.Platform.Rendering;
 namespace Rin.Platform.Vulkan;
 
 public sealed class RenderPassInput {
-    public RenderPassResourceType Type { get; private set; }
+    public RenderPassResourceType Type { get; set; }
     public List<object> Input { get; } = new();
 
     public RenderPassInput() { }
@@ -27,8 +27,21 @@ public sealed class RenderPassInput {
         Type = RenderPassResourceType.StorageBufferSet;
         Input.Add(storageBufferSet);
     }
-
-    // TODO: Texture2D, TextureCube, Image2D
+    
+    public RenderPassInput(ITexture2D texture2D) {
+        Type = RenderPassResourceType.Texture2D;
+        Input.Add(texture2D);
+    }
+    
+    public RenderPassInput(ITextureCube textureCube) {
+        Type = RenderPassResourceType.TextureCube;
+        Input.Add(textureCube);
+    }
+    
+    public RenderPassInput(IImage2D image) {
+        Type = RenderPassResourceType.Image2D;
+        Input.Add(image);
+    }
 
     public void Set(IUniformBuffer uniformBuffer, int index = 0) {
         Type = RenderPassResourceType.UniformBuffer;
@@ -49,12 +62,30 @@ public sealed class RenderPassInput {
         Type = RenderPassResourceType.StorageBufferSet;
         Input[index] = storageBufferSet;
     }
-
-    // TODO: Texture2D, TextureCube, Image2D, ImageView
+    
+    public void Set(ITexture2D texture, int index = 0) {
+        Type = RenderPassResourceType.Texture2D;
+        Input[index] = texture;
+    }
+    
+    public void Set(ITextureCube textureCube, int index = 0) {
+        Type = RenderPassResourceType.TextureCube;
+        Input[index] = textureCube;
+    }
+    
+    public void Set(IImage2D image, int index = 0) {
+        Type = RenderPassResourceType.Image2D;
+        Input[index] = image;
+    }
+    
+    public void Set(IImageView imageView, int index = 0) {
+        Type = RenderPassResourceType.Image2D;
+        Input[index] = imageView;
+    }
 }
 
 public enum RenderPassResourceType : ushort {
-    None = 0,
+    None = 0, // TODO: remove none?
     UniformBuffer,
     UniformBufferSet,
     StorageBuffer,
@@ -65,7 +96,7 @@ public enum RenderPassResourceType : ushort {
 }
 
 public enum RenderPassInputType : ushort {
-    None = 0,
+    None = 0, // TODO: remove none??
     UniformBuffer,
     StorageBuffer,
     ImageSampler1D,
