@@ -28,4 +28,8 @@ public class Window {
     public void Test_InvokeLoad() {
         Load?.Invoke();
     }
+
+    public void Test_InvokeRender() {
+        Render?.Invoke(0);
+    }
 }

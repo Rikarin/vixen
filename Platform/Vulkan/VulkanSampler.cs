@@ -7,7 +7,7 @@ public static class VulkanSampler {
 
     public static unsafe Sampler CreateSampler(SamplerCreateInfo createInfo) {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
-        VulkanContext.Vulkan.CreateSampler(device, createInfo, null, out var sampler);
+        VulkanContext.Vulkan.CreateSampler(device, createInfo, null, out var sampler).EnsureSuccess();
 
         Resources.Samplers++;
         return sampler;

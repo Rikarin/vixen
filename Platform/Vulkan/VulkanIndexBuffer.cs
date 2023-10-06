@@ -1,17 +1,15 @@
-using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan.Allocator;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
 sealed class VulkanIndexBuffer : IIndexBuffer {
-    // readonly byte[] localBuffer;
     Allocation allocation;
 
     public Buffer VkBuffer { get; private set; }
-
     public int Count => Size / sizeof(int);
     public int Size { get; }
 

@@ -1,8 +1,9 @@
 ﻿using Rin.Core.Abstractions;
 using Rin.Core.General;
 using Rin.Editor;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
-using Rin.Platform.Rendering;
+using Rin.Rendering;
 using Serilog;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
@@ -32,6 +33,7 @@ Log.Information("Bar");
 var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
+        options.ThreadingPolicy = ThreadingPolicy.SingleThreaded;
     }
 );
 
@@ -44,6 +46,9 @@ var app = Application.CreateDefault(
 //
 // Mesh? box = null;
 // Material? material = null;
+
+IRenderCommandBuffer? commandBuffer = null;
+IRenderPass? swapchainRenderPass = null;
 
 app.MainWindow.Load += () => {
     Log.Information("Application Loading");
@@ -76,7 +81,7 @@ app.MainWindow.Load += () => {
     };
 
     // Render Pass
-    var swapchainRenderPass = ObjectFactory.CreateRenderPass(
+    swapchainRenderPass = ObjectFactory.CreateRenderPass(
         new() { DebugName = "SceneComposite", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions) }
     );
 
@@ -86,7 +91,7 @@ app.MainWindow.Load += () => {
 
     swapchainRenderPass.Bake();
 
-    var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
+    commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
 
     // vertexArray = VertexArray.Create();
@@ -123,6 +128,17 @@ app.MainWindow.Load += () => {
 };
 
 app.MainWindow.Render += deltaTime => {
+
+    Log.Information("On Update");
+    
+    
+    commandBuffer.Begin();
+    Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
+    Renderer.EndRenderPass(commandBuffer); 
+    commandBuffer.End();
+    
+    
+    
     // RenderCommand.SetClearColor(Color.Gray);
     // RenderCommand.Clear();
     // This can be called from SilkWindow

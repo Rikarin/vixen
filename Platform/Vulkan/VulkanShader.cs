@@ -1,5 +1,6 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
+using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
 using System.Runtime.InteropServices;
@@ -45,17 +46,18 @@ public sealed class VulkanShader : IShader, IDisposable {
             };
 
             var device = VulkanContext.CurrentDevice.VkLogicalDevice;
-            VulkanContext.Vulkan.CreateShaderModule(device, shaderModuleCreateInfo, null, out var module);
+            VulkanContext.Vulkan.CreateShaderModule(device, shaderModuleCreateInfo, null, out var module)
+                .EnsureSuccess();
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ShaderModule,
                 $"{name}:{entry.Key}",
                 module.Handle
             );
 
-            var entryPoint = entry.Key == ShaderStageFlags.VertexBit ? vertName : fragName;
+            var entryPoint = entry.Key == ShaderStage.Vertex ? vertName : fragName;
             pipelineShaderStageCreateInfos.Add(
                 new(StructureType.PipelineShaderStageCreateInfo) {
-                    Stage = entry.Key, Module = module, PName = (byte*)entryPoint
+                    Stage = entry.Key.ToVulkan(), Module = module, PName = (byte*)entryPoint
                 }
             );
         }
@@ -213,7 +215,8 @@ public sealed class VulkanShader : IShader, IDisposable {
                     BindingCount = (uint)layoutBindings.Count, PBindings = bindingsPtr
                 };
 
-                VulkanContext.Vulkan.CreateDescriptorSetLayout(device, descriptorLayout, null, out var setLayout);
+                VulkanContext.Vulkan.CreateDescriptorSetLayout(device, descriptorLayout, null, out var setLayout)
+                    .EnsureSuccess();
                 descriptorSetLayouts[set.Key] = setLayout;
 
                 Log.Information(
@@ -246,4 +249,12 @@ public sealed class VulkanShader : IShader, IDisposable {
             }
         );
     }
+}
+
+public static class ShaderStagesExtensions {
+    public static ShaderStageFlags ToVulkan(this ShaderStage shaderStage) =>
+        shaderStage switch {
+            ShaderStage.Vertex => ShaderStageFlags.VertexBit,
+            ShaderStage.Fragment => ShaderStageFlags.FragmentBit
+        };
 }

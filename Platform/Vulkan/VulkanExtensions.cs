@@ -1,6 +1,7 @@
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Silk.NET.Vulkan;
-using PrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
+using PrimitiveTopology = Rin.Platform.Abstractions.Rendering.PrimitiveTopology;
+using VkPrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 
 namespace Rin.Platform.Vulkan;
 
@@ -25,14 +26,14 @@ public static class VulkanExtensions {
             _ => RenderPassResourceType.None
         };
 
-    public static PrimitiveTopology ToVulkan(this Rendering.PrimitiveTopology topology) =>
+    public static VkPrimitiveTopology ToVulkan(this PrimitiveTopology topology) =>
         topology switch {
-            Rendering.PrimitiveTopology.Points => PrimitiveTopology.PointList,
-            Rendering.PrimitiveTopology.Lines => PrimitiveTopology.LineList,
-            Rendering.PrimitiveTopology.Triangles => PrimitiveTopology.TriangleList,
-            Rendering.PrimitiveTopology.LineStrip => PrimitiveTopology.LineStrip,
-            Rendering.PrimitiveTopology.TriangleStrip => PrimitiveTopology.TriangleStrip,
-            Rendering.PrimitiveTopology.TriangleFan => PrimitiveTopology.TriangleFan,
+            PrimitiveTopology.Points => VkPrimitiveTopology.PointList,
+            PrimitiveTopology.Lines => VkPrimitiveTopology.LineList,
+            PrimitiveTopology.Triangles => VkPrimitiveTopology.TriangleList,
+            PrimitiveTopology.LineStrip => VkPrimitiveTopology.LineStrip,
+            PrimitiveTopology.TriangleStrip => VkPrimitiveTopology.TriangleStrip,
+            PrimitiveTopology.TriangleFan => VkPrimitiveTopology.TriangleFan,
             _ => throw new ArgumentOutOfRangeException()
         };
 

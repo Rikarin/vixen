@@ -1,5 +1,6 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
+using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
 
@@ -12,6 +13,8 @@ public sealed class DescriptorSetManager {
     readonly Dictionary<string, RenderPassInputDeclaration> inputDeclarations = new();
 
     readonly List<Dictionary<int, Dictionary<int, WriteDescriptor>>> writeDescriptorMap = new();
+
+    DescriptorPool descriptorPool;
 
 
     public DescriptorSetManager(DescriptorSetManagerOptions options) {
@@ -107,7 +110,8 @@ public sealed class DescriptorSetManager {
             };
 
             var device = VulkanContext.CurrentDevice.VkLogicalDevice;
-            VulkanContext.Vulkan.CreateDescriptorPool(device, poolInfo, null, out var pool);
+            VulkanContext.Vulkan.CreateDescriptorPool(device, poolInfo, null, out var pool).EnsureSuccess();
+            descriptorPool = pool;
         }
 
         // TODO: finish this

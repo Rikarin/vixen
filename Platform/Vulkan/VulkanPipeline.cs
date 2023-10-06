@@ -1,15 +1,15 @@
-using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
-using Serilog;
+using Rin.Platform.Abstractions.Rendering;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
-using PrimitiveTopology = Rin.Platform.Rendering.PrimitiveTopology;
+using PrimitiveTopology = Rin.Platform.Abstractions.Rendering.PrimitiveTopology;
 
 namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanPipeline : IPipeline, IDisposable {
-    Pipeline pipeline;
     PipelineLayout layout;
     PipelineCache cache;
+    
+    public Pipeline VkPipeline { get; private set; }
 
     public bool IsDynamicLineWidth =>
         Options.Topology is PrimitiveTopology.Lines or PrimitiveTopology.LineStrip || Options.WireFrame;
@@ -29,7 +29,7 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
                 var device = VulkanContext.CurrentDevice.VkLogicalDevice;
                 var vk = VulkanContext.Vulkan;
 
-                vk.DestroyPipeline(device, pipeline, null);
+                vk.DestroyPipeline(device, VkPipeline, null);
                 vk.DestroyPipelineCache(device, cache, null);
                 vk.DestroyPipelineLayout(device, layout, null);
             }
@@ -45,22 +45,30 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
                 var shader = Options.Shader as VulkanShader;
                 var framebuffer = Options.TargetFramebuffer as VulkanFramebuffer;
 
+                // Push Constants
+                var pushConstantRange = new List<PushConstantRange>();
+                foreach (var entry in shader.PushConstantRanges) {
+                    pushConstantRange.Add(
+                        new() { StageFlags = entry.ShaderStage, Offset = (uint)entry.Offset, Size = (uint)entry.Size }
+                    );
+                }
+
+                using var pushConstantRangeMemoryHandle =
+                    new Memory<PushConstantRange>(pushConstantRange.ToArray()).Pin();
+
+                // Descriptor Set Layouts
                 var descriptorSetLayouts = shader.DescriptorSetLayouts;
-                var pushConstantRanges = shader.PushConstantRanges;
-
-                // TODO: push constants
-
                 fixed (DescriptorSetLayout* descriptorSetLayoutPtr = descriptorSetLayouts.Values.ToArray()) {
                     var pipelineLayoutCreateInfo =
                         new PipelineLayoutCreateInfo(StructureType.PipelineLayoutCreateInfo) {
                             SetLayoutCount = (uint)descriptorSetLayouts.Count,
                             PSetLayouts = descriptorSetLayoutPtr,
-                            // TODO
-                            PushConstantRangeCount = 0,
-                            PPushConstantRanges = null
+                            PushConstantRangeCount = (uint)pushConstantRange.Count,
+                            PPushConstantRanges = (PushConstantRange*)pushConstantRangeMemoryHandle.Pointer
                         };
 
-                    vk.CreatePipelineLayout(device, pipelineLayoutCreateInfo, null, out var pipelineLayout);
+                    vk.CreatePipelineLayout(device, pipelineLayoutCreateInfo, null, out var pipelineLayout)
+                        .EnsureSuccess();
                     layout = pipelineLayout;
                 }
 
@@ -155,7 +163,9 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
                 if (Options.InstanceLayout?.HasElements == true) {
                     vertexInputBindings.Add(
                         new() {
-                            Binding = 1, Stride = (uint)Options.InstanceLayout.Stride, InputRate = VertexInputRate.Instance
+                            Binding = 1,
+                            Stride = (uint)Options.InstanceLayout.Stride,
+                            InputRate = VertexInputRate.Instance
                         }
                     );
                 }
@@ -163,7 +173,9 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
                 if (Options.BoneInfluenceLayout?.HasElements == true) {
                     vertexInputBindings.Add(
                         new() {
-                            Binding = 2, Stride = (uint)Options.BoneInfluenceLayout.Stride, InputRate = VertexInputRate.Vertex
+                            Binding = 2,
+                            Stride = (uint)Options.BoneInfluenceLayout.Stride,
+                            InputRate = VertexInputRate.Vertex
                         }
                     );
                 }
@@ -226,14 +238,14 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
 
                 // Create cache
                 var pipelineCacheCreateInfo = new PipelineCacheCreateInfo(StructureType.PipelineCacheCreateInfo);
-                vk.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out var pipelineCache);
+                vk.CreatePipelineCache(device, pipelineCacheCreateInfo, null, out var pipelineCache).EnsureSuccess();
                 cache = pipelineCache;
 
                 // Create rendering pipeline
                 var pipelines = new[] { pipelineCreateInfo };
                 var outPipeline = new Pipeline[1];
-                vk.CreateGraphicsPipelines(device, cache, pipelines.AsSpan(), null, outPipeline);
-                pipeline = outPipeline[0];
+                vk.CreateGraphicsPipelines(device, cache, pipelines.AsSpan(), null, outPipeline).EnsureSuccess();
+                VkPipeline = outPipeline[0];
             }
         );
     }

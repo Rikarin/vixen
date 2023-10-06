@@ -1,5 +1,5 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using System.Numerics;
 
 namespace Rin.Platform.Internal;

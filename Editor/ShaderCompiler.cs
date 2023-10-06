@@ -3,7 +3,7 @@ using Rin.Core.Abstractions.Shaders;
 using Rin.Core.General;
 using Rin.Editor.RinCompiler;
 using Rin.Editor.RinCompiler.Parser;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Shaderc;
@@ -20,8 +20,8 @@ public class ShaderCompiler {
     // These are default entry points of *.shader file
     // If shader contains compute or geometry shader it needs to set it explicitly in the shader file
     // as  TODO compute <entry_point>
-    readonly Dictionary<ShaderStageFlags, string> shaderEntryPoints = new() {
-        { ShaderStageFlags.VertexBit, "vert" }, { ShaderStageFlags.FragmentBit, "frag" }
+    readonly Dictionary<ShaderStage, string> shaderEntryPoints = new() {
+        { ShaderStage.Vertex, "vert" }, { ShaderStage.Fragment, "frag" }
     };
 
     // Compiled shaders
@@ -86,7 +86,7 @@ public class ShaderCompiler {
         }
     }
 
-    public unsafe void Compile(string shader, ShaderStageFlags stage, bool debug, ShaderCollection dataStorage) {
+    public unsafe void Compile(string shader, ShaderStage stage, bool debug, ShaderCollection dataStorage) {
         var api = Shaderc.GetApi();
         var compiler = api.CompilerInitialize();
         var options = api.CompileOptionsInitialize();
@@ -156,7 +156,7 @@ public class ShaderCompiler {
         ClearReflectionData();
 
         foreach (var entry in data) {
-            Reflect(entry.Key, entry.Value);
+            Reflect(entry.Key.ToVulkan(), entry.Value);
         }
     }
 
@@ -451,11 +451,11 @@ public class ShaderCompiler {
         // TODO
         ShaderUniformType.None;
 
-    ShaderKind ShaderStageToShaderC(ShaderStageFlags flags) =>
+    ShaderKind ShaderStageToShaderC(ShaderStage flags) =>
         flags switch {
-            ShaderStageFlags.VertexBit => ShaderKind.VertexShader,
-            ShaderStageFlags.FragmentBit => ShaderKind.FragmentShader,
-            ShaderStageFlags.ComputeBit => ShaderKind.ComputeShader,
+            ShaderStage.Vertex => ShaderKind.VertexShader,
+            ShaderStage.Fragment => ShaderKind.FragmentShader,
+            ShaderStage.Compute => ShaderKind.ComputeShader,
             _ => throw new NotImplementedException()
         };
 }

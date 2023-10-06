@@ -1,10 +1,11 @@
 using Rin.Core.Abstractions;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
-using Rin.Platform.Rendering;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Key = Silk.NET.Input.Key;
@@ -80,15 +81,10 @@ sealed class SilkWindow : IInternalWindow {
         var swapChain = new VulkanSwapChain();
         swapChain.InitializeSurface(silkWindow);
 
-        var width = 800;
-        var height = 600;
+        var size = new Size(800, 600); // TODO
 
-        swapChain.Create(ref width, ref height, false);
+        swapChain.Create(ref size, false);
         Swapchain = swapChain;
-
-        //     // swapChain.Dispose();
-        //     swapChain.BeginFrame();
-        //     swapChain.Present();
     }
 
     void OnClosing() {

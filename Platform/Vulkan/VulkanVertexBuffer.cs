@@ -1,6 +1,7 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan.Allocator;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
@@ -20,6 +21,10 @@ sealed class VulkanVertexBuffer : IVertexBuffer {
         RendererId = new(0);
         localBuffer = new byte[size];
 
+        if (usage != VertexBufferUsage.Dynamic) {
+            throw new NotImplementedException();
+        }
+
         Renderer.Submit(
             () => {
                 var bufferCreateInfo = new BufferCreateInfo(StructureType.BufferCreateInfo) {
@@ -36,6 +41,10 @@ sealed class VulkanVertexBuffer : IVertexBuffer {
         Size = data.Length;
         RendererId = new(0);
         localBuffer = data.ToArray();
+
+        if (usage != VertexBufferUsage.Static) {
+            throw new NotImplementedException();
+        }
 
         Renderer.Submit(
             () => {

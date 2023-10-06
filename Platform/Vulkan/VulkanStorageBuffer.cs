@@ -1,6 +1,6 @@
-using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan.Allocator;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
 using Buffer = Silk.NET.Vulkan.Buffer;
 

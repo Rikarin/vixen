@@ -19,5 +19,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj"/>
+        <ProjectReference Include="..\Platform.Abstractions\Rin.Platform.Abstractions.csproj" />
+        <ProjectReference Include="..\Rendering\Rin.Rendering.csproj" />
     </ItemGroup>
 </Project>

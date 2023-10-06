@@ -15,9 +15,6 @@ sealed class VulkanContext : RendererContext, IDisposable {
 
     ExtDebugUtils? debugUtils;
     DebugUtilsMessengerEXT debugMessenger;
-    PipelineCache pipelineCache;
-
-
     VulkanPhysicalDevice physicalDevice;
 
     public static Vk Vulkan { get; private set; }
@@ -72,9 +69,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             }
         }
 
-        if (Vulkan.CreateInstance(createInfo, null, out var instance) != Result.Success) {
-            throw new("Failed to create Vulkan instance");
-        }
+        Vulkan.CreateInstance(createInfo, null, out _).EnsureSuccess();
 
         Marshal.FreeHGlobal((IntPtr)appInfo.PApplicationName);
         Marshal.FreeHGlobal((IntPtr)appInfo.PEngineName);
@@ -84,6 +79,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
         // Physical device initialization
         physicalDevice = VulkanPhysicalDevice.Select();
 
+        // TODO: enable these based on device used. MoltenVK doesn't support WideLines nor Pipeline Statistics
         var enabledFeatures = new PhysicalDeviceFeatures {
             SamplerAnisotropy = true,
             // WideLines = true,
@@ -94,10 +90,6 @@ sealed class VulkanContext : RendererContext, IDisposable {
 
         CurrentDevice = new(physicalDevice, enabledFeatures);
         VulkanAllocator.Init();
-
-        // TODO: this should be moved to pipeline
-        var pipelineCacheCreateInfo = new PipelineCacheCreateInfo { SType = StructureType.PipelineCacheCreateInfo };
-        Vulkan.CreatePipelineCache(CurrentDevice.VkLogicalDevice, pipelineCacheCreateInfo, null, out pipelineCache);
     }
 
     public unsafe void Dispose() {
@@ -130,11 +122,11 @@ sealed class VulkanContext : RendererContext, IDisposable {
 
     unsafe bool CheckValidationLayerSupport() {
         uint layerCount = 0;
-        Vulkan.EnumerateInstanceLayerProperties(ref layerCount, null);
+        Vulkan.EnumerateInstanceLayerProperties(ref layerCount, null).EnsureSuccess();
         var availableLayers = new LayerProperties[layerCount];
 
         fixed (LayerProperties* availableLayersPtr = availableLayers) {
-            Vulkan.EnumerateInstanceLayerProperties(ref layerCount, availableLayersPtr);
+            Vulkan.EnumerateInstanceLayerProperties(ref layerCount, availableLayersPtr).EnsureSuccess();
         }
 
         var availableLayerNames = availableLayers
@@ -178,9 +170,6 @@ sealed class VulkanContext : RendererContext, IDisposable {
         var createInfo = new DebugUtilsMessengerCreateInfoEXT();
         PopulateDebugMessengerCreateInfo(ref createInfo);
 
-        if (debugUtils!.CreateDebugUtilsMessenger(instance, in createInfo, null, out debugMessenger)
-            != Result.Success) {
-            throw new("failed to set up debug messenger!");
-        }
+        debugUtils!.CreateDebugUtilsMessenger(instance, in createInfo, null, out debugMessenger).EnsureSuccess();
     }
 }

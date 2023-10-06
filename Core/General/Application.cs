@@ -1,5 +1,8 @@
 using Rin.Core.Abstractions;
 using Rin.Core.Diagnostics;
+using Rin.Platform.Vulkan;
+using Rin.Rendering;
+using Serilog;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -28,7 +31,8 @@ public class Application : IDisposable {
         // TODO: stuff
 
         MainWindow = new();
-        Renderer.Initialize(MainWindow.Handle.Swapchain);
+        var vulkanRenderer = new VulkanRenderer();
+        Renderer.Initialize(MainWindow.Handle.Swapchain, vulkanRenderer);
         renderThread.Pump();
 
         // Setup profiler
@@ -54,6 +58,8 @@ public class Application : IDisposable {
             performance.MainThreadWaitTime.Reset();
             renderThread.BlockUntilRenderComplete();
             ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
+            
+            Log.Information("running");
 
             renderThread.NextFrame();
             renderThread.Kick();
@@ -61,7 +67,13 @@ public class Application : IDisposable {
             // TODO: if not minimized
 
             Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
+            Renderer.BeginFrame();
+            
+            // Invoke all rendering layers??
+            MainWindow.Test_InvokeRender();
+            Log.Information("INVOKING ======================");
 
+            Renderer.EndFrame();
             Renderer.Submit(MainWindow.Handle.Swapchain.Present);
 
             Renderer.IncreaseCurrentFrameIndex();

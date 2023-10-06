@@ -1,4 +1,5 @@
 using Rin.Core.Abstractions;
+using Rin.Rendering;
 
 namespace Rin.Core.General;
 
@@ -12,7 +13,10 @@ public sealed class RenderThread : IRenderThread, IDisposable {
 
     public RenderThread(ThreadingPolicy threadingPolicy) {
         this.threadingPolicy = threadingPolicy;
-        thread = new(() => RenderThreadFunc(this));
+        
+        if (threadingPolicy == ThreadingPolicy.MultiThreaded) {
+            thread = new(() => RenderThreadFunc(this));
+        }
     }
 
     public void Run() {
@@ -91,7 +95,6 @@ public sealed class RenderThread : IRenderThread, IDisposable {
             Renderer.WaitAndRender(thread);
         }
     }
-
 
     public void Dispose() {
         Terminate();

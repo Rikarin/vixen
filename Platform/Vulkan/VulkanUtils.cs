@@ -32,7 +32,7 @@ static class VulkanUtils {
             ObjectType = objectType, PObjectName = (byte*)Marshal.StringToHGlobalAnsi(name), ObjectHandle = handle
         };
 
-        utils.SetDebugUtilsObjectName(VulkanContext.CurrentDevice.VkLogicalDevice, nameInfo);
+        utils.SetDebugUtilsObjectName(VulkanContext.CurrentDevice.VkLogicalDevice, nameInfo).EnsureSuccess();
         Marshal.FreeHGlobal((IntPtr)nameInfo.PObjectName);
     }
 

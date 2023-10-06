@@ -1,5 +1,5 @@
-using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
@@ -42,7 +42,7 @@ public class VulkanImageView : IImageView, IDisposable {
             }
         };
 
-        VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView);
+        VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView).EnsureSuccess();
         VulkanUtils.SetDebugObjectName(
             ObjectType.ImageView,
             $"{options.DebugName} default image view",

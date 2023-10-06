@@ -1,4 +1,4 @@
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 
 namespace Rin.Platform.Vulkan;
 

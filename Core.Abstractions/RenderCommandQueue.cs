@@ -3,6 +3,8 @@ namespace Rin.Core.Abstractions;
 public sealed class RenderCommandQueue {
     readonly Queue<Action> commands = new();
 
+    public int Count => commands.Count;
+
     public void Push(Action command) => commands.Enqueue(command);
 
     public void Execute() {

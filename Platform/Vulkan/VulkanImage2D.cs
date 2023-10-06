@@ -1,6 +1,7 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan.Allocator;
+using Rin.Rendering;
 using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
@@ -98,7 +99,7 @@ public class VulkanImage2D : IImage2D, IDisposable {
                 }
             };
 
-            VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView);
+            VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView).EnsureSuccess();
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ImageView,
                 $"{Options.DebugName} image view layer: {layer}",
@@ -159,7 +160,7 @@ public class VulkanImage2D : IImage2D, IDisposable {
             Image = image
         };
 
-        VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView);
+        VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView).EnsureSuccess();
         ImageInfo.ImageView = imageView;
         VulkanUtils.SetDebugObjectName(
             ObjectType.ImageView,
@@ -260,7 +261,7 @@ public class VulkanImage2D : IImage2D, IDisposable {
                 }
             };
 
-            VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView);
+            VulkanContext.Vulkan.CreateImageView(device, imageViewCreateInfo, null, out var imageView).EnsureSuccess();
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ImageView,
                 $"{Options.DebugName} image view layer: {layer}",

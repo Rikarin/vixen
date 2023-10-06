@@ -1,6 +1,6 @@
-using Rin.Core.Abstractions;
+using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
-using Rin.Platform.Rendering;
+using Rin.Rendering;
 
 namespace Rin.Platform.Vulkan;
 

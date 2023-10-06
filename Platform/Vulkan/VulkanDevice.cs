@@ -69,10 +69,7 @@ sealed class VulkanDevice : IDisposable {
         }
 
         var vk = VulkanContext.Vulkan;
-        if (vk.CreateDevice(PhysicalDevice.VkPhysicalDevice, deviceCreateInfo, null, out var device)
-            != Result.Success) {
-            throw new("Failed to create logical device");
-        }
+        vk.CreateDevice(PhysicalDevice.VkPhysicalDevice, deviceCreateInfo, null, out var device).EnsureSuccess();
 
         var queueFamilies = PhysicalDevice.QueueFamilyIndices;
         vk.GetDeviceQueue(device, queueFamilies.Graphics!.Value, 0, out var graphicsQueue);
@@ -102,11 +99,9 @@ sealed class VulkanDevice : IDisposable {
         };
 
         var vk = VulkanContext.Vulkan;
-        if (vk.AllocateCommandBuffers(VkLogicalDevice, in allocateInfo, out var commandBuffer) != Result.Success) {
-            throw new("Failed to allocate secondary command buffer");
-        }
-
+        vk.AllocateCommandBuffers(VkLogicalDevice, in allocateInfo, out var commandBuffer).EnsureSuccess();
         VulkanUtils.SetDebugObjectName(ObjectType.CommandBuffer, debugName, commandBuffer.Handle);
+        
         return commandBuffer;
     }
 

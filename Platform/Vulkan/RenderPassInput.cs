@@ -1,4 +1,4 @@
-using Rin.Platform.Rendering;
+using Rin.Platform.Abstractions.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
@@ -83,28 +83,3 @@ public sealed class RenderPassInput {
         Input[index] = imageView;
     }
 }
-
-public enum RenderPassResourceType : ushort {
-    None = 0, // TODO: remove none?
-    UniformBuffer,
-    UniformBufferSet,
-    StorageBuffer,
-    StorageBufferSet,
-    Texture2D,
-    TextureCube,
-    Image2D
-}
-
-public enum RenderPassInputType : ushort {
-    None = 0, // TODO: remove none??
-    UniformBuffer,
-    StorageBuffer,
-    ImageSampler1D,
-    ImageSampler2D,
-    ImageSampler3D, // TODO: 3D vs Cube?
-    StorageImage1D,
-    StorageImage2D,
-    StorageImage3D
-}
-
-public record RenderPassInputDeclaration(RenderPassInputType Type, int Set, int Binding, int Count, string Name);
