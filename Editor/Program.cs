@@ -128,7 +128,6 @@ app.MainWindow.Load += () => {
 };
 
 app.MainWindow.Render += deltaTime => {
-
     Log.Information("On Update");
     
     

@@ -1,6 +1,5 @@
 using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Rendering;
-using Serilog;
 
 namespace Rin.Rendering;
 
@@ -45,13 +44,12 @@ public static class Renderer {
         thread.WaitAndSet(RenderThreadState.Kick, RenderThreadState.Busy);
         // TODO: timers and stuff
 
-        Log.Information("Rendering Idx {Index} Count {Count}", RenderQueueIndex, commandQueue[RenderQueueIndex].Count);
+        // Log.Information("Rendering Idx {Index} Count {Count}", RenderQueueIndex, commandQueue[RenderQueueIndex].Count);
         commandQueue[RenderQueueIndex].Execute();
         thread.Set(RenderThreadState.Idle);
     }
 
     public static void SwapQueues() {
-        Log.Information("Before Swapping queue: {Variable}", renderCommandQueueSubmissionIndex);
         renderCommandQueueSubmissionIndex = (renderCommandQueueSubmissionIndex + 1) % commandQueue.Length;
     }
 

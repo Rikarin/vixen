@@ -15,7 +15,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
     readonly Vk vk = VulkanContext.Vulkan;
     readonly Device vkDevice = VulkanContext.CurrentDevice.VkLogicalDevice;
 
-    uint? queueNodeIndex;
     ColorSpaceKHR colorSpace;
 
     // Instances from Silk.NET
@@ -51,44 +50,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
 
         surface = window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
 
-        var physicalDevice = VulkanContext.CurrentDevice.PhysicalDevice;
-        var queueProps = physicalDevice.QueueFamilyProperties;
-        var supportsPresent = new bool[queueProps.Count];
-
-        for (uint i = 0; i < queueProps.Count; i++) {
-            vkSurface.GetPhysicalDeviceSurfaceSupport(physicalDevice.VkPhysicalDevice, i, surface, out var supported)
-                .EnsureSuccess();
-            supportsPresent[i] = supported;
-        }
-
-        uint? graphicsQueueNodeIndex = null;
-        uint? presentQueueNodeIndex = null;
-        for (var i = 0; i < queueProps.Count; i++) {
-            if (queueProps[i].QueueFlags.HasFlag(QueueFlags.GraphicsBit)) {
-                graphicsQueueNodeIndex ??= (uint)i;
-
-                if (supportsPresent[i]) {
-                    graphicsQueueNodeIndex = (uint)i;
-                    presentQueueNodeIndex = (uint)i;
-                    break;
-                }
-            }
-        }
-
-        if (presentQueueNodeIndex == null) {
-            for (var i = 0; i < queueProps.Count; i++) {
-                if (supportsPresent[i]) {
-                    presentQueueNodeIndex = (uint)i;
-                    break;
-                }
-            }
-        }
-
-        if (graphicsQueueNodeIndex == null || presentQueueNodeIndex == null) {
-            throw new("Failed to find graphics or present queue index");
-        }
-
-        queueNodeIndex = graphicsQueueNodeIndex;
         FindImageFormatAndColorSpace();
         Log.Information("Surface initialized");
     }
@@ -129,11 +90,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         var waitSemaphores = stackalloc[] { semaphores.PresentComplete!.Value };
         var signalSemaphores = stackalloc[] { semaphores.RenderComplete!.Value };
         var commandBuffer = commandBuffers[CurrentBufferIndex].CommandBuffer;
-        Log.Information("Current BufferIndex: {Variable}", CurrentBufferIndex);
-
-        // Testing
-        // vk.BeginCommandBuffer(commandBuffer, new CommandBufferBeginInfo(StructureType.CommandBufferBeginInfo));
-        // vk.EndCommandBuffer(commandBuffer);
 
         var submitInfo = new SubmitInfo(StructureType.SubmitInfo) {
             PWaitDstStageMask = waitStages,
@@ -150,8 +106,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         vk.QueueSubmit(graphicsQueue, 1, in submitInfo, waitFences[CurrentBufferIndex]).EnsureSuccess();
 
         var swapchain = this.swapchain!.Value;
-        Log.Information("Debug: {Variable}", swapchain.Handle);
-        Log.Information("current image index: {Variable}", currentImageIndex);
         fixed (int* currentImageIndexPtr = &currentImageIndex) {
             var presentInfo = new PresentInfoKHR(StructureType.PresentInfoKhr) {
                 PSwapchains = &swapchain,
@@ -343,7 +297,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         Log.Information("Frames in flight: {Variable}", imagesCount);
         images.Clear();
         for (var i = 0; i < imagesCount; i++) {
-            Log.Information("Debug: {Variable}", swapchainImages[i].Handle);
             var imageViewCreateInfo = new ImageViewCreateInfo {
                 SType = StructureType.ImageViewCreateInfo,
                 Format = ColorFormat,
@@ -365,7 +318,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         }
 
         var cmdPoolInfo = new CommandPoolCreateInfo(StructureType.CommandPoolCreateInfo) {
-            QueueFamilyIndex = queueNodeIndex!.Value,
+            QueueFamilyIndex = VulkanContext.CurrentDevice.PhysicalDevice.QueueFamilyIndices.Graphics.Value,
             Flags = CommandPoolCreateFlags.TransientBit
         };
 
@@ -522,7 +475,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             .EnsureSuccess();
 
         // TODO: verify if this cast is correct
-        Log.Information("acquired next image: {Variable}", imageIndex);
         return (int)imageIndex;
     }
 
