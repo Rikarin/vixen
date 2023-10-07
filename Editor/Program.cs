@@ -5,6 +5,7 @@ using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
@@ -12,17 +13,28 @@ using System.Drawing;
 
 var eventSourceListener = new EventSourceCreatedListener();
 
+Thread.CurrentThread.Name = "Main";
 
 // TODO: colored text, thread name, context name
 Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Verbose()
+    .MinimumLevel.Debug()
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.IRenderer", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
-    
+    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.IRenderCommandBuffer", LogEventLevel.Information)
+    .MinimumLevel.Override("Rin.Core.General.Application", LogEventLevel.Information)
+    .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
+    .Enrich.WithThreadName()
+    // .Enrich.WithProperty(ThreadNameEnricher.ThreadNamePropertyName, "MyDefault")
+    .Enrich.FromLogContext()
+    .Enrich.With(new SourceContextEnricher())
+
     // .Enrich.WithProperty("Environment", builder.Configuration.GetSection("environment").Value)
-    .WriteTo.Console()
+    .WriteTo.Console(
+        outputTemplate:
+        "[{Timestamp:HH:mm:ss} {Level:u3}][{ThreadName}]{SourceContext} {Message:lj}{NewLine}{Exception}"
+    )
     .CreateLogger();
 
 var project = Project.CreateProject("Example 1", "../Examples/Project1");
@@ -31,8 +43,6 @@ project.Save();
 var editor = new EditorManager(project);
 
 editor.Watch();
-
-Log.Information("Bar");
 
 
 // LoadRuntime, ...
@@ -54,95 +64,85 @@ var app = Application.CreateDefault(
 // Mesh? box = null;
 // Material? material = null;
 
-IRenderCommandBuffer? commandBuffer = null;
-IRenderPass? swapchainRenderPass = null;
+var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
+var testShader = shaderImporter.GetShader();
 
-// app.MainWindow.Load += () => {
-    Log.Information("Application Loading");
-
-    var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
-    var testShader = shaderImporter.GetShader();
-
-
-    // TODO: this is based on RuntimeLayer.OnAttach()
-    var framebuffer = ObjectFactory.CreateFramebuffer(
-        new() {
-            DebugName = "SceneComposite",
-            ClearColor = Color.Aqua,
-            IsSwapChainTarget = true,
-            Attachments = new(ImageFormat.Rgba)
-        }
-    );
-
-    var pipelineOptions = new PipelineOptions {
-        Layout = new(
-            new VertexBufferElement(ShaderDataType.Float3, "a_Position"),
-            new VertexBufferElement(ShaderDataType.Float2, "a_TexCoord")
-        ),
-        BackfaceCulling = false,
-        Shader = testShader.Handle, // TODO
-        TargetFramebuffer = framebuffer,
+// TODO: this is based on RuntimeLayer.OnAttach()
+var framebuffer = ObjectFactory.CreateFramebuffer(
+    new() {
         DebugName = "SceneComposite",
-        DepthWrite = false
-    };
+        ClearColor = Color.Aqua,
+        IsSwapChainTarget = true,
+        Attachments = new(ImageFormat.Rgba)
+    }
+);
 
-    // Render Pass
-    swapchainRenderPass = ObjectFactory.CreateRenderPass(
-        new() { DebugName = "SceneComposite", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions) }
-    );
+var pipelineOptions = new PipelineOptions {
+    Layout = new(
+        new VertexBufferElement(ShaderDataType.Float3, "a_Position"),
+        new VertexBufferElement(ShaderDataType.Float2, "a_TexCoord")
+    ),
+    BackfaceCulling = false,
+    Shader = testShader.Handle, // TODO
+    TargetFramebuffer = framebuffer,
+    DebugName = "SceneComposite",
+    DepthWrite = false
+};
 
-    // TODO: stuff
-    
-    // TODO: finish DescriptorSetManager, VulkanPipeline, VulkanRenderCommandBuffer
+// Render Pass
+var swapchainRenderPass = ObjectFactory.CreateRenderPass(
+    new() { DebugName = "SceneComposite", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions) }
+);
 
-    swapchainRenderPass.Bake();
+// TODO: stuff
 
-    commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
+// TODO: finish DescriptorSetManager, VulkanPipeline, VulkanRenderCommandBuffer
+
+swapchainRenderPass.Bake();
+
+var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
 
-    // vertexArray = VertexArray.Create();
-    // float[] vertices = {
-    //     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
-    //     0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
-    //     0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
-    // };
-    //
-    // var vertexBuffer = VertexBuffer.Create(vertices);
-    // var bufferLayout = new BufferLayout(
-    //     new[] {
-    //         new BufferElement(ShaderDataType.Float3, "a_Position"), new BufferElement(ShaderDataType.Float4, "a_Color")
-    //     }
-    // );
-    //
-    // vertexBuffer.Layout = bufferLayout;
-    // vertexArray.AddVertexBuffer(vertexBuffer);
-    //
-    // int[] indices = { 0, 1, 2 };
-    // var indexBuffer = IndexBuffer.Create(indices);
-    // vertexArray.SetIndexBuffer(indexBuffer);
-
-    // Shader.Create(
-    //     "Basic/Shader1",
-    //     "../Examples/Project1/Assets/Shaders/Shader.vert",
-    //     "../Examples/Project1/Assets/Shaders/Shader.frag"
-    // );
-
-    // material = new(Shader.Find("Basic/Shader1")!);
-    // material.SetColor("u_Color", Color.Bisque);
-
-    Log.Information("Application Loaded");
+// vertexArray = VertexArray.Create();
+// float[] vertices = {
+//     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
+//     0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
+//     0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
 // };
+//
+// var vertexBuffer = VertexBuffer.Create(vertices);
+// var bufferLayout = new BufferLayout(
+//     new[] {
+//         new BufferElement(ShaderDataType.Float3, "a_Position"), new BufferElement(ShaderDataType.Float4, "a_Color")
+//     }
+// );
+//
+// vertexBuffer.Layout = bufferLayout;
+// vertexArray.AddVertexBuffer(vertexBuffer);
+//
+// int[] indices = { 0, 1, 2 };
+// var indexBuffer = IndexBuffer.Create(indices);
+// vertexArray.SetIndexBuffer(indexBuffer);
+
+// Shader.Create(
+//     "Basic/Shader1",
+//     "../Examples/Project1/Assets/Shaders/Shader.vert",
+//     "../Examples/Project1/Assets/Shaders/Shader.frag"
+// );
+
+// material = new(Shader.Find("Basic/Shader1")!);
+// material.SetColor("u_Color", Color.Bisque);
+
 
 app.Render += () => {
-    Log.Information("On Update");
-    
+    // Log.Information("On Update");
+
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
-    Renderer.EndRenderPass(commandBuffer); 
+    Renderer.EndRenderPass(commandBuffer);
     commandBuffer.End();
-    
-    
-    
+
+
     // RenderCommand.SetClearColor(Color.Gray);
     // RenderCommand.Clear();
     // This can be called from SilkWindow
@@ -202,5 +202,22 @@ sealed class EventSourceCreatedListener : EventListener {
     protected override void OnEventWritten(EventWrittenEventArgs eventData) {
         base.OnEventWritten(eventData);
         // Console.WriteLine($"event data {eventData.EventName}");
+    }
+}
+
+
+class SourceContextEnricher : ILogEventEnricher {
+    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory) {
+        if (logEvent.Properties.TryGetValue("SourceContext", out var property)) {
+            var scalarValue = property as ScalarValue;
+            var value = scalarValue?.Value as string;
+
+            if (value?.StartsWith("Rin") ?? false) {
+                var lastElement = value.Split(".").LastOrDefault();
+                if (!string.IsNullOrWhiteSpace(lastElement)) {
+                    logEvent.AddOrUpdateProperty(new("SourceContext", new ScalarValue($"[{lastElement}]")));
+                }
+            }
+        }
     }
 }

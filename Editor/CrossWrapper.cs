@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 namespace Rin.Editor;
 
 sealed unsafe class CrossWrapper : IDisposable {
+    readonly ILogger log = Log.ForContext<ShaderCompiler>();
     readonly Cross cross = Cross.GetApi();
     Context* context;
 
@@ -26,7 +27,7 @@ sealed unsafe class CrossWrapper : IDisposable {
     void ErrorHandler(void* arg0, byte* arg1) {
         // TODO call some OnError event
         var str = Marshal.PtrToStringAnsi((nint)arg1);
-        Log.Information("Error Callback Spir-V Cross {str}", str);
+        log.Error("Error Callback Spir-V Cross {str}", str);
     }
 
     public sealed class CompilerWrapper {

@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanShader : IShader, IDisposable {
+    readonly ILogger log = Log.ForContext<IShader>();
     readonly string name;
     readonly List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
 
@@ -219,7 +220,7 @@ public sealed class VulkanShader : IShader, IDisposable {
                     .EnsureSuccess();
                 descriptorSetLayouts[set.Key] = setLayout;
 
-                Log.Information(
+                log.Information(
                     "Creating descriptor set {Set} with {UniformBuffers} ubo's, {StorageBuffers} ssbo's, {ImageSamplers} samplers, {SeparateTextures} separate textures, {SeparateSamplers} separate samplers and {StorageImages} storage images",
                     set.Key,
                     set.Value.UniformBuffers.Count,

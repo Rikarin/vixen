@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 namespace Rin.Platform.Vulkan;
 
 sealed class VulkanPhysicalDevice {
+    ILogger log = Log.ForContext<VulkanPhysicalDevice>();
     internal readonly List<DeviceQueueCreateInfo> queueCreateInfos = new();
 
     // This reference needs to be retained so GC will not free up the memory
@@ -41,7 +42,7 @@ sealed class VulkanPhysicalDevice {
         );
 
         if (VkPhysicalDevice.Handle == 0) {
-            Log.Warning("No device with discrete GPU");
+            log.Warning("No device with discrete GPU");
 
             // We call it a day and set it as is for now but this has more verification check in place
             // https://github.com/dotnet/Silk.NET/blob/main/src/Lab/Experiments/ImGuiVulkan/ImGuiVulkanApplication.cs#L473
@@ -73,7 +74,7 @@ sealed class VulkanPhysicalDevice {
             typeBits >>= 1;
         }
 
-        Log.Fatal("Could not find a suitable memory type");
+        log.Fatal("Could not find a suitable memory type");
         return uint.MaxValue;
     }
 
@@ -103,7 +104,7 @@ sealed class VulkanPhysicalDevice {
                 vk.EnumerateDeviceExtensionProperties(VkPhysicalDevice, (byte*)null, ref count, extensionProperties)
                 == Result.Success
             ) {
-                Log.Information("Selected renderer has {Count} properties", count);
+                log.Debug("Selected renderer has {Count} properties", count);
                 for (var i = 0; i < count; i++) {
                     var name = Marshal.PtrToStringAnsi((IntPtr)extensionProperties[i].ExtensionName)!;
                     supportedExtensions.Add(name);

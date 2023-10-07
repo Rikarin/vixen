@@ -19,6 +19,7 @@ using WindowOptions = Rin.Core.Abstractions.WindowOptions;
 namespace Rin.Platform.Silk;
 
 sealed class SilkWindow : Abstractions.Rendering.IWindow {
+    readonly ILogger log = Log.ForContext<Abstractions.Rendering.IWindow>();
     internal static SilkWindow MainWindow;
     internal global::Silk.NET.Windowing.IWindow silkWindow = null!;
     internal IInputContext input;
@@ -111,7 +112,7 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
             // click, scroll, double click??
         }
 
-        Log.Information("Silk Window Loaded");
+        log.Debug("Silk Window Loaded");
     }
 
     void OnMouseMove(IMouse arg1, Vector2 arg2) {

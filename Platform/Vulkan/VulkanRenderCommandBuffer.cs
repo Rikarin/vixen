@@ -14,6 +14,7 @@ public sealed class VulkanRenderCommandBuffer : IRenderCommandBuffer {
     CommandPool commandPool;
     int timestampNextAvailableQuery = 2;
 
+    readonly ILogger log = Log.ForContext<IRenderCommandBuffer>();
     // readonly int pipelineQueryCount;
     readonly int timestampQueryCount;
     readonly List<QueryPool> timestampQueryPools = new();
@@ -73,7 +74,7 @@ public sealed class VulkanRenderCommandBuffer : IRenderCommandBuffer {
 
         Renderer.Submit(
             () => {
-                Log.Information("[Render Command Buffer] Begin");
+                log.Verbose("[Render Command Buffer] Begin");
 
                 var vk = VulkanContext.Vulkan;
                 var frameIndex = Renderer.CurrentFrameIndex_RT;
@@ -106,13 +107,13 @@ public sealed class VulkanRenderCommandBuffer : IRenderCommandBuffer {
     public void End() {
         Renderer.Submit(
             () => {
-                Log.Information("[Render Command Buffer] End");
+                log.Verbose("[Render Command Buffer] End");
 
                 var vk = VulkanContext.Vulkan;
                 var frameIndex = Renderer.CurrentFrameIndex_RT;
 
                 if (!ActiveCommandBuffer.HasValue) {
-                    Log.Warning("Ending non active buffer");
+                    log.Warning("Ending non active buffer");
                     return;
                 }
 

@@ -11,7 +11,7 @@ namespace Rin.Platform.Vulkan;
 
 sealed class VulkanContext : RendererContext, IDisposable {
     readonly string[] validationLayers = { "VK_LAYER_KHRONOS_validation" };
-    readonly ILogger logger;
+    readonly ILogger log = Log.ForContext<RendererContext>();
 
     ExtDebugUtils? debugUtils;
     DebugUtilsMessengerEXT debugMessenger;
@@ -23,8 +23,6 @@ sealed class VulkanContext : RendererContext, IDisposable {
     bool EnableValidationLayers { get; } = true;
 
     public VulkanContext() {
-        logger = Log.ForContext<VulkanContext>();
-
         CreateInstance();
         SetupDebugMessenger();
     }
@@ -46,7 +44,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             extensions = extensions.Append("VK_KHR_portability_enumeration").ToArray();
         }
 
-        Log.Information("Vulkan Extensions: {Extensions}", extensions);
+        log.Information("Vulkan Extensions: {Extensions}", extensions);
         InstanceCreateInfo createInfo = new() {
             SType = StructureType.InstanceCreateInfo,
             Flags = isMacOs ? InstanceCreateFlags.EnumeratePortabilityBitKhr : InstanceCreateFlags.None,
@@ -65,7 +63,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
                 PopulateDebugMessengerCreateInfo(ref debugCreateInfo);
                 createInfo.PNext = &debugCreateInfo;
             } else {
-                Log.Error("Validation layer not present but required! Validation is disabled");
+                log.Error("Validation layer not present but required! Validation is disabled");
             }
         }
 
@@ -153,7 +151,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
         DebugUtilsMessengerCallbackDataEXT* pCallbackData,
         void* pUserData
     ) {
-        logger.Information("{Message}", Marshal.PtrToStringAnsi((nint)pCallbackData->PMessage));
+        log.Debug("{Message}", Marshal.PtrToStringAnsi((nint)pCallbackData->PMessage));
         return Vk.False;
     }
 

@@ -14,7 +14,7 @@ using System.Runtime.InteropServices;
 namespace Rin.Editor;
 
 public class ShaderCompiler {
-    readonly ILogger logger = Log.ForContext<ShaderCompiler>();
+    readonly ILogger log = Log.ForContext<ShaderCompiler>();
     readonly string shaderPath;
 
     // These are default entry points of *.shader file
@@ -40,7 +40,7 @@ public class ShaderCompiler {
     }
 
     public static Shader Compile(string shaderPath, bool forceCompile, bool debug) {
-        Log.Information("Compiling shader");
+        Log.ForContext<ShaderCompiler>().Verbose("Compiling shader {Path}", shaderPath);
         var compiler = new ShaderCompiler(Path.Combine(Project.OpenProject!.RootDirectory, shaderPath));
         compiler.Reload(forceCompile);
 
@@ -54,9 +54,6 @@ public class ShaderCompiler {
 
         // Renderer acknowledge parsed global marcros
         // on shader reloaded
-
-
-        Log.Information("Debug asdf: {Variable}", compiler.Name);
 
         ShaderCache.Serialize(compiler);
 
@@ -212,7 +209,7 @@ public class ShaderCompiler {
         // }
 
         // ============= Uniform Buffers =============
-        logger.Information("Uniform Buffers:");
+        log.Verbose("Uniform Buffers:");
         var uniformBuffers = shaderResources.GetResourceListForType(ResourceType.UniformBuffer);
         foreach (var resource in uniformBuffers) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -227,7 +224,7 @@ public class ShaderCompiler {
                 ShaderStage = ShaderStageFlags.All
             };
 
-            logger.Information(
+            log.Verbose(
                 "{Name} ({DescriptorSet}, {Binding}) | Member Count: {Members} | Size: {Size}",
                 resource.Name,
                 resource.DescriptorSet,
@@ -238,7 +235,7 @@ public class ShaderCompiler {
         }
 
         // ============= Storage Buffers =============
-        logger.Information("Storage Buffers:");
+        log.Verbose("Storage Buffers:");
         var storageBuffers = shaderResources.GetResourceListForType(ResourceType.StorageBuffer);
         foreach (var resource in storageBuffers) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -253,7 +250,7 @@ public class ShaderCompiler {
                 ShaderStage = ShaderStageFlags.All
             };
 
-            logger.Information(
+            log.Verbose(
                 "{Name} ({DescriptorSet}, {Binding}) | Member Count: {Members} | Size: {Size}",
                 resource.Name,
                 resource.DescriptorSet,
@@ -264,7 +261,7 @@ public class ShaderCompiler {
         }
 
         // ============= Push Constants Buffers =============
-        logger.Information("Push Constant Buffers:");
+        log.Verbose("Push Constant Buffers:");
         var pushConstantBuffers = shaderResources.GetResourceListForType(ResourceType.PushConstant);
         foreach (var resource in pushConstantBuffers) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -303,7 +300,7 @@ public class ShaderCompiler {
 
             ReflectionData.ConstantBuffers[resource.Name] = shaderBuffer;
 
-            logger.Information(
+            log.Verbose(
                 "{Name} | Member Count: {Members} | Size: {Size}",
                 resource.Name,
                 resource.MemberCount,
@@ -312,7 +309,7 @@ public class ShaderCompiler {
         }
 
         // ============= Sampled Images =============
-        logger.Information("Sampled Images:");
+        log.Verbose("Sampled Images:");
         var sampledImages = shaderResources.GetResourceListForType(ResourceType.SampledImage);
         foreach (var resource in sampledImages) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -330,7 +327,7 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            logger.Information(
+            log.Verbose(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
@@ -346,7 +343,7 @@ public class ShaderCompiler {
         }
 
         // ============= Separate Images =============
-        logger.Information("Separate Images:");
+        log.Verbose("Separate Images:");
         var separateImages = shaderResources.GetResourceListForType(ResourceType.SeparateImage);
         foreach (var resource in separateImages) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -363,7 +360,7 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            logger.Information(
+            log.Verbose(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
@@ -379,7 +376,7 @@ public class ShaderCompiler {
         }
 
         // ============= Separate Samplers =============
-        logger.Information("Separate Samplers:");
+        log.Verbose("Separate Samplers:");
         var separateSamplers = shaderResources.GetResourceListForType(ResourceType.SeparateSamplers);
         foreach (var resource in separateSamplers) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -397,7 +394,7 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            logger.Information(
+            log.Verbose(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,
@@ -413,7 +410,7 @@ public class ShaderCompiler {
         }
 
         // ============= Storage Images =============
-        logger.Information("Storage Images:");
+        log.Verbose("Storage Images:");
         var storageImages = shaderResources.GetResourceListForType(ResourceType.StorageImage);
         foreach (var resource in storageImages) {
             // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
@@ -431,7 +428,7 @@ public class ShaderCompiler {
                 // TODO: Dimension, ArraySize
             };
 
-            logger.Information(
+            log.Information(
                 "{Name} ({DescriptorSet}, {Binding})",
                 resource.Name,
                 resource.DescriptorSet,

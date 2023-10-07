@@ -15,6 +15,7 @@ namespace Rin.Core.General;
 public class Application : IDisposable {
     internal static Application Current = null!;
 
+    readonly ILogger log = Log.ForContext<Application>();
     readonly Performance performance = new();
     readonly IRenderThread renderThread;
 
@@ -68,7 +69,7 @@ public class Application : IDisposable {
             renderThread.BlockUntilRenderComplete();
             ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
             
-            Log.Information("============= INVOKING ======================");
+            log.Verbose("============= APPLICATION ======================");
             silkWindow.silkWindow.DoEvents();
 
             renderThread.NextFrame();
