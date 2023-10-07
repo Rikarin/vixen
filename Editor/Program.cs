@@ -5,6 +5,7 @@ using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
 using Serilog;
+using Serilog.Events;
 using Serilog.Exceptions;
 using System.Diagnostics.Tracing;
 using System.Drawing;
@@ -12,7 +13,12 @@ using System.Drawing;
 var eventSourceListener = new EventSourceCreatedListener();
 
 
+// TODO: colored text, thread name, context name
 Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Verbose()
+    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.IRenderer", LogEventLevel.Information)
+    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
+    
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
     // .Enrich.WithProperty("Environment", builder.Configuration.GetSection("environment").Value)
@@ -34,6 +40,7 @@ var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
         options.ThreadingPolicy = ThreadingPolicy.SingleThreaded;
+        options.WindowSize = new(800, 600);
     }
 );
 
@@ -50,7 +57,7 @@ var app = Application.CreateDefault(
 IRenderCommandBuffer? commandBuffer = null;
 IRenderPass? swapchainRenderPass = null;
 
-app.MainWindow.Load += () => {
+// app.MainWindow.Load += () => {
     Log.Information("Application Loading");
 
     var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
@@ -63,8 +70,7 @@ app.MainWindow.Load += () => {
             DebugName = "SceneComposite",
             ClearColor = Color.Aqua,
             IsSwapChainTarget = true,
-            Attachments = new(ImageFormat.Rgba),
-            Size = new Size(1920, 1080) // TODO: pass real values
+            Attachments = new(ImageFormat.Rgba)
         }
     );
 
@@ -125,11 +131,10 @@ app.MainWindow.Load += () => {
     // material.SetColor("u_Color", Color.Bisque);
 
     Log.Information("Application Loaded");
-};
+// };
 
-app.MainWindow.Render += deltaTime => {
+app.Render += () => {
     Log.Information("On Update");
-    
     
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);

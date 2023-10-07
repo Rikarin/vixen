@@ -27,9 +27,9 @@ sealed class GuiRenderer : IDisposable {
         Directory.CreateDirectory(settingsPath);
 
         var mainWindow = this.application.MainWindow;
-        mainWindow.Load += OnStart;
+        // mainWindow.Load += OnStart;
         mainWindow.Closing += OnClosing;
-        mainWindow.Render += OnRender;
+        // mainWindow.Render += OnRender;
 
         AddPane<StatsPane>();
         AddPane<HierarchyPane>();
@@ -56,9 +56,9 @@ sealed class GuiRenderer : IDisposable {
 
     public void Dispose() {
         var mainWindow = application.MainWindow;
-        mainWindow.Load -= OnStart;
+        // mainWindow.Load -= OnStart;
         mainWindow.Closing -= OnClosing;
-        mainWindow.Render -= OnRender;
+        // mainWindow.Render -= OnRender;
     }
 
     public void OpenPane<T>() => panes[typeof(T)].Open();
@@ -81,7 +81,7 @@ sealed class GuiRenderer : IDisposable {
     }
 
     void OnStart() {
-        guiHandle = Application.Current.MainWindow.Handle.CreateGuiRenderer();
+        // guiHandle = Application.Current.MainWindow.Handle.CreateGuiRenderer();
 
         var io = ImGui.GetIO();
         io.ConfigFlags |= ImGuiConfigFlags.DockingEnable

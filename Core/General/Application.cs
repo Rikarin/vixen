@@ -1,9 +1,11 @@
 using Rin.Core.Abstractions;
 using Rin.Core.Diagnostics;
+using Rin.Platform.Silk;
 using Rin.Platform.Vulkan;
 using Rin.Rendering;
 using Serilog;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Rin.Editor")]
@@ -30,16 +32,20 @@ public class Application : IDisposable {
 
         // TODO: stuff
 
-        MainWindow = new();
+        MainWindow = new(
+            o => {
+                o.Title = options.Name;
+                o.Size = options.WindowSize;
+            });
+        
+        MainWindow.Resize += OnWindowResize;
+        
         var vulkanRenderer = new VulkanRenderer();
         Renderer.Initialize(MainWindow.Handle.Swapchain, vulkanRenderer);
         renderThread.Pump();
 
         // Setup profiler
         // Setup Renderer.SetConfig (static)
-
-
-        // Renderer.Initialize();
     }
 
     // ConcurrentQueue<Action> queue = new();
@@ -50,8 +56,11 @@ public class Application : IDisposable {
     }
 
     public void Run() {
-        MainWindow.Test_InvokeLoad();
+        // MainWindow.Test_InvokeLoad();
         IsRunning = true;
+        
+        var silkWindow = MainWindow.Handle as SilkWindow;
+        // silkWindow.silkWindow.Initialize();
 
         while (IsRunning) {
             // TODO: consider creating disposable struct/class to track these states
@@ -59,7 +68,8 @@ public class Application : IDisposable {
             renderThread.BlockUntilRenderComplete();
             ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
             
-            Log.Information("running");
+            Log.Information("============= INVOKING ======================");
+            silkWindow.silkWindow.DoEvents();
 
             renderThread.NextFrame();
             renderThread.Kick();
@@ -69,30 +79,32 @@ public class Application : IDisposable {
             Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
             Renderer.BeginFrame();
             
-            // Invoke all rendering layers??
-            MainWindow.Test_InvokeRender();
-            Log.Information("INVOKING ======================");
+            Render?.Invoke();
 
             Renderer.EndFrame();
             Renderer.Submit(MainWindow.Handle.Swapchain.Present);
 
             Renderer.IncreaseCurrentFrameIndex();
+
+            // silkWindow.silkWindow.DoUpdate();
+            // silkWindow.silkWindow.DoRender();
         }
 
-        // MainWindow.Run();
-    }
-
-    // public void Run() {
     //     while (running) {
     //         ExecuteMainThreadQueue();
     //     }
-    // }
+    }
 
     // void ExecuteMainThreadQueue() {
     //     while (queue.TryDequeue(out var action)) {
     //         action();
     //     }
     // }
+
+    void OnWindowResize(Size newSize) {
+        Log.Information("OnResize: {Variable}", newSize);
+        Renderer.Submit(() => MainWindow.Handle.Swapchain.OnResize(newSize));
+    }
 
     public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
         var options = new ApplicationOptions { Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded };
@@ -103,7 +115,11 @@ public class Application : IDisposable {
 
     public void Dispose() {
         renderThread.Terminate();
+
+        MainWindow.Resize -= OnWindowResize;
     }
+
+    public event Action? Render;
 
     struct Performance {
         public Stopwatch MainThreadWorkTime { get; } = new();

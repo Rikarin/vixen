@@ -1,16 +1,14 @@
 using Rin.Core.Abstractions;
-using Rin.Platform.Abstractions.Rendering;
+using System.Drawing;
 using System.Numerics;
 
-namespace Rin.Platform.Internal;
+namespace Rin.Platform.Abstractions.Rendering;
 
-public interface IInternalWindow {
+public interface IWindow {
+    Size Size { get; }
     Vector2 MousePosition { get; }
     RendererContext RendererContext { get; }
     ISwapchain Swapchain { get; }
-
-    IInternalGuiRenderer CreateGuiRenderer();
-    void Run();
 
     bool GetKey(Key key);
     bool GetKeyDown(Key key);
@@ -18,7 +16,6 @@ public interface IInternalWindow {
     Vector2 GetMouseAxis();
     bool GetMouseButtonDown(MouseButton mouseButton);
     bool GetMouseButtonUp(MouseButton mouseButton);
-    event Action? Load;
-    public event Action? Closing;
-    event Action<float>? Render;
+    event Action? Closing;
+    event Action<Size>? Resize;
 }

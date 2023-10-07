@@ -7,7 +7,7 @@ using Rin.Rendering;
 namespace Rin.Platform.Internal;
 
 public static class ObjectFactory {
-    public static IInternalWindow CreateWindow(WindowOptions options) => new SilkWindow(options);
+    public static IWindow CreateWindow(WindowOptions options) => new SilkWindow(options);
 
     public static RendererContext CreateRendererContext() => new VulkanContext();
 

@@ -28,13 +28,13 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
         Options = options;
 
         if (options.Size == null) {
-            throw new NotImplementedException();
+            size = SilkWindow.MainWindow.Size;
+        } else {
+            size = new(
+                (int)(options.Size.Value.Width * options.Scale),
+                (int)(options.Size.Value.Height * options.Scale)
+            );
         }
-
-        size = new(
-            (int)(options.Size.Value.Width * options.Scale),
-            (int)(options.Size.Value.Height * options.Scale)
-        );
 
         var attachmentIndex = 0;
         if (options.ExistingFramebuffer == null) {

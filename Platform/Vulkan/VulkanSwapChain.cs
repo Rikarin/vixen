@@ -3,15 +3,15 @@ using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
 using Silk.NET.Vulkan.Extensions.KHR;
-using Silk.NET.Windowing;
 using System.Drawing;
 using AttachmentLoadOp = Silk.NET.Vulkan.AttachmentLoadOp;
+using IWindow = Silk.NET.Windowing.IWindow;
 using Semaphore = Silk.NET.Vulkan.Semaphore;
 
 namespace Rin.Platform.Vulkan;
 
 sealed class VulkanSwapChain : ISwapchain, IDisposable {
-    readonly ILogger logger = Log.ForContext<VulkanSwapChain>();
+    readonly ILogger log = Log.ForContext<ISwapchain>();
     readonly Vk vk = VulkanContext.Vulkan;
     readonly Device vkDevice = VulkanContext.CurrentDevice.VkLogicalDevice;
 
@@ -51,7 +51,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         surface = window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
 
         FindImageFormatAndColorSpace();
-        Log.Information("Surface initialized");
+        log.Information("Surface initialized");
     }
 
     public void Create(ref Size size, bool vSync) {
@@ -65,18 +65,14 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         CreateFramebuffers();
     }
 
-    // TODO: Not sure if this needs to has also ref params or not
     public void OnResize(Size size) {
-        logger.Verbose("OnResize");
-        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
-
-        vk.DeviceWaitIdle(device).EnsureSuccess();
+        vk.DeviceWaitIdle(vkDevice).EnsureSuccess();
         Create(ref size, VSync);
-        vk.DeviceWaitIdle(device).EnsureSuccess();
+        vk.DeviceWaitIdle(vkDevice).EnsureSuccess();
     }
 
     public void BeginFrame() {
-        Log.Information("[SwapChain] Begin Frame");
+        log.Verbose("[SwapChain] Begin Frame");
         Renderer.GetRenderDisposeQueue(CurrentBufferIndex).Execute();
 
         currentImageIndex = AcquireNextImage();
@@ -84,8 +80,8 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
     }
 
     public unsafe void Present() {
-        Log.Information("[SwapChain] Present");
-        
+        log.Verbose("[SwapChain] Present");
+
         var waitStages = stackalloc[] { PipelineStageFlags.ColorAttachmentOutputBit };
         var waitSemaphores = stackalloc[] { semaphores.PresentComplete!.Value };
         var signalSemaphores = stackalloc[] { semaphores.RenderComplete!.Value };
@@ -287,6 +283,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         foreach (var image in images) {
             vk.DestroyImage(vkDevice, image.Image, null);
         }
+        images.Clear();
 
         // Get new swapchain images
         uint imagesCount = 0;
@@ -294,8 +291,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         using var handle = VulkanUtils.Alloc<Image>(imagesCount, out var swapchainImages);
         vkSwapchain.GetSwapchainImages(vkDevice, swapchain.Value, ref imagesCount, swapchainImages).EnsureSuccess();
 
-        Log.Information("Frames in flight: {Variable}", imagesCount);
-        images.Clear();
         for (var i = 0; i < imagesCount; i++) {
             var imageViewCreateInfo = new ImageViewCreateInfo {
                 SType = StructureType.ImageViewCreateInfo,
@@ -316,6 +311,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         foreach (var commandBuffer in commandBuffers) {
             vk.DestroyCommandPool(vkDevice, commandBuffer.CommandPool, null);
         }
+        commandBuffers.Clear();
 
         var cmdPoolInfo = new CommandPoolCreateInfo(StructureType.CommandPoolCreateInfo) {
             QueueFamilyIndex = VulkanContext.CurrentDevice.PhysicalDevice.QueueFamilyIndices.Graphics.Value,
@@ -326,7 +322,6 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             Level = CommandBufferLevel.Primary, CommandBufferCount = 1
         };
 
-        commandBuffers.Clear();
         for (var i = 0; i < images.Count; i++) {
             vk.CreateCommandPool(vkDevice, cmdPoolInfo, null, out var commandPool).EnsureSuccess();
 
@@ -381,6 +376,11 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
     }
 
     unsafe void CreateRenderPass() {
+        // TODO: not sure about this
+        // if (RenderPass.HasValue) {
+        //     vk.DestroyRenderPass(vkDevice, RenderPass.Value, null);
+        // }
+        
         var colorAttachment = new AttachmentDescription {
             Format = ColorFormat,
             Samples = SampleCountFlags.Count1Bit,
@@ -434,6 +434,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         foreach (var framebuffer in framebuffers) {
             vk.DestroyFramebuffer(vkDevice, framebuffer, null);
         }
+        framebuffers.Clear();
 
         var framebufferCreateInfo = new FramebufferCreateInfo(StructureType.FramebufferCreateInfo) {
             RenderPass = RenderPass!.Value,
@@ -465,14 +466,15 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
 
         uint imageIndex = 0;
         vkSwapchain.AcquireNextImage(
-                VulkanContext.CurrentDevice.VkLogicalDevice,
-                swapchain.Value,
-                ulong.MaxValue,
-                semaphores.PresentComplete!.Value,
-                default,
-                ref imageIndex
-            )
-            .EnsureSuccess();
+            vkDevice,
+            swapchain.Value,
+            ulong.MaxValue,
+            semaphores.PresentComplete!.Value,
+            default,
+            ref imageIndex
+        );
+        // TODO
+            // .EnsureSuccess();
 
         // TODO: verify if this cast is correct
         return (int)imageIndex;
@@ -517,7 +519,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             }
         }
 
-        Log.Information("ColorFormat {Format} ColorSpace {Space}", ColorFormat, colorSpace);
+        log.Information("ColorFormat {Format} ColorSpace {Space}", ColorFormat, colorSpace);
     }
 
 

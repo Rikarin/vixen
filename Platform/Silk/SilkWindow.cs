@@ -4,6 +4,7 @@ using Rin.Platform.Internal;
 using Rin.Platform.Vulkan;
 using Serilog;
 using Silk.NET.Input;
+using Silk.NET.Maths;
 using Silk.NET.Windowing;
 using System.Drawing;
 using System.Numerics;
@@ -17,9 +18,9 @@ using WindowOptions = Rin.Core.Abstractions.WindowOptions;
 
 namespace Rin.Platform.Silk;
 
-sealed class SilkWindow : IInternalWindow {
+sealed class SilkWindow : Abstractions.Rendering.IWindow {
     internal static SilkWindow MainWindow;
-    internal IWindow silkWindow = null!;
+    internal global::Silk.NET.Windowing.IWindow silkWindow = null!;
     internal IInputContext input;
 
     // TODO: this needs to be fixed
@@ -33,6 +34,7 @@ sealed class SilkWindow : IInternalWindow {
     readonly bool[] keyPressed = new bool[(int)Key.Menu + 1];
     readonly bool[] mouseButtonPressed = new bool[(int)MouseButton.Button12 + 1];
 
+    public Size Size => new(silkWindow.Size.X, silkWindow.Size.Y);
     public RendererContext RendererContext { get; private set; }
     public ISwapchain Swapchain { get; private set; }
     public Vector2 MousePosition { get; private set; } = Vector2.Zero;
@@ -42,13 +44,8 @@ sealed class SilkWindow : IInternalWindow {
         Initialize(options);
     }
 
-    public IInternalGuiRenderer CreateGuiRenderer() => throw new NotImplementedException();
+    // public IInternalGuiRenderer CreateGuiRenderer() => throw new NotImplementedException();
     // new SilkImGuiRenderer(new(Gl, silkWindow, input));
-
-    public void Run() {
-        Load?.Invoke();
-        silkWindow.Run();
-    }
 
     public bool GetKey(Core.Abstractions.Key key) => keyPressed[(int)key];
     public bool GetKeyDown(Core.Abstractions.Key key) => keyDown.HasValue && (int)keyDown.Value == (int)key;
@@ -70,29 +67,28 @@ sealed class SilkWindow : IInternalWindow {
         );
 
         silkWindow.Load += OnLoad;
-        silkWindow.Render += OnRender;
         silkWindow.Closing += OnClosing;
-        // TODO
-        // silkWindow.FramebufferResize += vector2D => Gl.Viewport(vector2D);
-
+        silkWindow.Resize += OnResize;
 
         silkWindow.Initialize();
         RendererContext = ObjectFactory.CreateRendererContext();
         var swapChain = new VulkanSwapChain();
         swapChain.InitializeSurface(silkWindow);
 
-        var size = new Size(800, 600); // TODO
-
+        var size = new Size(silkWindow.Size.X, silkWindow.Size.Y);
         swapChain.Create(ref size, false);
         Swapchain = swapChain;
+    }
+
+    void OnResize(Vector2D<int> obj) {
+        Resize?.Invoke(new(obj.X, obj.Y));
     }
 
     void OnClosing() {
         Closing?.Invoke();
     }
 
-    void OnRender(double deltaTime) {
-        Render?.Invoke((float)deltaTime);
+    void ResetInput() {
         keyDown = null;
         keyUp = null;
         mouseAxis = Vector2.Zero;
@@ -115,7 +111,7 @@ sealed class SilkWindow : IInternalWindow {
             // click, scroll, double click??
         }
 
-        Log.Information("Vulkan Context initialized");
+        Log.Information("Silk Window Loaded");
     }
 
     void OnMouseMove(IMouse arg1, Vector2 arg2) {
@@ -147,7 +143,6 @@ sealed class SilkWindow : IInternalWindow {
         keyUp = key;
     }
 
-    public event Action? Load;
     public event Action? Closing;
-    public event Action<float>? Render;
+    public event Action<Size>? Resize;
 }

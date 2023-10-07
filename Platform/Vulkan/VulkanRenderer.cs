@@ -7,6 +7,7 @@ using Silk.NET.Vulkan;
 namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanRenderer : IRenderer {
+    readonly ILogger log = Log.ForContext<IRenderer>();
     readonly List<int> descriptorPoolAllocationCount = new();
     readonly List<DescriptorPool> descriptorPools = new();
 
@@ -67,7 +68,7 @@ public sealed class VulkanRenderer : IRenderer {
     public void BeginFrame() {
         Renderer.Submit(
             () => {
-                Log.Information("[Renderer] Begin Frame");
+                log.Verbose("[Renderer] Begin Frame");
                 var vk = VulkanContext.Vulkan;
                 var device = VulkanContext.CurrentDevice.VkLogicalDevice;
                 var swapchain = SilkWindow.MainWindow.Swapchain as VulkanSwapChain; // TODO
@@ -83,7 +84,7 @@ public sealed class VulkanRenderer : IRenderer {
     public void EndFrame() {
         Renderer.Submit(
             () =>
-                Log.Information("[Renderer] End Frame")
+                log.Verbose("[Renderer] End Frame")
         );
     }
 
@@ -95,7 +96,7 @@ public sealed class VulkanRenderer : IRenderer {
         Renderer.Submit(
             () => {
                 var vk = VulkanContext.Vulkan;
-                Log.Information("Begin Render Pass ({Name})", renderPass.Options.DebugName);
+                log.Verbose("Begin Render Pass ({Name})", renderPass.Options.DebugName);
                 
                 var commandBuffer = (renderCommandBuffer as VulkanRenderCommandBuffer).ActiveCommandBuffer.Value;
                 var framebuffer = renderPass.Options.Pipeline.Options.TargetFramebuffer as VulkanFramebuffer;
@@ -136,7 +137,7 @@ public sealed class VulkanRenderer : IRenderer {
                 
                 
                 // Bind Vulkan Pipeline
-                Log.Information("Binding pipeline");
+                log.Verbose("Binding pipeline");
                 var pipeline = renderPass.Options.Pipeline as VulkanPipeline;
                 vk.CmdBindPipeline(commandBuffer, PipelineBindPoint.Graphics, pipeline.VkPipeline);
 
@@ -159,7 +160,7 @@ public sealed class VulkanRenderer : IRenderer {
     public void EndRenderPass(IRenderCommandBuffer renderCommandBuffer) {
         Renderer.Submit(
             () => {
-                Log.Information("[Renderer] End Render Pass");
+                log.Verbose("[Renderer] End Render Pass");
                 var frameIndex = Renderer.CurrentFrameIndex_RT;
                 var commandBuffer = (renderCommandBuffer as VulkanRenderCommandBuffer).ActiveCommandBuffer;
 
