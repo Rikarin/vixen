@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Platform.Abstractions",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Rendering", "Rendering\Rin.Rendering.csproj", "{ACCD5735-755B-4D32-A41E-C81D031EF80C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Diagnostics", "Diagnostics\Rin.Diagnostics.csproj", "{6F9F5332-4611-4DFF-944C-C139F67A529F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,5 +54,9 @@ Global
 		{ACCD5735-755B-4D32-A41E-C81D031EF80C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ACCD5735-755B-4D32-A41E-C81D031EF80C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ACCD5735-755B-4D32-A41E-C81D031EF80C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

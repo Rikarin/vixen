@@ -1,8 +1,7 @@
 using System.Diagnostics;
 
-namespace Rin.Platform.Abstractions.Diagnostics;
+namespace Rin.Diagnostics;
 
-// TODO: move this to Rin.Diagnostics
 public readonly struct Watcher : IDisposable {
     readonly Action<long> reportCallback;
     readonly Stopwatch stopwatch = new();

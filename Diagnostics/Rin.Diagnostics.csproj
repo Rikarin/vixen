@@ -4,9 +4,4 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj" />
-      <ProjectReference Include="..\Diagnostics\Rin.Diagnostics.csproj" />
-    </ItemGroup>
 </Project>

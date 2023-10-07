@@ -1,4 +1,4 @@
-using Rin.Platform.Abstractions.Diagnostics;
+using Rin.Diagnostics;
 using System.Diagnostics.Tracing;
 
 namespace Rin.Core.Diagnostics;
