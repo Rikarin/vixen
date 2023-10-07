@@ -4,7 +4,6 @@ using Rin.Platform.Silk;
 using Rin.Platform.Vulkan;
 using Rin.Rendering;
 using Serilog;
-using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
@@ -16,10 +15,10 @@ public class Application : IDisposable {
     internal static Application Current = null!;
 
     readonly ILogger log = Log.ForContext<Application>();
-    readonly Performance performance = new();
     readonly IRenderThread renderThread;
 
     public bool IsRunning { get; private set; }
+    public bool IsMinimized {get; private set; }
     public Window MainWindow { get; }
 
     public Application(ApplicationOptions options) {
@@ -57,17 +56,13 @@ public class Application : IDisposable {
     }
 
     public void Run() {
-        // MainWindow.Test_InvokeLoad();
         IsRunning = true;
-        
         var silkWindow = MainWindow.Handle as SilkWindow;
-        // silkWindow.silkWindow.Initialize();
 
         while (IsRunning) {
-            // TODO: consider creating disposable struct/class to track these states
-            performance.MainThreadWaitTime.Reset();
-            renderThread.BlockUntilRenderComplete();
-            ApplicationEventSource.Log.ReportMainThreadWaitTime(performance.MainThreadWaitTime.ElapsedMilliseconds);
+            using (var _ = ApplicationEventSource.MainThreadWaitTime) {
+                renderThread.BlockUntilRenderComplete();
+            }
             
             log.Verbose("============= APPLICATION ======================");
             silkWindow.silkWindow.DoEvents();
@@ -76,19 +71,22 @@ public class Application : IDisposable {
             renderThread.Kick();
 
             // TODO: if not minimized
+            if (!IsMinimized) {
+                using var workTimeWatcher = ApplicationEventSource.MainThreadWorkTime;
 
-            Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
-            Renderer.BeginFrame();
-            
-            Render?.Invoke();
+                Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
+                Renderer.BeginFrame();
 
-            Renderer.EndFrame();
-            Renderer.Submit(MainWindow.Handle.Swapchain.Present);
+                Render?.Invoke();
 
-            Renderer.IncreaseCurrentFrameIndex();
+                Renderer.EndFrame();
+                Renderer.Submit(MainWindow.Handle.Swapchain.Present);
 
-            // silkWindow.silkWindow.DoUpdate();
-            // silkWindow.silkWindow.DoRender();
+                Renderer.IncreaseCurrentFrameIndex();
+
+                // silkWindow.silkWindow.DoUpdate();
+                // silkWindow.silkWindow.DoRender();
+            }
         }
 
     //     while (running) {
@@ -121,11 +119,4 @@ public class Application : IDisposable {
     }
 
     public event Action? Render;
-
-    struct Performance {
-        public Stopwatch MainThreadWorkTime { get; } = new();
-        public Stopwatch MainThreadWaitTime { get; } = new();
-
-        public Performance() { }
-    }
 }

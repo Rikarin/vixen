@@ -9,7 +9,7 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using System.Drawing;
 
-// var eventSourceListener = new EventSourcesListener();
+var eventSourceListener = new EventSourcesListener();
 
 Thread.CurrentThread.Name = "Main";
 

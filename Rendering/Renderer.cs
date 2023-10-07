@@ -1,4 +1,5 @@
 using Rin.Core.Abstractions;
+using Rin.Platform.Abstractions.Diagnostics;
 using Rin.Platform.Abstractions.Rendering;
 
 namespace Rin.Rendering;
@@ -41,12 +42,14 @@ public static class Renderer {
 
     // TODO: make this internal
     public static void WaitAndRender(IRenderThread thread) {
-        thread.WaitAndSet(RenderThreadState.Kick, RenderThreadState.Busy);
-        // TODO: timers and stuff
+        using (var _ = RenderingEventSource.RenderWaitTime) {
+            thread.WaitAndSet(RenderThreadState.Kick, RenderThreadState.Busy);
+        }
 
-        // Log.Information("Rendering Idx {Index} Count {Count}", RenderQueueIndex, commandQueue[RenderQueueIndex].Count);
-        commandQueue[RenderQueueIndex].Execute();
-        thread.Set(RenderThreadState.Idle);
+        using (var _ = RenderingEventSource.RenderWorkTime) {
+            commandQueue[RenderQueueIndex].Execute();
+            thread.Set(RenderThreadState.Idle);
+        }
     }
 
     public static void SwapQueues() {

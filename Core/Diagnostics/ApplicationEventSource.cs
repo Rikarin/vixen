@@ -1,3 +1,4 @@
+using Rin.Platform.Abstractions.Diagnostics;
 using System.Diagnostics.Tracing;
 
 namespace Rin.Core.Diagnostics;
@@ -10,6 +11,9 @@ public sealed class ApplicationEventSource : EventSource {
 
     readonly EventCounter mainThreadWorkTime;
     readonly EventCounter mainThreadWaitTime;
+
+    public static Watcher MainThreadWaitTime => new(Log.ReportMainThreadWaitTime);
+    public static Watcher MainThreadWorkTime => new(Log.ReportMainThreadWorkTime);
 
     ApplicationEventSource() {
         mainThreadWorkTime = new("main-thread-work-time", this) {
