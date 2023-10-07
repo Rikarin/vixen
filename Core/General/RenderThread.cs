@@ -3,7 +3,7 @@ using Rin.Rendering;
 
 namespace Rin.Core.General;
 
-public sealed class RenderThread : IRenderThread, IDisposable {
+public sealed class RenderThread : IRenderThread {
     readonly ThreadingPolicy threadingPolicy;
     readonly Thread thread;
 

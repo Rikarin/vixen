@@ -13,7 +13,6 @@
         <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
 
-        <!--        <PackageReference Include="Silk.NET" Version="2.17.1" />-->
         <PackageReference Include="Silk.NET.Shaderc" Version="2.17.1-build3832.0" />
         <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.17.1-build3832.0" />
         <PackageReference Include="Silk.NET.SPIRV.Cross.Native" Version="2.17.1-build3832.0" />

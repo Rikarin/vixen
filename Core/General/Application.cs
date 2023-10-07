@@ -123,7 +123,7 @@ public class Application : IDisposable {
     }
 
     public void Dispose() {
-        renderThread.Terminate();
+        renderThread.Dispose();
 
         MainWindow.Resize -= OnWindowResize;
         MainWindow.Closing -= OnWindowClose;

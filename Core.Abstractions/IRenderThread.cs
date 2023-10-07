@@ -1,6 +1,6 @@
 namespace Rin.Core.Abstractions;
 
-public interface IRenderThread {
+public interface IRenderThread : IDisposable {
     bool IsRunning { get; }
     
     void Run();

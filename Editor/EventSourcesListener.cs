@@ -2,27 +2,8 @@ using Serilog;
 using System.Diagnostics.Tracing;
 
 sealed class EventSourcesListener : EventListener {
-    static (string counterName, double counterValue) GetRelevantMetric(IDictionary<string, object> eventPayload) {
-        var counterName = "";
-        double counterValue = 0f;
-
-        if (eventPayload.TryGetValue("DisplayName", out var displayValue)) {
-            counterName = displayValue.ToString();
-        }
-
-        if (eventPayload.TryGetValue("Mean", out object value) || eventPayload.TryGetValue("Increment", out value)) {
-            counterValue = Convert.ToDouble(value);
-        }
-
-        return (counterName, counterValue);
-    }
-
     protected override void OnEventSourceCreated(EventSource eventSource) {
-        Console.WriteLine(eventSource.Name);
-
-        // TODO: system runtime is for GC, mem, cpu, etc.
-        // if (!eventSource.Name.Equals("System.Runtime")) {
-        if (!eventSource.Name.StartsWith("Rin.")) {
+        if (!eventSource.Name.StartsWith("Rin.") && !eventSource.Name.Equals("System.Runtime")) {
             return;
         }
 
@@ -32,7 +13,6 @@ sealed class EventSourcesListener : EventListener {
             EventKeywords.All,
             new Dictionary<string, string?> { ["EventCounterIntervalSec"] = "1" }
         );
-        Console.WriteLine($"New event source: {eventSource.Name}");
     }
 
     protected override void OnEventWritten(EventWrittenEventArgs eventData) {
@@ -43,9 +23,45 @@ sealed class EventSourcesListener : EventListener {
 
         for (var i = 0; i < eventData.Payload!.Count; ++i) {
             if (eventData.Payload[i] is IDictionary<string, object> eventPayload) {
-                var (counterName, counterValue) = GetRelevantMetric(eventPayload);
-                Log.Information("{CounterName}: {CounterValue}", counterName, counterValue);
+                ProfilerData.PushData(eventPayload);
             }
         }
     }
+}
+
+public static class ProfilerData {
+    public static Dictionary<string, ProfilerDataEntry> Data { get; } = new();
+
+    public static void PushData(IDictionary<string, object> data) {
+        var key = data["Name"].ToString()!;
+        var mean = Convert.ToSingle(data["Mean"]);
+        
+        if (!Data.TryGetValue(key, out var entry)) {
+            entry = new();
+            Data[key] = entry;
+        }
+
+        // Log.Information("Debug: {Variable}", data.Keys);
+        // Log.Information("Debug: {Variable}", data);
+
+        // TODO: optimize by SIMD
+        for (var i = 0; i < entry.MeanData.Length - 1; i++) {
+            entry.MeanData[i] = entry.MeanData[i + 1];
+        }
+
+        entry.MeanData[^1] = mean;
+        entry.DisplayName = data["DisplayName"].ToString() ?? "Unknown";
+        entry.DisplayUnits = data["DisplayUnits"].ToString();
+        entry.Min = Convert.ToSingle(data["Min"]);
+        entry.Max = Convert.ToSingle(data["Max"]);
+    }
+}
+
+public sealed class ProfilerDataEntry {
+    public string DisplayName { get; set; }
+    public string? DisplayUnits { get; set; }
+    public float[] MeanData { get; } = new float[60];
+    
+    public float Min { get; set; }
+    public float Max { get; set; }
 }

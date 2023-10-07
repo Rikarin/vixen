@@ -65,6 +65,8 @@ public class ImGuiController : IDisposable {
     ) {
         var context = ImGui.CreateContext();
         ImGui.SetCurrentContext(context);
+        // ImPlot.CreateContext();
+        // ImPlot.SetImGuiContext(context);
 
         // Use the default font
         var io = ImGui.GetIO();

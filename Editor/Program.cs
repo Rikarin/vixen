@@ -46,7 +46,7 @@ var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
         options.ThreadingPolicy = ThreadingPolicy.MultiThreaded;
-        options.WindowSize = new(800, 600);
+        options.WindowSize = new(1600, 900);
     }
 );
 

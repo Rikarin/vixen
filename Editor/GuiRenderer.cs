@@ -39,6 +39,8 @@ sealed class GuiRenderer : IDisposable {
         AddPane<DebugTransformViewMatrixPane>();
         AddPane<TagPane>();
         AddPane<GamePane>();
+        
+        AddPane<ProfilerPane>();
 
         // TODO: Load/Save of opened windows
 
@@ -50,6 +52,8 @@ sealed class GuiRenderer : IDisposable {
         OpenPane<LightningPane>();
         OpenPane<ScenePane>();
         OpenPane<GamePane>();
+        
+        OpenPane<ProfilerPane>();
     }
 
     public void Dispose() {
