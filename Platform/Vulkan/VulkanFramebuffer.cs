@@ -16,8 +16,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     // Not sure if use list or dictionary
     readonly List<IImage2D> attachmentImages = new();
 
-    readonly List<ClearValue> clearValues = new();
-
+    public List<ClearValue> ClearValues { get; } = new();
     public FramebufferOptions Options { get; }
     public IImage2D? DepthImage { get; private set; }
     public RenderPass RenderPass { get; private set; }
@@ -98,8 +97,8 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                     var vkSwapchain = SilkWindow.MainWindow.Swapchain as VulkanSwapChain; // TODO
                     RenderPass = vkSwapchain.RenderPass.Value;
 
-                    clearValues.Clear();
-                    clearValues.Add(new(new(0, 0, 0, 1)));
+                    ClearValues.Clear();
+                    ClearValues.Add(new(new(0, 0, 0, 1)));
                 }
             }
         );
@@ -136,7 +135,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     unsafe void Invalidate_RT() {
         // TODO: this is not called right now
         throw new NotImplementedException();
-        
+
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         var vk = VulkanContext.Vulkan;
 
@@ -147,7 +146,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
         // var depthAttachmentReference = new De
 
         // TODO: this was resized
-        clearValues.Clear();
+        ClearValues.Clear();
 
         if (Options.ExistingFramebuffer != null) {
             attachmentImages.Clear();
@@ -170,19 +169,24 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                 }
 
                 var loadOp = GetAttachmentLoadOp(attachment);
-                attachmentDescriptions.Add(new() {
-                    Format = attachment.Format.ToVulkanImageFormat(),
-                    Samples = SampleCountFlags.Count1Bit,
-                    LoadOp = loadOp,
-                    StoreOp = AttachmentStoreOp.Store,
-                    StencilLoadOp = AttachmentLoadOp.DontCare,
-                    StencilStoreOp = AttachmentStoreOp.DontCare,
-                    InitialLayout = loadOp == AttachmentLoadOp.Clear ? ImageLayout.Undefined : ImageLayout.DepthStencilReadOnlyOptimal,
-                    FinalLayout = ImageLayout.ReadOnlyOptimal // TODO: check this as it was implemented differently
-                });
-                
+                attachmentDescriptions.Add(
+                    new() {
+                        Format = attachment.Format.ToVulkanImageFormat(),
+                        Samples = SampleCountFlags.Count1Bit,
+                        LoadOp = loadOp,
+                        StoreOp = AttachmentStoreOp.Store,
+                        StencilLoadOp = AttachmentLoadOp.DontCare,
+                        StencilStoreOp = AttachmentStoreOp.DontCare,
+                        InitialLayout =
+                            loadOp == AttachmentLoadOp.Clear
+                                ? ImageLayout.Undefined
+                                : ImageLayout.DepthStencilReadOnlyOptimal,
+                        FinalLayout = ImageLayout.ReadOnlyOptimal // TODO: check this as it was implemented differently
+                    }
+                );
+
                 // TODO: depth stencil reference
-                clearValues.Add(new() { DepthStencil = new(Options.DepthClearValue, 0)});
+                ClearValues.Add(new() { DepthStencil = new(Options.DepthClearValue, 0) });
             } else {
                 throw new NotImplementedException();
             }

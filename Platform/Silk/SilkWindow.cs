@@ -24,6 +24,8 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
     internal global::Silk.NET.Windowing.IWindow silkWindow = null!;
     internal IInputContext input;
 
+    public ImGuiController imGuiController;
+
     // TODO: this needs to be fixed
     // I think user can press multiple keys during one frame
     Key? keyDown;
@@ -79,15 +81,23 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
         var size = new Size(silkWindow.Size.X, silkWindow.Size.Y);
         swapChain.Create(ref size, false);
         Swapchain = swapChain;
+        
+        
+        // TODO: move this away
+        imGuiController = new ImGuiController(
+            VulkanContext.Vulkan,
+            silkWindow,
+            input,
+            VulkanContext.CurrentDevice.PhysicalDevice.VkPhysicalDevice,
+            VulkanContext.CurrentDevice.PhysicalDevice.QueueFamilyIndices.Graphics.Value,
+            swapChain.Images.Count(),
+            swapChain.ColorFormat,
+            null
+        );
     }
 
-    void OnResize(Vector2D<int> obj) {
-        Resize?.Invoke(new(obj.X, obj.Y));
-    }
-
-    void OnClosing() {
-        Closing?.Invoke();
-    }
+    void OnResize(Vector2D<int> obj) => Resize?.Invoke(new(obj.X, obj.Y));
+    void OnClosing() => Closing?.Invoke();
 
     void ResetInput() {
         keyDown = null;

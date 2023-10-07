@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Rin.Platform.Silk;
 
-class SilkImGuiRenderer : IInternalGuiRenderer {
+class SilkImGuiRenderer2 : IInternalGuiRenderer {
     readonly ImGuiController controller;
 
     readonly Platform_CreateWindow createWindow;
@@ -22,7 +22,7 @@ class SilkImGuiRenderer : IInternalGuiRenderer {
     // Platform_GetWindowMinimized getWindowMinimized;
     // Platform_SetWindowTitle setWindowTitle;
 
-    public SilkImGuiRenderer(ImGuiController controller) {
+    public SilkImGuiRenderer2(ImGuiController controller) {
         this.controller = controller;
 
         // Multi-Viewport
@@ -44,7 +44,7 @@ class SilkImGuiRenderer : IInternalGuiRenderer {
     }
 
     public void Update(float deltaTime) => controller.Update(deltaTime);
-    public void Render() => controller.Render();
+    // public void Render() => controller.Render();
 
 
     void Callback_CreateWindow(ImGuiViewportPtr vp) {

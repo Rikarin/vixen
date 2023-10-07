@@ -124,12 +124,12 @@ public sealed class VulkanRenderer : IRenderer {
                 
                 // TODO
                 
-                // tODO: testing only
-                var clearValue = new ClearValue(new ClearColorValue());
-                renderPassBeginInfo.ClearValueCount = 1;
-                renderPassBeginInfo.PClearValues = &clearValue;
+                fixed (ClearValue* clearValues = framebuffer.ClearValues.ToArray()) {
+                    renderPassBeginInfo.ClearValueCount = (uint)framebuffer.ClearValues.Count;
+                    renderPassBeginInfo.PClearValues = clearValues;
 
-                vk.CmdBeginRenderPass(commandBuffer, renderPassBeginInfo, SubpassContents.Inline);
+                    vk.CmdBeginRenderPass(commandBuffer, renderPassBeginInfo, SubpassContents.Inline);
+                }
 
 
 

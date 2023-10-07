@@ -40,6 +40,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
     public Framebuffer CurrentFramebuffer => GetFrameBuffer(currentImageIndex);
     public CommandBuffer CurrentDrawCommandBuffer => GetDrawCommandBuffer(CurrentBufferIndex);
     public Semaphore? RenderCompleteSemaphore => semaphores.RenderComplete;
+    public IEnumerable<Image> Images => images.Select(x => x.Image);
 
     public unsafe void InitializeSurface(IWindow window) {
         var instance = vk.CurrentInstance!.Value;
@@ -408,7 +409,9 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
             SrcAccessMask = 0,
             DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
-            DstAccessMask = AccessFlags.ColorAttachmentWriteBit
+            // DstAccessMask = AccessFlags.ColorAttachmentWriteBit
+            // TODO ImGui
+            DstAccessMask = AccessFlags.ColorAttachmentWriteBit | AccessFlags.ColorAttachmentReadBit
         };
 
         var renderPassInfo = new RenderPassCreateInfo(StructureType.RenderPassCreateInfo) {

@@ -3,6 +3,8 @@ using Rin.Core.General;
 using Rin.Editor;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
+using Rin.Platform.Silk;
+using Rin.Platform.Vulkan;
 using Rin.Rendering;
 using Serilog;
 using Serilog.Events;
@@ -18,16 +20,14 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.RendererContext", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
-    
+
     // For debugging pipeline
     // .MinimumLevel.Verbose()
-    
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
     .Enrich.WithThreadName()
     .Enrich.FromLogContext()
     .Enrich.With(new SourceContextEnricher())
-
     .WriteTo.Console(
         outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}][{ThreadName}]{SourceContext} {Message:lj}{NewLine}{Exception}"
@@ -37,8 +37,8 @@ Log.Logger = new LoggerConfiguration()
 var project = Project.CreateProject("Example 1", "../Examples/Project1");
 Project.OpenProject = project;
 project.Save();
-var editor = new EditorManager(project);
 
+var editor = new EditorManager(project);
 editor.Watch();
 
 
@@ -92,7 +92,6 @@ swapchainRenderPass.Bake();
 
 var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
-
 // vertexArray = VertexArray.Create();
 // float[] vertices = {
 //     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
@@ -123,13 +122,32 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 // material = new(Shader.Find("Basic/Shader1")!);
 // material.SetColor("u_Color", Color.Bisque);
 
+var gui = new GuiRenderer(app, project);
+gui.OnStart();
 
-app.Render += () => {
-    // Log.Information("On Update");
-
+app.Update += () => {
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
     Renderer.EndRenderPass(commandBuffer);
+
+    Renderer.Submit(
+        () => {
+            SilkWindow.MainWindow.imGuiController.Update(0.1f);
+            gui.OnRender(0.1f);
+            
+            var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
+            var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
+
+            if (vkCmd.ActiveCommandBuffer.HasValue) {
+                SilkWindow.MainWindow.imGuiController.Render(
+                    vkCmd.ActiveCommandBuffer.Value,
+                    sw.CurrentFramebuffer,
+                    new((uint)sw.Size.Width, (uint)sw.Size.Height)
+                );
+            }
+        }
+    );
+
     commandBuffer.End();
 
 

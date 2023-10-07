@@ -39,6 +39,7 @@ public class Application : IDisposable {
             });
         
         MainWindow.Resize += OnWindowResize;
+        MainWindow.Closing += OnWindowClose;
         
         var vulkanRenderer = new VulkanRenderer();
         Renderer.Initialize(MainWindow.Handle.Swapchain, vulkanRenderer);
@@ -77,7 +78,7 @@ public class Application : IDisposable {
                 Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
                 Renderer.BeginFrame();
 
-                Render?.Invoke();
+                Update?.Invoke();
 
                 Renderer.EndFrame();
                 Renderer.Submit(MainWindow.Handle.Swapchain.Present);
@@ -88,6 +89,10 @@ public class Application : IDisposable {
                 // silkWindow.silkWindow.DoRender();
             }
         }
+
+        Log.Information("stopped working");
+        
+        renderThread.Terminate();
 
     //     while (running) {
     //         ExecuteMainThreadQueue();
@@ -105,6 +110,11 @@ public class Application : IDisposable {
         Renderer.Submit(() => MainWindow.Handle.Swapchain.OnResize(newSize));
     }
 
+    void OnWindowClose() {
+        Log.Information("on close");
+        IsRunning = false;
+    }
+
     public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
         var options = new ApplicationOptions { Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded };
         configureOptions?.Invoke(options);
@@ -116,7 +126,8 @@ public class Application : IDisposable {
         renderThread.Terminate();
 
         MainWindow.Resize -= OnWindowResize;
+        MainWindow.Closing -= OnWindowClose;
     }
 
-    public event Action? Render;
+    public event Action? Update;
 }

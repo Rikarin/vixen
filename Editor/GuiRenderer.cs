@@ -1,14 +1,12 @@
 using ImGuiNET;
 using Rin.Core.General;
 using Rin.Editor.Panes;
-using Rin.Platform.Internal;
 using Serilog;
 using System.Numerics;
 
 namespace Rin.Editor;
 
 sealed class GuiRenderer : IDisposable {
-    IInternalGuiRenderer guiHandle;
     readonly Application application;
     readonly Dictionary<Type, Pane> panes = new();
     readonly bool fullScreenDock = true;
@@ -26,9 +24,9 @@ sealed class GuiRenderer : IDisposable {
         settingsPath = Path.Combine(project.RootDirectory, "ProjectSettings", "Editor");
         Directory.CreateDirectory(settingsPath);
 
-        var mainWindow = this.application.MainWindow;
+        // var mainWindow = this.application.MainWindow;
         // mainWindow.Load += OnStart;
-        mainWindow.Closing += OnClosing;
+        // mainWindow.Closing += OnClosing;
         // mainWindow.Render += OnRender;
 
         AddPane<StatsPane>();
@@ -67,10 +65,8 @@ sealed class GuiRenderer : IDisposable {
         ImGui.SaveIniSettingsToDisk(DefaultPath);
     }
 
-    void OnRender(float deltaTime) {
-        guiHandle.Update(deltaTime);
+    public void OnRender(float deltaTime) {
         OnUpdate();
-        guiHandle.Render();
 
         ImGui.UpdatePlatformWindows();
         ImGui.RenderPlatformWindowsDefault();
@@ -80,7 +76,7 @@ sealed class GuiRenderer : IDisposable {
         panes.Add(typeof(T), new T { Gui = this });
     }
 
-    void OnStart() {
+    public void OnStart() {
         // guiHandle = Application.Current.MainWindow.Handle.CreateGuiRenderer();
 
         var io = ImGui.GetIO();
@@ -99,7 +95,7 @@ sealed class GuiRenderer : IDisposable {
         Log.Information("GUI Renderer Started");
     }
 
-    void OnUpdate() {
+    public void OnUpdate() {
         const ImGuiDockNodeFlags dockNodeFlags = ImGuiDockNodeFlags.None | ImGuiDockNodeFlags.PassthruCentralNode;
 
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
