@@ -51,7 +51,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
         surface = window.VkSurface!.Create<AllocationCallbacks>(instance.ToHandle(), null).ToSurface();
 
         FindImageFormatAndColorSpace();
-        log.Information("Surface initialized");
+        log.Debug("Surface initialized");
     }
 
     public void Create(ref Size size, bool vSync) {
@@ -519,7 +519,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             }
         }
 
-        log.Information("ColorFormat {Format} ColorSpace {Space}", ColorFormat, colorSpace);
+        log.Debug("ColorFormat {Format} ColorSpace {Space}", ColorFormat, colorSpace);
     }
 
 

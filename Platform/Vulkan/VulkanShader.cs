@@ -220,7 +220,7 @@ public sealed class VulkanShader : IShader, IDisposable {
                     .EnsureSuccess();
                 descriptorSetLayouts[set.Key] = setLayout;
 
-                log.Information(
+                log.Debug(
                     "Creating descriptor set {Set} with {UniformBuffers} ubo's, {StorageBuffers} ssbo's, {ImageSamplers} samplers, {SeparateTextures} separate textures, {SeparateSamplers} separate samplers and {StorageImages} storage images",
                     set.Key,
                     set.Value.UniformBuffers.Count,

@@ -16,6 +16,7 @@ public sealed class RenderThread : IRenderThread, IDisposable {
         
         if (threadingPolicy == ThreadingPolicy.MultiThreaded) {
             thread = new(() => RenderThreadFunc(this));
+            thread.Name = "Render Thread";
         }
     }
 

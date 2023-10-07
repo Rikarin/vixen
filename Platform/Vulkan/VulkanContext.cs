@@ -44,7 +44,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             extensions = extensions.Append("VK_KHR_portability_enumeration").ToArray();
         }
 
-        log.Information("Vulkan Extensions: {Extensions}", extensions);
+        log.Debug("Vulkan Extensions: {Extensions}", extensions);
         InstanceCreateInfo createInfo = new() {
             SType = StructureType.InstanceCreateInfo,
             Flags = isMacOs ? InstanceCreateFlags.EnumeratePortabilityBitKhr : InstanceCreateFlags.None,

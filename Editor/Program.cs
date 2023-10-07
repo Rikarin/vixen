@@ -5,32 +5,29 @@ using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
 using Serilog.Exceptions;
-using System.Diagnostics.Tracing;
 using System.Drawing;
 
-var eventSourceListener = new EventSourceCreatedListener();
+// var eventSourceListener = new EventSourcesListener();
 
 Thread.CurrentThread.Name = "Main";
 
-// TODO: colored text, thread name, context name
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.IRenderer", LogEventLevel.Information)
+    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.RendererContext", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
-    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.IRenderCommandBuffer", LogEventLevel.Information)
-    .MinimumLevel.Override("Rin.Core.General.Application", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
+    
+    // For debugging pipeline
+    // .MinimumLevel.Verbose()
+    
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
     .Enrich.WithThreadName()
-    // .Enrich.WithProperty(ThreadNameEnricher.ThreadNamePropertyName, "MyDefault")
     .Enrich.FromLogContext()
     .Enrich.With(new SourceContextEnricher())
 
-    // .Enrich.WithProperty("Environment", builder.Configuration.GetSection("environment").Value)
     .WriteTo.Console(
         outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}][{ThreadName}]{SourceContext} {Message:lj}{NewLine}{Exception}"
@@ -45,11 +42,10 @@ var editor = new EditorManager(project);
 editor.Watch();
 
 
-// LoadRuntime, ...
 var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
-        options.ThreadingPolicy = ThreadingPolicy.SingleThreaded;
+        options.ThreadingPolicy = ThreadingPolicy.MultiThreaded;
         options.WindowSize = new(800, 600);
     }
 );
@@ -60,9 +56,7 @@ var app = Application.CreateDefault(
 //
 // var boxObj = new GameObject();
 // boxObj.AddComponent<MeshFilter>();
-//
-// Mesh? box = null;
-// Material? material = null;
+
 
 var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
 var testShader = shaderImporter.GetShader();
@@ -93,10 +87,6 @@ var pipelineOptions = new PipelineOptions {
 var swapchainRenderPass = ObjectFactory.CreateRenderPass(
     new() { DebugName = "SceneComposite", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions) }
 );
-
-// TODO: stuff
-
-// TODO: finish DescriptorSetManager, VulkanPipeline, VulkanRenderCommandBuffer
 
 swapchainRenderPass.Bake();
 
@@ -143,11 +133,6 @@ app.Render += () => {
     commandBuffer.End();
 
 
-    // RenderCommand.SetClearColor(Color.Gray);
-    // RenderCommand.Clear();
-    // This can be called from SilkWindow
-    // RenderCommand.SetViewport(Point.Empty, new Size(128, 128));
-    //
     // if (Input.GetKey(Key.A)) {
     //     Log.Information("Key A pressed");
     // }
@@ -159,16 +144,7 @@ app.Render += () => {
     // if (Input.GetKeyUp(Key.W)) {
     //     Log.Information("Key W Up");
     // }
-    //
-    // material?.Render();
-    // if (box != null) {
-    //     // RenderCommand.Draw(box);
-    // }
 };
-
-// This needs to be set after the RenderCommand.Clear() is called
-// var guiRenderer = new GuiRenderer(app, project);
-
 
 // TODO: Example of creating a few objects
 // {
@@ -184,40 +160,5 @@ app.Render += () => {
 //     // Load scene
 // }
 
-
 app.Run();
-
 return 0;
-
-
-// TODO: use this to show in editor EventSource metrics
-sealed class EventSourceCreatedListener : EventListener {
-    protected override void OnEventSourceCreated(EventSource eventSource) {
-        base.OnEventSourceCreated(eventSource);
-
-        // EnableEvents(eventSource, EventLevel.Verbose, EventKeywords.All);
-        Console.WriteLine($"New event source: {eventSource.Name}");
-    }
-
-    protected override void OnEventWritten(EventWrittenEventArgs eventData) {
-        base.OnEventWritten(eventData);
-        // Console.WriteLine($"event data {eventData.EventName}");
-    }
-}
-
-
-class SourceContextEnricher : ILogEventEnricher {
-    public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory) {
-        if (logEvent.Properties.TryGetValue("SourceContext", out var property)) {
-            var scalarValue = property as ScalarValue;
-            var value = scalarValue?.Value as string;
-
-            if (value?.StartsWith("Rin") ?? false) {
-                var lastElement = value.Split(".").LastOrDefault();
-                if (!string.IsNullOrWhiteSpace(lastElement)) {
-                    logEvent.AddOrUpdateProperty(new("SourceContext", new ScalarValue($"[{lastElement}]")));
-                }
-            }
-        }
-    }
-}
