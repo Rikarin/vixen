@@ -1,4 +1,6 @@
 using ImGuiNET;
+using Rin.Core.UI;
+using Serilog;
 
 namespace Rin.Editor.Panes;
 
@@ -9,12 +11,17 @@ sealed class ProjectPane : Pane {
 
     string search = string.Empty;
 
+    readonly MyCustomView myCustomView = new();
+
     public ProjectPane() : base("Project") { }
 
     void RenderDictionary(string path) {
         foreach (var directory in Directory.GetDirectories(path)) {
             var openFlag = selectedPath == directory ? ImGuiTreeNodeFlags.Selected : ImGuiTreeNodeFlags.None;
-            var isOpened = ImGui.TreeNodeEx(Path.GetFileName(directory), ImGuiTreeNodeFlags.OpenOnArrow | openFlag);
+            var isOpened = ImGui.TreeNodeEx(
+                Path.GetFileName(directory),
+                ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanFullWidth | openFlag
+            );
             ContextMenuRender(directory);
 
             if (ImGui.IsItemClicked()) {
@@ -33,7 +40,7 @@ sealed class ProjectPane : Pane {
             }
 
             var selected = file == selectedPath;
-            var clicked = ImGui.Selectable(Path.GetFileName(file), ref selected);
+            var clicked = ImGui.Selectable(Path.GetFileName(file), ref selected, ImGuiSelectableFlags.SpanAllColumns);
             ContextMenuRender(file);
 
             if (clicked) {
@@ -96,14 +103,64 @@ sealed class ProjectPane : Pane {
     }
 
     protected override void OnRender() {
-        if (ImGui.TreeNodeEx("Project", ImGuiTreeNodeFlags.DefaultOpen)) {
-            if (ImGui.BeginPopupContextItem()) {
-                ImGui.MenuItem("Asdf");
-                ImGui.EndPopup();
+        ImGui.Columns(2, "##ProjectColumns", false);
+        if (ImGui.BeginChild("project")) {
+            if (ImGui.TreeNodeEx("Project", ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth)) {
+                if (ImGui.BeginPopupContextItem()) {
+                    ImGui.MenuItem("Asdf");
+                    ImGui.EndPopup();
+                }
+
+                RenderDictionary(Gui.Project.RootDirectory);
+                ImGui.TreePop();
             }
 
-            RenderDictionary(Gui.Project.RootDirectory);
-            ImGui.TreePop();
+            ImGui.EndChild();
         }
+
+
+        ImGui.NextColumn();
+        ImGui.Text("lol");
+        myCustomView.Render();
+        if (ImGui.BeginChild("project")) {
+            ImGui.Text("foo bar");
+            ImGui.EndChild();
+        }
+
+        ImGui.Columns(1);
     }
+}
+
+public class MyCustomView : View {
+    readonly string selected = "none";
+    // TODO: these states needs to be somehow persisted across renderings
+    readonly State<string> selection1 = new();
+    readonly State<string> selection2 = new();
+    readonly State<bool> isToggled = new();
+
+    string[] test = { "foo", "bar", "strings" };
+    
+    // @formatter:off
+    protected override View Body =>
+        VStack(
+            Button(isToggled.Value ? "toggled" : selection2.Value, () => Log.Error("test"))
+                .ContextMenu(
+                    Button(selected),
+                    MenuItem("Menu Item"),
+                    MenuItem("Menu Item"),
+                    Separator(),
+                    Menu(
+                        "Create",
+                        MenuItem("Menu Item"),
+                        MenuItem("Menu Item"),
+                        MenuItem("Menu Item")
+                    )
+                ),
+            Picker("first", selection1, "foo", "bar", "asdf"),
+            Picker("##foobar", selection2, "foo", "bar", "asdf"),
+            Toggle("someToggle", isToggled),
+            isToggled.Value ? Text("is checked!!") : Empty(),
+            ForEach(test, Text)
+        );
+    // @formatter:on
 }

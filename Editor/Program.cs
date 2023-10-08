@@ -28,6 +28,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithThreadName()
     .Enrich.FromLogContext()
     .Enrich.With(new SourceContextEnricher())
+    .WriteTo.EditorSink()
     .WriteTo.Console(
         outputTemplate:
         "[{Timestamp:HH:mm:ss} {Level:u3}][{ThreadName}]{SourceContext} {Message:lj}{NewLine}{Exception}"

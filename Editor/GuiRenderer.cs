@@ -290,8 +290,8 @@ sealed class GuiRenderer : IDisposable {
         
   		// Headers - Group tabs
 	    colors[(int)ImGuiCol.Header] = MonoColor(48);
-	    // colors[(int)ImGuiCol.HeaderHovered] = Color.FromArgb(255, 48, 48, 48).ToVector4();
-	    // colors[(int)ImGuiCol.HeaderActive] = Color.FromArgb(255, 48, 48, 48).ToVector4();
+	    colors[(int)ImGuiCol.HeaderHovered] = MonoColor(60);
+	    colors[(int)ImGuiCol.HeaderActive] = MonoColor(75);
 	    
 	    // Frame Background (Inputs, Selects, Charts)
 	    colors[(int)ImGuiCol.FrameBg] = MonoColor(17);
@@ -300,31 +300,27 @@ sealed class GuiRenderer : IDisposable {
 	    
 	    // Tabs
 	    colors[(int)ImGuiCol.Tab] = MonoColor(21);
-	    colors[(int)ImGuiCol.TabActive] = MonoColor(41);
+	    colors[(int)ImGuiCol.TabActive] = MonoColor(36);
 	    colors[(int)ImGuiCol.TabHovered] = MonoColor(45);
 	    
 	    colors[(int)ImGuiCol.TabUnfocused] = MonoColor(21);
 	    colors[(int)ImGuiCol.TabUnfocusedActive] = MonoColor(41);
 	    
 	    // Title
-	    // colors[(int)ImGuiCol.WindowBg] = Color.FromArgb(255, 21, 21, 21).ToVector4();
-	    colors[(int)ImGuiCol.WindowBg] = Color.Red.ToVector4();
 	    colors[(int)ImGuiCol.TitleBg] = MonoColor(21);
 	    colors[(int)ImGuiCol.TitleBgActive] = MonoColor(21);
-	    // colors[ImGuiCol_TitleBg]			= ImGui::ColorConvertU32ToFloat4(Colors::Theme::titlebar);
-	    // colors[ImGuiCol_TitleBgActive]		= ImGui::ColorConvertU32ToFloat4(Colors::Theme::titlebar);
-	    // colors[ImGuiCol_TitleBgCollapsed]	= ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
-	    //
+	    colors[(int)ImGuiCol.TitleBgCollapsed] = MonoColor(21);
+	    
 	    // Resize Grip
-	    // colors[ImGuiCol_ResizeGrip]			= ImVec4(0.91f, 0.91f, 0.91f, 0.25f);
-	    // colors[ImGuiCol_ResizeGripHovered]	= ImVec4(0.81f, 0.81f, 0.81f, 0.67f);
-	    // colors[ImGuiCol_ResizeGripActive]	= ImVec4(0.46f, 0.46f, 0.46f, 0.95f);
-	    //
+	    colors[(int)ImGuiCol.ResizeGrip] = MonoColor(55);
+	    colors[(int)ImGuiCol.ResizeGripHovered] = MonoColor(65);
+	    colors[(int)ImGuiCol.ResizeGripActive] = MonoColor(75);
+	    
 	    // Scrollbar
-	    // colors[ImGuiCol_ScrollbarBg]		= ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
-	    // colors[ImGuiCol_ScrollbarGrab]		= ImVec4(0.31f, 0.31f, 0.31f, 1.0f);
-	    // colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.0f);
-	    // colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.0f);
+	    colors[(int)ImGuiCol.ScrollbarBg] = MonoColor(17);
+	    colors[(int)ImGuiCol.ScrollbarGrab] = MonoColor(87);
+	    colors[(int)ImGuiCol.ScrollbarGrabHovered] = MonoColor(97);
+	    colors[(int)ImGuiCol.ScrollbarGrabActive] = MonoColor(107);
 	    
 	    // Check Mark
 	    colors[(int)ImGuiCol.CheckMark] = Color.FromArgb(255, 23, 90, 193).ToVector4();
@@ -338,23 +334,22 @@ sealed class GuiRenderer : IDisposable {
 	    colors[(int)ImGuiCol.Text] = MonoColor(200);
 	    
 	    // Separator
-	    // colors[ImGuiCol_Separator]			= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundDark);
-	    // colors[ImGuiCol_SeparatorActive]	= ImGui::ColorConvertU32ToFloat4(Colors::Theme::highlight);
-	    // colors[ImGuiCol_SeparatorHovered]	= ImColor(39, 185, 242, 150);
+	    colors[(int)ImGuiCol.Separator] = MonoColor(48);
+	    colors[(int)ImGuiCol.SeparatorHovered] = MonoColor(65);
+	    colors[(int)ImGuiCol.SeparatorActive] = MonoColor(75);
 	    
 	    // Window Background
-	    colors[(int)ImGuiCol.WindowBg] = MonoColor(21);
-
-	    // colors[ImGuiCol_ChildBg]			= ImGui::ColorConvertU32ToFloat4(Colors::Theme::background);
-	    // colors[ImGuiCol_PopupBg]			= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundPopup);
-	    // colors[ImGuiCol_Border]				= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundDark);
+	    colors[(int)ImGuiCol.WindowBg] = MonoColor(36);
+	    colors[(int)ImGuiCol.ChildBg] = MonoColor(26);
+	    // colors[(int)ImGuiCol.PopupBg] = MonoColor(21);
+	    colors[(int)ImGuiCol.Border] = MonoColor(8);
 	    
 	    // Tables
 	    // colors[ImGuiCol_TableHeaderBg]		= ImGui::ColorConvertU32ToFloat4(Colors::Theme::groupHeader);
 	    // colors[ImGuiCol_TableBorderLight]	= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundDark);
 	    
 	    // Menubar
-	    // colors[ImGuiCol_MenuBarBg]			= ImVec4{ 0.0f, 0.0f, 0.0f, 0.0f };
+		colors[(int)ImGuiCol.MenuBarBg] = MonoColor(21);
     }
 
     Vector4 MonoColor(int value) => Color.FromArgb(255, value, value, value).ToVector4();

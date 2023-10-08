@@ -51,7 +51,7 @@ sealed class ProfilerPane : Pane {
         PlotLine("cpu-usage", Cyan);
         PlotLine("monitor-lock-contention-count");
         PlotProgress("cpu-usage", 100);
-
+        
         // var lol = ImGui.GetWindowDrawList();
         // lol.AddRectFilled(new Vector2(1, 5), new Vector2(200, 600), 0xFF0000FF);
         

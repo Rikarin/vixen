@@ -8,12 +8,17 @@ sealed class HierarchyPane : Pane {
     public HierarchyPane() : base("Hierarchy") { }
 
     protected override void OnRender() {
-        if (ImGui.TreeNodeEx("Scene Name", ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen)) {
+        ImGui.BeginChild("hierarchy");
+        if (ImGui.TreeNodeEx(
+                "Scene Name",
+                ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth
+            )) {
             // TODO: render scene objects
 
             var opened = ImGui.TreeNodeEx(
                 "Basdffsdf",
-                ImGuiTreeNodeFlags.OpenOnArrow | (foobar ? ImGuiTreeNodeFlags.Selected : ImGuiTreeNodeFlags.None)
+                ImGuiTreeNodeFlags.OpenOnArrow
+                | (foobar ? ImGuiTreeNodeFlags.Selected : ImGuiTreeNodeFlags.None | ImGuiTreeNodeFlags.SpanFullWidth)
             );
 
             if (ImGui.IsItemClicked()) {
@@ -33,5 +38,7 @@ sealed class HierarchyPane : Pane {
 
             ImGui.TreePop();
         }
+
+        ImGui.EndChild();
     }
 }
