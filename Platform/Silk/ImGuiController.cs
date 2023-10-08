@@ -121,6 +121,13 @@ public class ImGuiController : IDisposable {
         if (io.Fonts.AddFontFromFileTTF(imGuiFontConfig.FontPath, imGuiFontConfig.FontSize).NativePtr == default) {
             throw new("Failed to load ImGui font");
         }
+        
+        // TODO: move this to proper font class manager
+        // Vulkan Image for fonts is created by Init method and is not reloaded when new font is added
+        io.Fonts.AddFontFromFileTTF("Assets/Switzer/Switzer-Bold.ttf", 16);
+        
+        
+        
 
         Init(
             vk,

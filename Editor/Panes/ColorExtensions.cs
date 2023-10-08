@@ -7,5 +7,5 @@ namespace Rin.Editor.Panes;
 // ImGui.PopStyleColor();
 static class ColorExtensions {
     public static Vector4 ToVector4(this Color color) =>
-        new(color.R / 256f, color.G / 256f, color.B / 256f, color.A / 256f);
+        new(color.R / 255f, color.G / 255f, color.B / 255f, color.A / 255f);
 }

@@ -88,6 +88,7 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
             VulkanContext.Vulkan,
             silkWindow,
             input,
+            new("Assets/Switzer/Switzer-Semibold.ttf", 16),
             VulkanContext.CurrentDevice.PhysicalDevice.VkPhysicalDevice,
             VulkanContext.CurrentDevice.PhysicalDevice.QueueFamilyIndices.Graphics.Value,
             swapChain.Images.Count(),

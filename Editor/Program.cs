@@ -132,8 +132,8 @@ app.Update += () => {
 
     Renderer.Submit(
         () => {
-            SilkWindow.MainWindow.imGuiController.Update(0.1f);
-            gui.OnRender(0.1f);
+            SilkWindow.MainWindow.imGuiController.Update((float)SilkWindow.MainWindow.silkWindow.Time);
+            gui.OnRender((float)SilkWindow.MainWindow.silkWindow.Time);
             
             var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
             var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
