@@ -1,5 +1,3 @@
-using Serilog;
-
 namespace Rin.Core.UI;
 
 public class ForEach<T> : View {
@@ -12,8 +10,11 @@ public class ForEach<T> : View {
     }
 
     public override void Render() {
+        // TODO: push or not push the ID
         foreach (var child in children) {
             callback(child).Render();
         }
+        
+        base.Render();
     }
 }

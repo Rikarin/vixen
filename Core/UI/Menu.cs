@@ -19,5 +19,7 @@ public class Menu : View {
 
             ImGui.EndMenu();
         }
+        
+        base.Render();
     }
 }

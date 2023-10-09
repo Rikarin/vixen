@@ -22,5 +22,7 @@ public class Toggle : View {
         if (ImGui.Checkbox(label, ref value)) {
             isOn.SetNext(value);
         }
+        
+        base.Render();
     }
 }

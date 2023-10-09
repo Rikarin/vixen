@@ -1,9 +1,9 @@
 namespace Rin.Core.UI;
 
-public class VerticalView : View {
+public class VStack : View {
     readonly View[] items;
 
-    public VerticalView(View[] items) {
+    public VStack(View[] items) {
         this.items = items;
     }
 
@@ -11,5 +11,7 @@ public class VerticalView : View {
         foreach (var item in items) {
             item.Render();
         }
+        
+        base.Render();
     }
 }

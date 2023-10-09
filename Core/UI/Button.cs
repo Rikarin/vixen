@@ -8,6 +8,9 @@ public class Button : View {
     readonly string label;
     Action? onSubmit;
 
+    // public Button(string label, Image image, Action? onSubmit) {
+    // public Button(Action? onSubmit, View label) {
+    
     public Button(string label, Action? onSubmit) {
         this.label = label;
         this.onSubmit = onSubmit;
@@ -23,7 +26,7 @@ public class Button : View {
     }
 
     public override void Render() {
-        if (ImGui.Button($"{label}")) {
+        if (ImGui.Button($"{label}###{ViewContext.GetId()}")) {
             onSubmit?.Invoke();
         }
         

@@ -23,11 +23,10 @@ public class MenuItem : View {
     }
 
     public override void Render() {
-        if (ImGui.MenuItem($"{label}##{GetHashCode()}")) {
+        if (ImGui.MenuItem($"{label}###{ViewContext.GetId()}")) {
             onSubmit?.Invoke();
         }
         
-        // This will render context menu
         base.Render();
     }
 }

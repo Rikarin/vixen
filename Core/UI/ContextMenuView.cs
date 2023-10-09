@@ -18,5 +18,7 @@ public class ContextMenuView : View {
 
             ImGui.EndPopup();
         }
+        
+        base.Render();
     }
 }

@@ -5,10 +5,10 @@ namespace Rin.Core.UI;
 public class Picker : View {
     readonly State<string> selection;
     readonly List<string> options;
-    
-    string label;
 
-    public Picker(string label, State<string> selection, IEnumerable<string> options) {
+    readonly string? label;
+
+    public Picker(string? label, State<string> selection, IEnumerable<string> options) {
         this.label = label;
         this.selection = selection;
         this.options = options.ToList();
@@ -20,7 +20,7 @@ public class Picker : View {
     // }
 
     public override void Render() {
-        if (ImGui.BeginCombo($"{label}", selection.Value)) {
+        if (ImGui.BeginCombo($"{label}###{ViewContext.GetId()}", selection.Value)) {
             for (var i = 0; i < options.Count; i++) {
                 if (ImGui.Selectable(options[i], selection.Value == options[i])) {
                     selection.SetNext(options[i]);
@@ -29,5 +29,7 @@ public class Picker : View {
 
             ImGui.EndPopup();
         }
+        
+        base.Render();
     }
 }

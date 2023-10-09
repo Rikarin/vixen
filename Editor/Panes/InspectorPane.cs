@@ -14,6 +14,8 @@ sealed class InspectorPane : Pane {
     int tagId;
     int layerId;
 
+    TransformView transformView = new();
+
     readonly Transform transform = new();
     Vector3 position;
     Vector3 rotation;
@@ -139,9 +141,11 @@ sealed class InspectorPane : Pane {
         ImGui.Spacing();
 
         RenderTransform();
+        transformView.Render();
 
 
         if (ImGui.CollapsingHeader("Mesh Filter")) {
+            ImGui.Text("Foo");
             ImGui.Text("Foo");
         }
     }

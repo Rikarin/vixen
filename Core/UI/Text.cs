@@ -11,5 +11,6 @@ public class Text : View {
 
     public override void Render() {
         ImGui.Text(text);
+        base.Render();
     }
 }
