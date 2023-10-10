@@ -74,7 +74,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
 
     public void BeginFrame() {
         log.Verbose("[SwapChain] Begin Frame");
-        Renderer.GetRenderDisposeQueue(CurrentBufferIndex).Execute();
+        Renderer.DisposeQueue(currentImageIndex);
 
         currentImageIndex = AcquireNextImage();
         vk.ResetCommandPool(vkDevice, commandBuffers[CurrentBufferIndex].CommandPool, 0).EnsureSuccess();
@@ -476,8 +476,7 @@ sealed class VulkanSwapChain : ISwapchain, IDisposable {
             default,
             ref imageIndex
         );
-        // TODO
-            // .EnsureSuccess();
+            //.EnsureSuccess();
 
         // TODO: verify if this cast is correct
         return (int)imageIndex;

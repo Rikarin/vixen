@@ -124,10 +124,10 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 // material = new(Shader.Find("Basic/Shader1")!);
 // material.SetColor("u_Color", Color.Bisque);
 
-// TODO: EventSource count of Render submits and submits for disposal
-
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
+
+// TODO: render first quad thru vulkan
 
 app.Update += () => {
     commandBuffer.Begin();

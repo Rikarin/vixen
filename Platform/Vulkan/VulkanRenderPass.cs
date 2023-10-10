@@ -10,6 +10,7 @@ public sealed class VulkanRenderPass : IRenderPass {
     public IPipeline Pipeline => Options.Pipeline;
     public IFramebuffer TargetFramebuffer => Options.Pipeline.Options.TargetFramebuffer;
     public int FirstSetIndex => throw new NotImplementedException();
+    public bool HasDescriptorSets => descriptorSetManager.HasDescriptorSets;
 
     public VulkanRenderPass(RenderPassOptions options) {
         Options = options;

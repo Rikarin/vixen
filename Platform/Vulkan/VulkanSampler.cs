@@ -16,9 +16,11 @@ public static class VulkanSampler {
     public static unsafe void DestroySampler(Sampler sampler) {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         VulkanContext.Vulkan.DestroySampler(device, sampler, null);
+        Resources.Samplers--;
     }
 }
 
+// TODO: log these in EventSource instead?
 public class ResourceAllocationCounts {
     public int Samplers { get; set; }
 }

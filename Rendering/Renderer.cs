@@ -16,12 +16,16 @@ public static class Renderer {
 
     // TODO: properly load this
     public static RendererOptions Options { get; private set; } = new();
-
     public static int CurrentFrameIndex { get; private set; }
     public static int CurrentFrameIndex_RT => currentBufferIndexAccessor.CurrentBufferIndex;
-
     public static int RenderQueueIndex => (renderCommandQueueSubmissionIndex + 1) % commandQueue.Length;
     public static RenderCommandQueue RenderCommandQueue => commandQueue[renderCommandQueueSubmissionIndex];
+
+
+    // TODO: initialize these
+    public static ITexture2D WhiteTexture => null;
+    public static ITexture2D BlackTexture => null;
+    public static ITextureCube BlackCubeTexture => null;
 
     public static void Initialize(ICurrentBufferIndexAccessor currentBufferIndexAccessor, IRenderer renderer) {
         Renderer.renderer = renderer;
@@ -38,7 +42,15 @@ public static class Renderer {
         renderer.Initialize();
     }
 
-    // TODO: shutdown
+    public static void Shutdown() {
+        // TODO: shader dependencies
+        renderer.Shutdown();
+        // TODO
+
+        for (var i = 0; i < Options.FramesInFlight; i++) {
+            GetRenderDisposeQueue(i).Execute();
+        }
+    }
 
     // TODO: make this internal
     public static void WaitAndRender(IRenderThread thread) {
@@ -46,10 +58,17 @@ public static class Renderer {
             thread.WaitAndSet(RenderThreadState.Kick, RenderThreadState.Busy);
         }
 
+        RenderingEventSource.Log.ReportSubmitCount(commandQueue[RenderQueueIndex].Count);
         using (var _ = RenderingEventSource.RenderWorkTime) {
             commandQueue[RenderQueueIndex].Execute();
             thread.Set(RenderThreadState.Idle);
         }
+    }
+
+    public static void DisposeQueue(int currentBufferIndex) {
+        var queue = GetRenderDisposeQueue(currentBufferIndex);
+        RenderingEventSource.Log.ReportSubmitDisposalCount(queue.Count);
+        queue.Execute();
     }
 
     public static void SwapQueues() {
@@ -61,7 +80,6 @@ public static class Renderer {
     public static void BeginFrame() => renderer.BeginFrame();
     public static void EndFrame() => renderer.EndFrame();
 
-
     public static void BeginRenderPass(
         IRenderCommandBuffer renderCommandBuffer,
         IRenderPass renderPass,
@@ -71,7 +89,6 @@ public static class Renderer {
 
     public static void EndRenderPass(IRenderCommandBuffer renderCommandBuffer) =>
         renderer.EndRenderPass(renderCommandBuffer);
-
 
     public static void IncreaseCurrentFrameIndex() {
         CurrentFrameIndex = (CurrentFrameIndex + 1) % Options.FramesInFlight;

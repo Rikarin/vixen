@@ -51,6 +51,7 @@ public partial class View {
     public EmptyView Empty() => new();
     public ForEach<T> ForEach<T>(IEnumerable<T> children, Func<T, View> callback) => new(children, callback);
     public Divider Divider() => new();
+    public Spacing Spacing() => new();
     public Text Text(string text) => new(text);
     
     // Stacks

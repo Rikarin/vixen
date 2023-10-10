@@ -1,28 +1,6 @@
-using ImGuiNET;
 using Rin.Core.UI;
 
-namespace Rin.Editor.Panes;
-
-sealed class InspectorPane : Pane {
-    readonly TransformView transformView = new();
-    readonly MeshFilterView meshFilterView = new();
-
-    public InspectorPane() : base("Inspector") {
-        // position = transform.LocalPosition;
-        // rotation = transform.LocalRotation.ToEulerAngles();
-        // scale = transform.LocalScale;
-    }
-
-    protected override void OnRender() {
-        new InspectorHeaderView(Gui.Project.Tags.ToArray(), Gui.Project.Tags.ToArray()).Render();
-        ImGui.Spacing();
-        ImGui.Spacing();
-        transformView.Render();
-        meshFilterView.Render();
-        
-        ImGui.ShowMetricsWindow();
-    }
-}
+namespace Rin.Editor.Panes.Inspector;
 
 public class InspectorHeaderView : View {
     readonly string[] tags;
@@ -37,6 +15,7 @@ public class InspectorHeaderView : View {
         public State<string> Layer { get; set; } = new();
     }
 
+    // TODO
     static InspectorHeaderData data = new();
 
     public InspectorHeaderView(string[] tags, string[] layers) {
@@ -55,7 +34,7 @@ public class InspectorHeaderView : View {
             Grid(
                 GridRow(
                     Picker("Tag", data.Tag, tags),
-                    Picker("Tag", data.Layer, layers)
+                    Picker("Layer", data.Layer, layers)
                 )
             )
         );

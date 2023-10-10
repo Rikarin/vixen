@@ -40,10 +40,10 @@ public sealed class VulkanShader : IShader, IDisposable {
         var vertName = Marshal.StringToHGlobalAnsi("vert");
         var fragName = Marshal.StringToHGlobalAnsi("frag");
 
-        foreach (var entry in data) {
-            using var ptr = entry.Value.Pin();
+        foreach (var (shaderStage, shaderData) in data) {
+            using var ptr = shaderData.Pin();
             var shaderModuleCreateInfo = new ShaderModuleCreateInfo(StructureType.ShaderModuleCreateInfo) {
-                CodeSize = (uint)entry.Value.Length, PCode = (uint*)ptr.Pointer
+                CodeSize = (uint)shaderData.Length, PCode = (uint*)ptr.Pointer
             };
 
             var device = VulkanContext.CurrentDevice.VkLogicalDevice;
@@ -51,14 +51,14 @@ public sealed class VulkanShader : IShader, IDisposable {
                 .EnsureSuccess();
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ShaderModule,
-                $"{name}:{entry.Key}",
+                $"{name}:{shaderStage}",
                 module.Handle
             );
 
-            var entryPoint = entry.Key == ShaderStage.Vertex ? vertName : fragName;
+            var entryPoint = shaderStage == ShaderStage.Vertex ? vertName : fragName;
             pipelineShaderStageCreateInfos.Add(
                 new(StructureType.PipelineShaderStageCreateInfo) {
-                    Stage = entry.Key.ToVulkan(), Module = module, PName = (byte*)entryPoint
+                    Stage = shaderStage.ToVulkan(), Module = module, PName = (byte*)entryPoint
                 }
             );
         }
@@ -72,141 +72,140 @@ public sealed class VulkanShader : IShader, IDisposable {
     public unsafe void CreateDescriptors() {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
 
-        foreach (var set in ReflectionData.ShaderDescriptorSets) {
-            if (set.Value.UniformBuffers.Count > 0) {
+        foreach (var (set, data) in ReflectionData.ShaderDescriptorSets) {
+            if (data.UniformBuffers.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.UniformBuffer, (uint)set.Value.UniformBuffers.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.UniformBuffer, (uint)data.UniformBuffers.Count));
             }
 
-            if (set.Value.StorageBuffers.Count > 0) {
+            if (data.StorageBuffers.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.StorageBuffer, (uint)set.Value.StorageBuffers.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.StorageBuffer, (uint)data.StorageBuffers.Count));
             }
 
-            if (set.Value.ImageSamplers.Count > 0) {
+            if (data.ImageSamplers.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.CombinedImageSampler, (uint)set.Value.ImageSamplers.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.CombinedImageSampler, (uint)data.ImageSamplers.Count));
             }
 
-            if (set.Value.SeparateTextures.Count > 0) {
+            if (data.SeparateTextures.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.SampledImage, (uint)set.Value.SeparateTextures.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.SampledImage, (uint)data.SeparateTextures.Count));
             }
 
-            if (set.Value.SeparateSamplers.Count > 0) {
+            if (data.SeparateSamplers.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.Sampler, (uint)set.Value.SeparateSamplers.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.Sampler, (uint)data.SeparateSamplers.Count));
             }
 
-            if (set.Value.StorageImages.Count > 0) {
+            if (data.StorageImages.Count > 0) {
                 typeCounts
-                    .GetOrCreateDefault(set.Key)
-                    .Add(new(DescriptorType.StorageImage, (uint)set.Value.StorageImages.Count));
+                    .GetOrCreateDefault(set)
+                    .Add(new(DescriptorType.StorageImage, (uint)data.StorageImages.Count));
             }
 
             // Descriptor Set Layout
-
             var layoutBindings = new List<DescriptorSetLayoutBinding>();
-            foreach (var entry in set.Value.UniformBuffers) {
+            foreach (var (binding, buffer) in data.UniformBuffers) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.UniformBuffer,
                         DescriptorCount = 1,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        StageFlags = buffer.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
-                    DescriptorType = DescriptorType.UniformBuffer, DescriptorCount = 1, DstBinding = (uint)entry.Key
+                data.WriteDescriptorSets[buffer.Name] = new(StructureType.WriteDescriptorSet) {
+                    DescriptorType = DescriptorType.UniformBuffer, DescriptorCount = 1, DstBinding = (uint)binding
                 };
             }
 
-            foreach (var entry in set.Value.StorageBuffers) {
+            foreach (var (binding, buffer) in data.StorageBuffers) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.StorageBuffer,
                         DescriptorCount = 1,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        StageFlags = buffer.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
-                    DescriptorType = DescriptorType.StorageBuffer, DescriptorCount = 1, DstBinding = (uint)entry.Key
+                data.WriteDescriptorSets[buffer.Name] = new(StructureType.WriteDescriptorSet) {
+                    DescriptorType = DescriptorType.StorageBuffer, DescriptorCount = 1, DstBinding = (uint)binding
                 };
             }
 
-            foreach (var entry in set.Value.ImageSamplers) {
+            foreach (var (binding, sampler) in data.ImageSamplers) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.CombinedImageSampler,
-                        DescriptorCount = (uint)entry.Value.ArraySize,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        DescriptorCount = (uint)sampler.ArraySize,
+                        StageFlags = sampler.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
+                data.WriteDescriptorSets[sampler.Name] = new(StructureType.WriteDescriptorSet) {
                     DescriptorType = DescriptorType.CombinedImageSampler,
-                    DescriptorCount = (uint)entry.Value.ArraySize,
-                    DstBinding = (uint)entry.Key
+                    DescriptorCount = (uint)sampler.ArraySize,
+                    DstBinding = (uint)binding
                 };
             }
 
-            foreach (var entry in set.Value.SeparateTextures) {
+            foreach (var (binding, sampler) in data.SeparateTextures) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.SampledImage,
-                        DescriptorCount = (uint)entry.Value.ArraySize,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        DescriptorCount = (uint)sampler.ArraySize,
+                        StageFlags = sampler.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
+                data.WriteDescriptorSets[sampler.Name] = new(StructureType.WriteDescriptorSet) {
                     DescriptorType = DescriptorType.SampledImage,
-                    DescriptorCount = (uint)entry.Value.ArraySize,
-                    DstBinding = (uint)entry.Key
+                    DescriptorCount = (uint)sampler.ArraySize,
+                    DstBinding = (uint)binding
                 };
             }
 
-            foreach (var entry in set.Value.SeparateSamplers) {
+            foreach (var (binding, sampler) in data.SeparateSamplers) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.Sampler,
-                        DescriptorCount = (uint)entry.Value.ArraySize,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        DescriptorCount = (uint)sampler.ArraySize,
+                        StageFlags = sampler.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
+                data.WriteDescriptorSets[sampler.Name] = new(StructureType.WriteDescriptorSet) {
                     DescriptorType = DescriptorType.Sampler,
-                    DescriptorCount = (uint)entry.Value.ArraySize,
-                    DstBinding = (uint)entry.Key
+                    DescriptorCount = (uint)sampler.ArraySize,
+                    DstBinding = (uint)binding
                 };
             }
 
-            foreach (var entry in set.Value.StorageImages) {
+            foreach (var (binding, sampler) in data.StorageImages) {
                 layoutBindings.Add(
                     new() {
                         DescriptorType = DescriptorType.StorageImage,
-                        DescriptorCount = (uint)entry.Value.ArraySize,
-                        StageFlags = entry.Value.ShaderStage,
-                        Binding = (uint)entry.Key
+                        DescriptorCount = (uint)sampler.ArraySize,
+                        StageFlags = sampler.ShaderStage,
+                        Binding = (uint)binding
                     }
                 );
 
-                set.Value.WriteDescriptorSets[entry.Value.Name] = new(StructureType.WriteDescriptorSet) {
+                data.WriteDescriptorSets[sampler.Name] = new(StructureType.WriteDescriptorSet) {
                     DescriptorType = DescriptorType.StorageImage,
-                    DescriptorCount = (uint)entry.Value.ArraySize,
-                    DstBinding = (uint)entry.Key
+                    DescriptorCount = (uint)sampler.ArraySize,
+                    DstBinding = (uint)binding
                 };
             }
 
@@ -218,17 +217,17 @@ public sealed class VulkanShader : IShader, IDisposable {
 
                 VulkanContext.Vulkan.CreateDescriptorSetLayout(device, descriptorLayout, null, out var setLayout)
                     .EnsureSuccess();
-                descriptorSetLayouts[set.Key] = setLayout;
+                descriptorSetLayouts[set] = setLayout;
 
                 log.Debug(
                     "Creating descriptor set {Set} with {UniformBuffers} ubo's, {StorageBuffers} ssbo's, {ImageSamplers} samplers, {SeparateTextures} separate textures, {SeparateSamplers} separate samplers and {StorageImages} storage images",
-                    set.Key,
-                    set.Value.UniformBuffers.Count,
-                    set.Value.StorageBuffers.Count,
-                    set.Value.ImageSamplers.Count,
-                    set.Value.SeparateTextures.Count,
-                    set.Value.SeparateSamplers.Count,
-                    set.Value.StorageImages.Count
+                    set,
+                    data.UniformBuffers.Count,
+                    data.StorageBuffers.Count,
+                    data.ImageSamplers.Count,
+                    data.SeparateTextures.Count,
+                    data.SeparateSamplers.Count,
+                    data.StorageImages.Count
                 );
             }
         }

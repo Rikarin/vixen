@@ -1,6 +1,6 @@
 using Rin.Core.UI;
 
-namespace Rin.Editor.Panes; 
+namespace Rin.Editor.Panes.Inspector; 
 
 public class MeshFilterView : View {
     // @formatter:off

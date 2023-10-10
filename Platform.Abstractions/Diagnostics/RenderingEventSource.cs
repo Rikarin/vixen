@@ -7,6 +7,8 @@ namespace Rin.Platform.Abstractions.Diagnostics;
 public sealed class RenderingEventSource : EventSource {
     public static readonly RenderingEventSource Log = new();
 
+    readonly EventCounter submitCount;
+    readonly EventCounter submitDisposalCount;
     readonly EventCounter rendererWorkTime;
     readonly EventCounter renderWaitTime;
 
@@ -14,6 +16,14 @@ public sealed class RenderingEventSource : EventSource {
     public static Watcher RenderWorkTime => new(Log.ReportRenderWorkTime);
 
     RenderingEventSource() {
+        submitCount = new("render-submit-count", this) {
+            DisplayName = "Render Submit Count"
+        };
+        
+        submitDisposalCount = new("render-submit-disposal-count", this) {
+            DisplayName = "Render Submit for Disposal Count"
+        };
+        
         rendererWorkTime = new("render-work-time", this) {
             DisplayName = "Render Work Time", DisplayUnits = "ms"
         };
@@ -31,5 +41,15 @@ public sealed class RenderingEventSource : EventSource {
     public void ReportRenderWaitTime(long elapsedMilliseconds) {
         WriteEvent(2, elapsedMilliseconds);
         renderWaitTime.WriteMetric(elapsedMilliseconds);
+    }
+
+    public void ReportSubmitCount(long count) {
+        WriteEvent(3, count);
+        submitCount.WriteMetric(count);
+    }
+    
+    public void ReportSubmitDisposalCount(long count) {
+        WriteEvent(4, count);
+        submitDisposalCount.WriteMetric(count);
     }
 }

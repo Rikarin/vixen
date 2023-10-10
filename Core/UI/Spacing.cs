@@ -2,9 +2,9 @@ using ImGuiNET;
 
 namespace Rin.Core.UI;
 
-public class Divider : View {
+public class Spacing : View {
     public override void Render() {
-        ImGui.Separator();
+        ImGui.Spacing();
         base.Render();
     }
 }

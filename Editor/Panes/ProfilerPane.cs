@@ -52,13 +52,12 @@ sealed class ProfilerPane : Pane {
         PlotLine("monitor-lock-contention-count");
         PlotProgress("cpu-usage", 100);
         
-        // var lol = ImGui.GetWindowDrawList();
-        // lol.AddRectFilled(new Vector2(1, 5), new Vector2(200, 600), 0xFF0000FF);
-        
         ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Text("Engine");
         ImGui.Separator();
+        PlotLine("render-submit-count", Cyan);
+        PlotLine("render-submit-disposal-count", Cyan);
         PlotLine("main-thread-work-time", LightBlue);
         PlotLine("main-thread-wait-time", Yellow);
         PlotLine("render-work-time", Cyan);
@@ -95,6 +94,7 @@ sealed class ProfilerPane : Pane {
         PlotLine("methods-jitted-count", Color.MediumPurple);
         PlotLine("il-bytes-jitted", Color.MediumPurple);
 
+        ImGui.PopItemWidth();
         // working-set: 253.181952
         // monitor-lock-contention-count: 355
         // alloc-rate: 10828320
@@ -104,11 +104,5 @@ sealed class ProfilerPane : Pane {
         // poh-size: 97264
         // assembly-count: 83
 
-        ImGui.PopItemWidth();
-
-
-        // ImPlot.BeginPlot("foo bar");
-        // ImPlot.EndPlot();
-        // ImGui.ProgressBar(0.5f, Vector2.Zero);
     }
 }

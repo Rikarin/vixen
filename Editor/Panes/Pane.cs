@@ -15,9 +15,10 @@ abstract class Pane {
 
     public void Render() {
         if (IsOpened) {
-            ImGui.Begin(Title, ref isOpened);
-            OnRender();
-            ImGui.End();
+            if (ImGui.Begin(Title, ref isOpened)) {
+                OnRender();
+                ImGui.End();
+            }
         }
     }
 

@@ -1,4 +1,3 @@
-using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Rendering;
 using Serilog;
@@ -7,6 +6,8 @@ using Silk.NET.Vulkan;
 namespace Rin.Platform.Vulkan;
 
 public sealed class DescriptorSetManager {
+    readonly ILogger log = Log.ForContext<DescriptorSetManager>();
+    
     readonly DescriptorSetManagerOptions options;
     readonly Dictionary<int, Dictionary<int, RenderPassInput>> inputResources = new();
     readonly Dictionary<int, Dictionary<int, RenderPassInput>> invalidatedInputResources = new();
@@ -14,7 +15,11 @@ public sealed class DescriptorSetManager {
 
     readonly List<Dictionary<int, Dictionary<int, WriteDescriptor>>> writeDescriptorMap = new();
 
+    // Per Frame in Flight
+    readonly List<List<DescriptorSet>> descriptorSets = new();
+
     DescriptorPool descriptorPool;
+    public bool HasDescriptorSets => descriptorSets.Count > 0 && descriptorSets[0].Count > 0;
 
 
     public DescriptorSetManager(DescriptorSetManagerOptions options) {
@@ -26,7 +31,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(uniformBuffer);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -34,7 +39,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(uniformBufferSet);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -42,7 +47,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(storageBuffer);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -50,7 +55,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(storageBufferSet);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -58,7 +63,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(texture);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -66,7 +71,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(textureCube);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -74,7 +79,7 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(image);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
@@ -82,14 +87,14 @@ public sealed class DescriptorSetManager {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
             inputResources[declaration.Set][declaration.Binding].Set(imageView);
         } else {
-            Log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
+            log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }
     }
 
 
     public unsafe void Bake() {
         if (!Validate()) {
-            Log.Error("[Render Pass ({RenderPass})] Bake - Validation failed", options.DebugName);
+            log.Error("[Render Pass ({RenderPass})] Bake - Validation failed", options.DebugName);
         }
 
         DescriptorPoolSize[] poolSizes = {
@@ -114,7 +119,20 @@ public sealed class DescriptorSetManager {
             descriptorPool = pool;
         }
 
+        // TODO: not sure about this
+        descriptorSets.Clear();
+
+        foreach (var (set, setData) in inputResources) {
+            
+        }
+        
         // TODO: finish this
+
+
+
+        // foreach (var entry in writeDescriptorMap) {
+        //     if (!IsInvalidated(set, entry.Keys))
+        // }
     }
 
 
@@ -131,7 +149,7 @@ public sealed class DescriptorSetManager {
             }
 
             if (!inputResources.TryGetValue(set, out var setInputResources)) {
-                Log.Error("[Render Pass ({RenderPass})] No input resources for set {Set}", options.DebugName, set);
+                log.Error("[Render Pass ({RenderPass})] No input resources for set {Set}", options.DebugName, set);
                 return false;
             }
 
@@ -139,14 +157,14 @@ public sealed class DescriptorSetManager {
             foreach (var entry in shaderDescriptor.WriteDescriptorSets) {
                 var binding = (int)entry.Value.DstBinding;
                 if (!setInputResources.ContainsKey(binding)) {
-                    Log.Error(
+                    log.Error(
                         "[Render Pass ({RenderPass})] No input resource for {Set}.{Binding}",
                         options.DebugName,
                         set,
                         binding
                     );
                     
-                    Log.Error(
+                    log.Error(
                         "[Render Pass ({RenderPass})] Required resource is {Name} ({Type})",
                         options.DebugName,
                         entry.Key,
@@ -183,16 +201,15 @@ public sealed class DescriptorSetManager {
                 );
 
                 if (options.DefaultResources || true) {
-                    // TODO
                     inputResources[set][binding] = new() { Type = entry.Value.DescriptorType.GetDefaultResourceType() };
 
                     if (inputDeclaration.Type == RenderPassInputType.ImageSampler2D) {
                         for (var i = 0; i < entry.Value.DescriptorCount; i++) {
-                            // TODO: add texture
+                            inputResources[set][binding].Input.Add(Renderer.WhiteTexture);
                         }
                     } else if (inputDeclaration.Type == RenderPassInputType.ImageSampler3D) {
                         for (var i = 0; i < entry.Value.DescriptorCount; i++) {
-                            // TODO: add texture
+                            inputResources[set][binding].Input.Add(Renderer.BlackCubeTexture);
                         }
                     }
                 }
@@ -204,8 +221,29 @@ public sealed class DescriptorSetManager {
                 }
 
                 if (shaderDescriptor.ImageSamplers.TryGetValue(binding, out var imageSampler)) {
-                    // TODO: finish this
+                    if (entry.Value.DescriptorType is DescriptorType.SampledImage
+                        or DescriptorType.CombinedImageSampler) {
+                        var type = imageSampler.Dimension switch {
+                            1 => RenderPassInputType.ImageSampler1D,
+                            2 => RenderPassInputType.ImageSampler2D,
+                            3 => RenderPassInputType.ImageSampler3D,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        inputDeclaration = inputDeclaration with { Type = type };
+                    } else if (entry.Value.DescriptorType == DescriptorType.StorageImage) {
+                        var type = imageSampler.Dimension switch {
+                            1 => RenderPassInputType.StorageImage1D,
+                            2 => RenderPassInputType.StorageImage2D,
+                            3 => RenderPassInputType.StorageImage3D,
+                            _ => throw new ArgumentOutOfRangeException()
+                        };
+
+                        inputDeclaration = inputDeclaration with { Type = type };
+                    }
                 }
+
+                inputDeclarations[entry.Key] = inputDeclaration;
             }
         }
     }

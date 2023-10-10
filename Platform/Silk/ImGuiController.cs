@@ -48,53 +48,6 @@ public class ImGuiController : IDisposable {
     /// <param name="vk">The vulkan api instance</param>
     /// <param name="view">Window view</param>
     /// <param name="input">Input context</param>
-    /// <param name="physicalDevice">The physical device instance in use</param>
-    /// <param name="graphicsFamilyIndex">The graphics family index corresponding to the graphics queue</param>
-    /// <param name="swapChainImageCt">The number of images used in the swap chain</param>
-    /// <param name="swapChainFormat">The image format used by the swap chain</param>
-    /// <param name="depthBufferFormat">The image formate used by the depth buffer, or null if no depth buffer is used</param>
-    public ImGuiController(
-        Vk vk,
-        IView view,
-        IInputContext input,
-        PhysicalDevice physicalDevice,
-        uint graphicsFamilyIndex,
-        int swapChainImageCt,
-        Format swapChainFormat,
-        Format? depthBufferFormat
-    ) {
-        var context = ImGui.CreateContext();
-        ImGui.SetCurrentContext(context);
-        // ImPlot.CreateContext();
-        // ImPlot.SetImGuiContext(context);
-
-        // Use the default font
-        var io = ImGui.GetIO();
-        io.Fonts.AddFontDefault();
-        io.BackendFlags |= ImGuiBackendFlags.RendererHasVtxOffset;
-
-        Init(
-            vk,
-            view,
-            input,
-            physicalDevice,
-            graphicsFamilyIndex,
-            swapChainImageCt,
-            swapChainFormat,
-            depthBufferFormat
-        );
-
-        SetKeyMappings();
-        SetPerFrameImGuiData(1f / 60f);
-        BeginFrame();
-    }
-
-    /// <summary>
-    ///     Constructs a new ImGuiController.
-    /// </summary>
-    /// <param name="vk">The vulkan api instance</param>
-    /// <param name="view">Window view</param>
-    /// <param name="input">Input context</param>
     /// <param name="imGuiFontConfig">A custom ImGui configuration</param>
     /// <param name="physicalDevice">The physical device instance in use</param>
     /// <param name="graphicsFamilyIndex">The graphics family index corresponding to the graphics queue</param>
@@ -121,13 +74,10 @@ public class ImGuiController : IDisposable {
         if (io.Fonts.AddFontFromFileTTF(imGuiFontConfig.FontPath, imGuiFontConfig.FontSize).NativePtr == default) {
             throw new("Failed to load ImGui font");
         }
-        
+
         // TODO: move this to proper font class manager
         // Vulkan Image for fonts is created by Init method and is not reloaded when new font is added
         io.Fonts.AddFontFromFileTTF("Assets/Switzer/Switzer-Bold.ttf", 16);
-        
-        
-        
 
         Init(
             vk,
@@ -253,9 +203,7 @@ public class ImGuiController : IDisposable {
             StoreOp = AttachmentStoreOp.Store,
             StencilLoadOp = AttachmentLoadOp.DontCare,
             StencilStoreOp = AttachmentStoreOp.DontCare,
-            InitialLayout = AttachmentLoadOp.Load == AttachmentLoadOp.Clear
-                ? ImageLayout.Undefined
-                : ImageLayout.PresentSrcKhr,
+            InitialLayout = ImageLayout.PresentSrcKhr,
             FinalLayout = ImageLayout.PresentSrcKhr
         };
 
@@ -571,71 +519,62 @@ public class ImGuiController : IDisposable {
             throw new("Failed to bind device memory");
         }
 
-        var imageViewInfo = new ImageViewCreateInfo();
-        imageViewInfo.SType = StructureType.ImageViewCreateInfo;
-        imageViewInfo.Image = _fontImage;
-        imageViewInfo.ViewType = ImageViewType.Type2D;
-        imageViewInfo.Format = Format.R8G8B8A8Unorm;
+        var imageViewInfo = new ImageViewCreateInfo {
+            SType = StructureType.ImageViewCreateInfo,
+            Image = _fontImage,
+            ViewType = ImageViewType.Type2D,
+            Format = Format.R8G8B8A8Unorm
+        };
         imageViewInfo.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
         imageViewInfo.SubresourceRange.LevelCount = 1;
         imageViewInfo.SubresourceRange.LayerCount = 1;
-        if (_vk.CreateImageView(_device, &imageViewInfo, default, out _fontView) != Result.Success) {
-            throw new("Failed to create an image view");
-        }
+        _vk.CreateImageView(_device, &imageViewInfo, default, out _fontView).EnsureSuccess();
 
-        var descImageInfo = new DescriptorImageInfo();
-        descImageInfo.Sampler = _fontSampler;
-        descImageInfo.ImageView = _fontView;
-        descImageInfo.ImageLayout = ImageLayout.ShaderReadOnlyOptimal;
-        var writeDescriptors = new WriteDescriptorSet();
-        writeDescriptors.SType = StructureType.WriteDescriptorSet;
-        writeDescriptors.DstSet = _descriptorSet;
-        writeDescriptors.DescriptorCount = 1;
-        writeDescriptors.DescriptorType = DescriptorType.CombinedImageSampler;
-        writeDescriptors.PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref descImageInfo);
+        var descImageInfo = new DescriptorImageInfo {
+            Sampler = _fontSampler, ImageView = _fontView, ImageLayout = ImageLayout.ShaderReadOnlyOptimal
+        };
+        var writeDescriptors = new WriteDescriptorSet {
+            SType = StructureType.WriteDescriptorSet,
+            DstSet = _descriptorSet,
+            DescriptorCount = 1,
+            DescriptorType = DescriptorType.CombinedImageSampler,
+            PImageInfo = (DescriptorImageInfo*)Unsafe.AsPointer(ref descImageInfo)
+        };
         _vk.UpdateDescriptorSets(_device, 1, writeDescriptors, 0, default);
 
         // Create the Upload Buffer:
-        var bufferInfo = new BufferCreateInfo();
-        bufferInfo.SType = StructureType.BufferCreateInfo;
-        bufferInfo.Size = upload_size;
-        bufferInfo.Usage = BufferUsageFlags.TransferSrcBit;
-        bufferInfo.SharingMode = SharingMode.Exclusive;
-        if (_vk.CreateBuffer(_device, bufferInfo, default, out var uploadBuffer) != Result.Success) {
-            throw new("Failed to create a device buffer");
-        }
+        var bufferInfo = new BufferCreateInfo {
+            SType = StructureType.BufferCreateInfo,
+            Size = upload_size,
+            Usage = BufferUsageFlags.TransferSrcBit,
+            SharingMode = SharingMode.Exclusive
+        };
+        _vk.CreateBuffer(_device, bufferInfo, default, out var uploadBuffer).EnsureSuccess();
 
         _vk.GetBufferMemoryRequirements(_device, uploadBuffer, out var uploadReq);
         _bufferMemoryAlignment =
             _bufferMemoryAlignment > uploadReq.Alignment ? _bufferMemoryAlignment : uploadReq.Alignment;
 
-        var uploadAllocInfo = new MemoryAllocateInfo();
-        uploadAllocInfo.SType = StructureType.MemoryAllocateInfo;
-        uploadAllocInfo.AllocationSize = uploadReq.Size;
-        uploadAllocInfo.MemoryTypeIndex = GetMemoryTypeIndex(
-            vk,
-            MemoryPropertyFlags.HostVisibleBit,
-            uploadReq.MemoryTypeBits
-        );
-        if (_vk.AllocateMemory(_device, uploadAllocInfo, default, out var uploadBufferMemory) != Result.Success) {
-            throw new("Failed to allocate device memory");
-        }
-
-        if (_vk.BindBufferMemory(_device, uploadBuffer, uploadBufferMemory, 0) != Result.Success) {
-            throw new("Failed to bind device memory");
-        }
+        var uploadAllocInfo = new MemoryAllocateInfo {
+            SType = StructureType.MemoryAllocateInfo,
+            AllocationSize = uploadReq.Size,
+            MemoryTypeIndex = GetMemoryTypeIndex(
+                vk,
+                MemoryPropertyFlags.HostVisibleBit,
+                uploadReq.MemoryTypeBits
+            )
+        };
+        _vk.AllocateMemory(_device, uploadAllocInfo, default, out var uploadBufferMemory).EnsureSuccess();
+        _vk.BindBufferMemory(_device, uploadBuffer, uploadBufferMemory, 0).EnsureSuccess();
 
         void* map = null;
-        if (_vk.MapMemory(_device, uploadBufferMemory, 0, upload_size, 0, &map) != Result.Success) {
-            throw new("Failed to map device memory");
-        }
+        _vk.MapMemory(_device, uploadBufferMemory, 0, upload_size, 0, &map).EnsureSuccess();
 
         Unsafe.CopyBlock(map, pixels.ToPointer(), (uint)upload_size);
 
-        var range = new MappedMemoryRange();
-        range.SType = StructureType.MappedMemoryRange;
-        range.Memory = uploadBufferMemory;
-        range.Size = upload_size;
+        var range = new MappedMemoryRange {
+            SType = StructureType.MappedMemoryRange, Memory = uploadBufferMemory, Size = upload_size
+        };
         if (_vk.FlushMappedMemoryRanges(_device, 1, range) != Result.Success) {
             throw new("Failed to flush memory to device");
         }
@@ -644,17 +583,16 @@ public class ImGuiController : IDisposable {
 
         const uint VK_QUEUE_FAMILY_IGNORED = ~0U;
 
-        var copyBarrier = new ImageMemoryBarrier();
-        copyBarrier.SType = StructureType.ImageMemoryBarrier;
-        copyBarrier.DstAccessMask = AccessFlags.TransferWriteBit;
-        copyBarrier.OldLayout = ImageLayout.Undefined;
-        copyBarrier.NewLayout = ImageLayout.TransferDstOptimal;
-        copyBarrier.SrcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        copyBarrier.DstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        copyBarrier.Image = _fontImage;
-        copyBarrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
-        copyBarrier.SubresourceRange.LevelCount = 1;
-        copyBarrier.SubresourceRange.LayerCount = 1;
+        var copyBarrier = new ImageMemoryBarrier {
+            SType = StructureType.ImageMemoryBarrier,
+            DstAccessMask = AccessFlags.TransferWriteBit,
+            OldLayout = ImageLayout.Undefined,
+            NewLayout = ImageLayout.TransferDstOptimal,
+            SrcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            DstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            Image = _fontImage,
+            SubresourceRange = new() { AspectMask = ImageAspectFlags.ColorBit, LayerCount = 1, LevelCount = 1 }
+        };
         _vk.CmdPipelineBarrier(
             commandBuffer,
             PipelineStageFlags.HostBit,
@@ -676,15 +614,16 @@ public class ImGuiController : IDisposable {
         region.ImageExtent.Depth = 1;
         _vk.CmdCopyBufferToImage(commandBuffer, uploadBuffer, _fontImage, ImageLayout.TransferDstOptimal, 1, &region);
 
-        var use_barrier = new ImageMemoryBarrier();
-        use_barrier.SType = StructureType.ImageMemoryBarrier;
-        use_barrier.SrcAccessMask = AccessFlags.TransferWriteBit;
-        use_barrier.DstAccessMask = AccessFlags.ShaderReadBit;
-        use_barrier.OldLayout = ImageLayout.TransferDstOptimal;
-        use_barrier.NewLayout = ImageLayout.ShaderReadOnlyOptimal;
-        use_barrier.SrcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        use_barrier.DstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        use_barrier.Image = _fontImage;
+        var use_barrier = new ImageMemoryBarrier {
+            SType = StructureType.ImageMemoryBarrier,
+            SrcAccessMask = AccessFlags.TransferWriteBit,
+            DstAccessMask = AccessFlags.ShaderReadBit,
+            OldLayout = ImageLayout.TransferDstOptimal,
+            NewLayout = ImageLayout.ShaderReadOnlyOptimal,
+            SrcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            DstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            Image = _fontImage
+        };
         use_barrier.SubresourceRange.AspectMask = ImageAspectFlags.ColorBit;
         use_barrier.SubresourceRange.LevelCount = 1;
         use_barrier.SubresourceRange.LayerCount = 1;
@@ -710,10 +649,11 @@ public class ImGuiController : IDisposable {
 
         _vk.GetDeviceQueue(_device, graphicsFamilyIndex, 0, out var graphicsQueue);
 
-        var submitInfo = new SubmitInfo();
-        submitInfo.SType = StructureType.SubmitInfo;
-        submitInfo.CommandBufferCount = 1;
-        submitInfo.PCommandBuffers = (CommandBuffer*)Unsafe.AsPointer(ref commandBuffer);
+        var submitInfo = new SubmitInfo {
+            SType = StructureType.SubmitInfo,
+            CommandBufferCount = 1,
+            PCommandBuffers = (CommandBuffer*)Unsafe.AsPointer(ref commandBuffer)
+        };
         if (_vk.QueueSubmit(graphicsQueue, 1, submitInfo, default) != Result.Success) {
             throw new("Failed to begin a command buffer");
         }
@@ -841,14 +781,13 @@ public class ImGuiController : IDisposable {
             return;
         }
 
-        var renderPassInfo = new RenderPassBeginInfo();
-        renderPassInfo.SType = StructureType.RenderPassBeginInfo;
-        renderPassInfo.RenderPass = _renderPass;
-        renderPassInfo.Framebuffer = framebuffer;
-        renderPassInfo.RenderArea.Offset = default;
-        renderPassInfo.RenderArea.Extent = swapChainExtent;
-        renderPassInfo.ClearValueCount = 0;
-        renderPassInfo.PClearValues = default;
+        var renderPassInfo = new RenderPassBeginInfo {
+            SType = StructureType.RenderPassBeginInfo,
+            RenderPass = _renderPass,
+            Framebuffer = framebuffer,
+            RenderArea = new() { Extent = swapChainExtent },
+            ClearValueCount = 0
+        };
 
         _vk.CmdBeginRenderPass(commandBuffer, &renderPassInfo, SubpassContents.Inline);
 
@@ -1098,21 +1037,23 @@ public class ImGuiController : IDisposable {
         }
 
         var sizeAlignedVertexBuffer = ((newSize - 1) / _bufferMemoryAlignment + 1) * _bufferMemoryAlignment;
-        var bufferInfo = new BufferCreateInfo();
-        bufferInfo.SType = StructureType.BufferCreateInfo;
-        bufferInfo.Size = sizeAlignedVertexBuffer;
-        bufferInfo.Usage = usage;
-        bufferInfo.SharingMode = SharingMode.Exclusive;
+        var bufferInfo = new BufferCreateInfo {
+            SType = StructureType.BufferCreateInfo,
+            Size = sizeAlignedVertexBuffer,
+            Usage = usage,
+            SharingMode = SharingMode.Exclusive
+        };
         if (_vk.CreateBuffer(_device, bufferInfo, default, out buffer) != Result.Success) {
             throw new("Unable to create a device buffer");
         }
 
         _vk.GetBufferMemoryRequirements(_device, buffer, out var req);
         _bufferMemoryAlignment = _bufferMemoryAlignment > req.Alignment ? _bufferMemoryAlignment : req.Alignment;
-        var allocInfo = new MemoryAllocateInfo();
-        allocInfo.SType = StructureType.MemoryAllocateInfo;
-        allocInfo.AllocationSize = req.Size;
-        allocInfo.MemoryTypeIndex = GetMemoryTypeIndex(_vk, MemoryPropertyFlags.HostVisibleBit, req.MemoryTypeBits);
+        var allocInfo = new MemoryAllocateInfo {
+            SType = StructureType.MemoryAllocateInfo,
+            AllocationSize = req.Size,
+            MemoryTypeIndex = GetMemoryTypeIndex(_vk, MemoryPropertyFlags.HostVisibleBit, req.MemoryTypeBits)
+        };
         if (_vk.AllocateMemory(_device, &allocInfo, default, out buffer_memory) != Result.Success) {
             throw new("Unable to allocate device memory");
         }

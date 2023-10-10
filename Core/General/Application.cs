@@ -27,7 +27,7 @@ public class Application : IDisposable {
         ApplicationEventSource.Log.Startup();
         Current = this;
 
-        Renderer.Options.FramesInFlight = 3; // TODO
+        Renderer.Options.FramesInFlight = 3; // TODO: this needs to be loaded based on number of images in swapchain
 
         renderThread = new RenderThread(options.ThreadingPolicy);
         renderThread.Run();
@@ -52,14 +52,6 @@ public class Application : IDisposable {
         // Setup profiler
         // Setup Renderer.SetConfig (static)
     }
-
-    // ConcurrentQueue<Action> queue = new();
-    // bool running;
-
-    public void InvokeOnMainThread(Action action) {
-        // queue.Enqueue(action);
-    }
-
 
     public void Run() {
         IsRunning = true;
@@ -99,13 +91,7 @@ public class Application : IDisposable {
             }
         }
 
-        Log.Information("stopped working");
-
         renderThread.Terminate();
-
-        //     while (running) {
-        //         ExecuteMainThreadQueue();
-        //     }
     }
 
     public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
@@ -119,16 +105,13 @@ public class Application : IDisposable {
 
     public void Dispose() {
         renderThread.Dispose();
+        
+        Renderer.Shutdown();
+        // Layer detach
 
         MainWindow.Resize -= OnWindowResize;
         MainWindow.Closing -= OnWindowClose;
     }
-
-    // void ExecuteMainThreadQueue() {
-    //     while (queue.TryDequeue(out var action)) {
-    //         action();
-    //     }
-    // }
 
     void OnWindowResize(Size newSize) {
         Log.Information("OnResize: {Variable}", newSize);

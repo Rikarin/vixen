@@ -1,6 +1,6 @@
 using Rin.Core.UI;
 
-namespace Rin.Editor.Panes;
+namespace Rin.Editor.Panes.Inspector;
 
 public class TransformView : View {
     public class RowData {
@@ -10,7 +10,8 @@ public class TransformView : View {
         public State<float> Z { get; } = new();
     }
 
-    RowData[] data = {
+    // TODO: not static
+    static RowData[] data = {
         new() { Name = "Position" },
         new() { Name = "Rotation" },
         new() { Name = "Scale" }

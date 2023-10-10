@@ -10,26 +10,24 @@ using AttachmentLoadOp = Silk.NET.Vulkan.AttachmentLoadOp;
 namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
-    Framebuffer? framebuffer;
-    Size size;
-
     // Not sure if use list or dictionary
     readonly List<IImage2D> attachmentImages = new();
-
     public List<ClearValue> ClearValues { get; } = new();
     public FramebufferOptions Options { get; }
+    public Size Size { get; private set; }
     public IImage2D? DepthImage { get; private set; }
     public RenderPass RenderPass { get; private set; }
-
     public int ColorAttachmentCount => Options.IsSwapChainTarget ? 1 : attachmentImages.Count;
+
+    internal Framebuffer? vkFramebuffer { get; private set; }
 
     public VulkanFramebuffer(FramebufferOptions options) {
         Options = options;
 
         if (options.Size == null) {
-            size = SilkWindow.MainWindow.Size;
+            Size = SilkWindow.MainWindow.Size;
         } else {
-            size = new(
+            Size = new(
                 (int)(options.Size.Value.Width * options.Scale),
                 (int)(options.Size.Value.Height * options.Scale)
             );
@@ -58,7 +56,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                         Format = attachment.Format,
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
-                        Size = size, // TODO: check as this is implemented differently
+                        Size = Size, // TODO: check as this is implemented differently
                         DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-DepthAttachment{attachmentIndex}"
                     };
                     DepthImage = ObjectFactory.CreateImage2D(imageOptions);
@@ -67,7 +65,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                         Format = attachment.Format,
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
-                        Size = size, // TODO: check as this is implemented differently
+                        Size = Size, // TODO: check as this is implemented differently
                         DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-ColorAttachment{attachmentIndex}"
                     };
                     attachmentImages.Add(ObjectFactory.CreateImage2D(imageOptions));
@@ -77,20 +75,20 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
             }
         }
 
-        Resize(size, true);
+        Resize(Size, true);
     }
 
     public void Dispose() => Release();
     public IImage2D GetImage(int index) => attachmentImages[index];
 
     void Resize(Size newSize, bool forceRecreate) {
-        if (!forceRecreate && newSize == size) {
+        if (!forceRecreate && newSize == Size) {
             return;
         }
 
         Renderer.Submit(
             () => {
-                size = newSize;
+                Size = newSize;
                 if (!Options.IsSwapChainTarget) {
                     Invalidate_RT();
                 } else {
@@ -105,14 +103,14 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     }
 
     unsafe void Release() {
-        if (framebuffer == null) {
+        if (vkFramebuffer == null) {
             return;
         }
 
         Renderer.SubmitDisposal(
             () => VulkanContext.Vulkan.DestroyFramebuffer(
                 VulkanContext.CurrentDevice.VkLogicalDevice,
-                framebuffer.Value,
+                vkFramebuffer.Value,
                 null
             )
         );
@@ -164,7 +162,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                 } else if (Options.ExistingImages.TryGetValue(attachmentIndex, out var existingImage)) {
                     DepthImage = existingImage;
                 } else {
-                    DepthImage = new VulkanImage2D(new() { Size = size }); // TODO: not sure about this size
+                    DepthImage = new VulkanImage2D(new() { Size = Size }); // TODO: not sure about this size
                     DepthImage.Invalidate();
                 }
 
@@ -212,12 +210,12 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
 
         var framebufferCreateInfo = new FramebufferCreateInfo(StructureType.FramebufferCreateInfo) {
             // TODO
-            RenderPass = renderPass, Width = (uint)size.Width, Height = (uint)size.Height, Layers = 1
+            RenderPass = renderPass, Width = (uint)Size.Width, Height = (uint)Size.Height, Layers = 1
         };
 
         vk.CreateFramebuffer(device, framebufferCreateInfo, null, out var framebuffer).EnsureSuccess();
         VulkanUtils.SetDebugObjectName(ObjectType.Framebuffer, Options.DebugName, framebuffer.Handle);
-        this.framebuffer = framebuffer;
+        vkFramebuffer = framebuffer;
     }
 
     AttachmentLoadOp GetAttachmentLoadOp(FramebufferTextureOptions textureOptions) {

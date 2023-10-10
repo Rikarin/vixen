@@ -1,7 +1,8 @@
 using ImGuiNET;
 using Rin.Core.General;
+using Rin.Core.UI;
 using Rin.Editor.Panes;
-using Rin.Rendering;
+using Rin.Editor.Panes.Inspector;
 using Serilog;
 using System.Drawing;
 using System.Numerics;
@@ -26,10 +27,8 @@ sealed class GuiRenderer : IDisposable {
         settingsPath = Path.Combine(project.RootDirectory, "ProjectSettings", "Editor");
         Directory.CreateDirectory(settingsPath);
 
-        // var mainWindow = this.application.MainWindow;
-        // mainWindow.Load += OnStart;
-        // mainWindow.Closing += OnClosing;
-        // mainWindow.Render += OnRender;
+        var mainWindow = this.application.MainWindow;
+        mainWindow.Closing += OnClosing;
 
         AddPane<StatsPane>();
         AddPane<HierarchyPane>();
@@ -60,9 +59,7 @@ sealed class GuiRenderer : IDisposable {
 
     public void Dispose() {
         var mainWindow = application.MainWindow;
-        // mainWindow.Load -= OnStart;
         mainWindow.Closing -= OnClosing;
-        // mainWindow.Render -= OnRender;
     }
 
     public void OpenPane<T>() => panes[typeof(T)].Open();
@@ -80,9 +77,6 @@ sealed class GuiRenderer : IDisposable {
             | ImGuiConfigFlags.ViewportsEnable
             | ImGuiConfigFlags.NavEnableKeyboard;
 
-        Log.Information("font init");
-
-        // ImGui.StyleColorsDark();
         SetTheme();
 
         // io.BackendFlags |=
@@ -96,9 +90,6 @@ sealed class GuiRenderer : IDisposable {
 
     public void OnUpdate() {
         const ImGuiDockNodeFlags dockNodeFlags = ImGuiDockNodeFlags.None | ImGuiDockNodeFlags.PassthruCentralNode;
-
-        // tODO: testing only
-        SetTheme();
 
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
         // because it would be confusing to have two docking targets within each others.
@@ -150,6 +141,9 @@ sealed class GuiRenderer : IDisposable {
         style.WindowMinSize.X = minWindowSizeX;
         io.WantSaveIniSettings = false; // Doesn't work or what
 
+        // Reset ViewContext
+        ViewContext.Reset();
+
         // Start pane renderings
         foreach (var pane in panes.Values) {
             pane.Render();
@@ -161,105 +155,53 @@ sealed class GuiRenderer : IDisposable {
         }
 
         if (ImGui.BeginMainMenuBar()) {
-            // if (ImGui.BeginMenu("File")) {
-            //     if (ImGui.MenuItem("New", "Ctrl+N")) {
-            //         opened = true;
-            //     }
-            //     ImGui.EndMenu();
-            // }
-
-            if (ImGui.BeginMenu("File")) {
-                if (ImGui.MenuItem("Load Layout")) {
-                    ImGui.LoadIniSettingsFromDisk("imgui_layout.ini");
-                }
-
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Edit")) {
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Assets")) {
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Game Object")) {
-                if (ImGui.MenuItem("Create Empty")) {
-                    // TODO: create empty object in the current scene
-                }
-
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Component")) {
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Window")) {
-                if (ImGui.BeginMenu("Layouts")) {
-                    if (ImGui.MenuItem("Basic")) {
-                        ImGui.LoadIniSettingsFromDisk(Path.Combine(settingsPath, "Layouts", "Basic.ini"));
-                    }
-
-                    ImGui.EndMenu();
-                }
-
-                ImGui.Separator();
-                if (ImGui.BeginMenu("General")) {
-                    if (ImGui.MenuItem("Scene")) {
-                        OpenPane<ScenePane>();
-                    }
-
-                    if (ImGui.MenuItem("Game")) {
-                        OpenPane<GamePane>();
-                    }
-
-                    if (ImGui.MenuItem("Inspector", "Ctrl+I")) {
-                        OpenPane<InspectorPane>();
-                    }
-
-                    if (ImGui.MenuItem("Hierarchy")) {
-                        OpenPane<HierarchyPane>();
-                    }
-
-                    if (ImGui.MenuItem("Project")) {
-                        OpenPane<ProjectPane>();
-                    }
-
-                    if (ImGui.MenuItem("Console")) {
-                        OpenPane<ConsolePane>();
-                    }
-
-                    ImGui.EndMenu();
-                }
-
-                if (ImGui.BeginMenu("Debug")) {
-                    if (ImGui.MenuItem("Debug Transform View Matrix")) {
-                        OpenPane<DebugTransformViewMatrixPane>();
-                    }
-
-                    if (ImGui.MenuItem("Stats")) {
-                        OpenPane<StatsPane>();
-                    }
-
-                    ImGui.EndMenu();
-                }
-
-                ImGui.EndMenu();
-            }
-
-            if (ImGui.BeginMenu("Help")) {
-                if (ImGui.MenuItem("Demo Window")) { }
-
-                ImGui.EndMenu();
-            }
-
+            MenuView().Render();
             ImGui.EndMainMenuBar();
         }
 
         // ImGui.ShowDemoWindow();
         ImGui.End();
+    }
+
+    View MenuView() {
+        var x = new EmptyView();
+        
+        // @formatter:off
+        return x.VStack(
+            x.Menu("File",
+                x.MenuItem("New"),
+                x.MenuItem("Load Layout", () => ImGui.LoadIniSettingsFromDisk("imgui_layout.ini"))
+            ),
+            x.Menu("Edit"),
+            x.Menu("Assets"),
+            x.Menu("Game Object",
+                x.MenuItem("Create Empty")
+            ),
+            x.Menu("Component"),
+            x.Menu("Window",
+	            x.Menu("Layouts",
+					x.MenuItem("Basic", () =>ImGui.LoadIniSettingsFromDisk(Path.Combine(settingsPath, "Layouts", "Basic.ini")))
+				),
+                x.Divider(),
+	            x.Menu("General",
+					x.MenuItem("Scene", OpenPane<ScenePane>),
+					x.MenuItem("Game", OpenPane<GamePane>),
+					x.MenuItem("Inspector", OpenPane<InspectorPane>),
+					x.MenuItem("Hierarchy", OpenPane<HierarchyPane>),
+					x.MenuItem("Project", OpenPane<ProjectPane>),
+					x.MenuItem("Console", OpenPane<ConsolePane>)
+                ),
+                x.Menu("Debug",
+					x.MenuItem("Debug Transform View Matrix", OpenPane<DebugTransformViewMatrixPane>),
+					x.MenuItem("Stats", OpenPane<StatsPane>),
+					x.MenuItem("Profiler", OpenPane<ProfilerPane>)
+                )
+			),
+            x.Menu("Help",
+                x.MenuItem("Demo Window")
+            )
+        );
+        // @formatter:on
     }
 
     void OnClosing() {
@@ -271,85 +213,85 @@ sealed class GuiRenderer : IDisposable {
     }
 
     void SetTheme() {
-		// Style
+        // Style
         var style = ImGui.GetStyle();
-        
-		style.FrameRounding = 2.5f;
-		style.FrameBorderSize = 1.0f;
-		// style.FrameRounding = 0;
-		// style.FrameBorderSize = 0;
-		style.IndentSpacing = 11.0f;
-        
+
+        style.FrameRounding = 2.5f;
+        style.FrameBorderSize = 1.0f;
+        // style.FrameRounding = 0;
+        // style.FrameBorderSize = 0;
+        style.IndentSpacing = 11.0f;
+
         // Colors
         var colors = ImGui.GetStyle().Colors;
-        
+
         // Buttons
-	    colors[(int)ImGuiCol.Button] = MonoColor(56);
-	    colors[(int)ImGuiCol.ButtonHovered] = MonoColor(70);
-	    colors[(int)ImGuiCol.ButtonActive] = MonoColor(56);
-        
-  		// Headers - Group tabs
-	    colors[(int)ImGuiCol.Header] = MonoColor(48);
-	    colors[(int)ImGuiCol.HeaderHovered] = MonoColor(60);
-	    colors[(int)ImGuiCol.HeaderActive] = MonoColor(75);
-	    
-	    // Frame Background (Inputs, Selects, Charts)
-	    colors[(int)ImGuiCol.FrameBg] = MonoColor(17);
-	    colors[(int)ImGuiCol.FrameBgHovered] = MonoColor(26);
-	    colors[(int)ImGuiCol.FrameBgActive] = MonoColor(31);
-	    
-	    // Tabs
-	    colors[(int)ImGuiCol.Tab] = MonoColor(21);
-	    colors[(int)ImGuiCol.TabActive] = MonoColor(36);
-	    colors[(int)ImGuiCol.TabHovered] = MonoColor(45);
-	    
-	    colors[(int)ImGuiCol.TabUnfocused] = MonoColor(21);
-	    colors[(int)ImGuiCol.TabUnfocusedActive] = MonoColor(41);
-	    
-	    // Title
-	    colors[(int)ImGuiCol.TitleBg] = MonoColor(21);
-	    colors[(int)ImGuiCol.TitleBgActive] = MonoColor(21);
-	    colors[(int)ImGuiCol.TitleBgCollapsed] = MonoColor(21);
-	    
-	    // Resize Grip
-	    colors[(int)ImGuiCol.ResizeGrip] = MonoColor(55);
-	    colors[(int)ImGuiCol.ResizeGripHovered] = MonoColor(65);
-	    colors[(int)ImGuiCol.ResizeGripActive] = MonoColor(75);
-	    
-	    // Scrollbar
-	    colors[(int)ImGuiCol.ScrollbarBg] = MonoColor(17);
-	    colors[(int)ImGuiCol.ScrollbarGrab] = MonoColor(87);
-	    colors[(int)ImGuiCol.ScrollbarGrabHovered] = MonoColor(97);
-	    colors[(int)ImGuiCol.ScrollbarGrabActive] = MonoColor(107);
-	    
-	    // Check Mark
-	    colors[(int)ImGuiCol.CheckMark] = Color.FromArgb(255, 23, 90, 193).ToVector4();
-	    
-	    // Slider
-	    // Xcode color
-	    colors[(int)ImGuiCol.SliderGrab] = Color.FromArgb(255, 23, 90, 193).ToVector4();
-	    colors[(int)ImGuiCol.SliderGrabActive] = MonoColor(168);
-	    
-	    // Text
-	    colors[(int)ImGuiCol.Text] = MonoColor(200);
-	    
-	    // Separator
-	    colors[(int)ImGuiCol.Separator] = MonoColor(48);
-	    colors[(int)ImGuiCol.SeparatorHovered] = MonoColor(65);
-	    colors[(int)ImGuiCol.SeparatorActive] = MonoColor(75);
-	    
-	    // Window Background
-	    colors[(int)ImGuiCol.WindowBg] = MonoColor(36);
-	    colors[(int)ImGuiCol.ChildBg] = MonoColor(26);
-	    // colors[(int)ImGuiCol.PopupBg] = MonoColor(21);
-	    colors[(int)ImGuiCol.Border] = MonoColor(8);
-	    
-	    // Tables
-	    // colors[ImGuiCol_TableHeaderBg]		= ImGui::ColorConvertU32ToFloat4(Colors::Theme::groupHeader);
-	    // colors[ImGuiCol_TableBorderLight]	= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundDark);
-	    
-	    // Menubar
-		colors[(int)ImGuiCol.MenuBarBg] = MonoColor(21);
+        colors[(int)ImGuiCol.Button] = MonoColor(56);
+        colors[(int)ImGuiCol.ButtonHovered] = MonoColor(70);
+        colors[(int)ImGuiCol.ButtonActive] = MonoColor(56);
+
+        // Headers - Group tabs
+        colors[(int)ImGuiCol.Header] = MonoColor(48);
+        colors[(int)ImGuiCol.HeaderHovered] = MonoColor(60);
+        colors[(int)ImGuiCol.HeaderActive] = MonoColor(75);
+
+        // Frame Background (Inputs, Selects, Charts)
+        colors[(int)ImGuiCol.FrameBg] = MonoColor(17);
+        colors[(int)ImGuiCol.FrameBgHovered] = MonoColor(26);
+        colors[(int)ImGuiCol.FrameBgActive] = MonoColor(31);
+
+        // Tabs
+        colors[(int)ImGuiCol.Tab] = MonoColor(21);
+        colors[(int)ImGuiCol.TabActive] = MonoColor(36);
+        colors[(int)ImGuiCol.TabHovered] = MonoColor(45);
+
+        colors[(int)ImGuiCol.TabUnfocused] = MonoColor(21);
+        colors[(int)ImGuiCol.TabUnfocusedActive] = MonoColor(41);
+
+        // Title
+        colors[(int)ImGuiCol.TitleBg] = MonoColor(21);
+        colors[(int)ImGuiCol.TitleBgActive] = MonoColor(21);
+        colors[(int)ImGuiCol.TitleBgCollapsed] = MonoColor(21);
+
+        // Resize Grip
+        colors[(int)ImGuiCol.ResizeGrip] = MonoColor(55);
+        colors[(int)ImGuiCol.ResizeGripHovered] = MonoColor(65);
+        colors[(int)ImGuiCol.ResizeGripActive] = MonoColor(75);
+
+        // Scrollbar
+        colors[(int)ImGuiCol.ScrollbarBg] = MonoColor(17);
+        colors[(int)ImGuiCol.ScrollbarGrab] = MonoColor(87);
+        colors[(int)ImGuiCol.ScrollbarGrabHovered] = MonoColor(97);
+        colors[(int)ImGuiCol.ScrollbarGrabActive] = MonoColor(107);
+
+        // Check Mark
+        colors[(int)ImGuiCol.CheckMark] = Color.FromArgb(255, 23, 90, 193).ToVector4();
+
+        // Slider
+        // Xcode color
+        colors[(int)ImGuiCol.SliderGrab] = Color.FromArgb(255, 23, 90, 193).ToVector4();
+        colors[(int)ImGuiCol.SliderGrabActive] = MonoColor(168);
+
+        // Text
+        colors[(int)ImGuiCol.Text] = MonoColor(200);
+
+        // Separator
+        colors[(int)ImGuiCol.Separator] = MonoColor(48);
+        colors[(int)ImGuiCol.SeparatorHovered] = MonoColor(65);
+        colors[(int)ImGuiCol.SeparatorActive] = MonoColor(75);
+
+        // Window Background
+        colors[(int)ImGuiCol.WindowBg] = MonoColor(36);
+        colors[(int)ImGuiCol.ChildBg] = MonoColor(26);
+        // colors[(int)ImGuiCol.PopupBg] = MonoColor(21);
+        colors[(int)ImGuiCol.Border] = MonoColor(8);
+
+        // Tables
+        // colors[ImGuiCol_TableHeaderBg]		= ImGui::ColorConvertU32ToFloat4(Colors::Theme::groupHeader);
+        // colors[ImGuiCol_TableBorderLight]	= ImGui::ColorConvertU32ToFloat4(Colors::Theme::backgroundDark);
+
+        // Menubar
+        colors[(int)ImGuiCol.MenuBarBg] = MonoColor(21);
     }
 
     Vector4 MonoColor(int value) => Color.FromArgb(255, value, value, value).ToVector4();

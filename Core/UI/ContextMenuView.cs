@@ -1,5 +1,4 @@
 using ImGuiNET;
-using Serilog;
 
 namespace Rin.Core.UI;
 
