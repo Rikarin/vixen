@@ -1,5 +1,4 @@
 using ImGuiNET;
-using System.Numerics;
 
 namespace Rin.Core.UI;
 
@@ -13,15 +12,20 @@ public class Grid : View {
     public override void Render() {
         var columns = GetMaxColumns();
         
-        if (ImGui.BeginChild($"###{ViewContext.GetId()}", Vector2.Zero, false, ImGuiWindowFlags.NoBackground)) {
+        // TODO: fix this somehow
+        // ImGui.BeginGroup();
+        // if (ImGui.BeginChild($"###{ViewContext.GetId()}", new (-1, -1), false, ImGuiWindowFlags.None)) {
+            // ImGui.Columns(columns, "foo", true);
+            // ImGui.Columns(child is GridRow ? columns : 1, null, false);
             foreach (var child in children) {
                 ImGui.Columns(child is GridRow ? columns : 1, null, false);
                 child.Render();
                 ImGui.Columns(1);
             }
 
-            ImGui.EndChild();
-        }
+            // ImGui.EndChild();
+        // }
+        // ImGui.EndGroup();
 
         base.Render();
     }

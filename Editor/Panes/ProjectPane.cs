@@ -132,11 +132,11 @@ sealed class ProjectPane : Pane {
 
         ImGui.Columns(1);
 
-        ImGui.ShowStackToolWindow();
-        float angle = 0;
-        Vector3 vec3 = Vector3.Zero;
-        ImGui.SliderFloat("foobar", ref angle, 0, 200);
-        ImGui.SliderFloat3("asdf", ref vec3, 0, 200);
+        // ImGui.ShowStackToolWindow();
+        // float angle = 0;
+        // Vector3 vec3 = Vector3.Zero;
+        // ImGui.SliderFloat("foobar", ref angle, 0, 200);
+        // ImGui.SliderFloat3("asdf", ref vec3, 0, 200);
     }
 }
 
@@ -185,45 +185,45 @@ public class MyCustomView : View {
                 Toggle("Foo bar toggle", isToggled)
             ).Style(ToggleStyle.Button),
             
-            // Grid(
-            //     GridRow(
-            //         Toggle("Toggle 1", isToggled),
-            //         TextField("Field 1", textField),
-            //         // Picker("Picker", selection1, "foo", "asdf"),
-            //         Toggle("Toggle 2", isToggled)
-            //     ),
-            //     GridRow(
-            //         Toggle("Toggle 3", isToggled),
-            //         Toggle("Toggle 4", isToggled)
-            //     ),
-            //     Divider(),
-            //     Text("Random Text 1"),
-            //     GridRow(
-            //         Toggle("Toggle 5", isToggled),
-            //         TextField(textField),
-            //         Picker("Picker 1", selection1, "foo", "asdf"),
-            //         Toggle("Toggle 6", isToggled)
-            //     )
-            // ),
-            //
-            // Slider(slider),
-            // Drag(slider),
-            // Drag(dragInt),
-            // Table(people,
-            //     TableColumn($"Name {slider.Value}", (Person p) => p.Name),
-            //     TableColumn("Age", (Person p) => p.Age.ToString()),
-            //     TableColumn("Actions", (Person p) => Button($"Ban {p.Name}"))
-            // )
-            // .Style(new TableStyle { HasHeader = false }),
-            //
-            // CollapsingView("foo bar",
-            //     VStack(
-            //         Text("Foo"),
-            //         Text("bar")
-            //     )
-            // ),
-            //
-            // Button("outside"),
+            Grid(
+                GridRow(
+                    Toggle("Toggle 1", isToggled),
+                    TextField("Field 1", textField),
+                    // Picker("Picker", selection1, "foo", "asdf"),
+                    Toggle("Toggle 2", isToggled)
+                ),
+                GridRow(
+                    Toggle("Toggle 3", isToggled),
+                    Toggle("Toggle 4", isToggled)
+                ),
+                Divider(),
+                Text("Random Text 1"),
+                GridRow(
+                    Toggle("Toggle 5", isToggled),
+                    TextField(textField),
+                    Picker("Picker 1", selection1, "foo", "asdf"),
+                    Toggle("Toggle 6", isToggled)
+                )
+            ),
+            
+            Slider(slider),
+            Drag(slider),
+            Drag(dragInt),
+            Table(people,
+                TableColumn($"Name {slider.Value}", (Person p) => p.Name),
+                TableColumn("Age", (Person p) => p.Age.ToString()),
+                TableColumn("Actions", (Person p) => Button($"Ban {p.Name}"))
+            )
+            .Style(new TableStyle { HasHeader = false }),
+            
+            CollapsingView("foo bar",
+                VStack(
+                    Text("Foo"),
+                    Text("bar")
+                )
+            ),
+            
+            Button("outside"),
             transformView
         );
     // @formatter:on

@@ -64,6 +64,7 @@ public partial class View {
     
     // Controls
     public Button Button(string label, Action? onSubmit = null) => new(label, onSubmit);
+    public Toggle Toggle(State<bool> isOn) => new(null, isOn);
     public Toggle Toggle(string label, State<bool> isOn) => new(label, isOn);
     public Picker Picker(State<string> selection, params string[] options) => new(null, selection, options);
     public Picker Picker(string label, State<string> selection, params string[] options) =>

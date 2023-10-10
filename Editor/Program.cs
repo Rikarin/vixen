@@ -48,6 +48,7 @@ var app = Application.CreateDefault(
         options.Name = "Project 1";
         options.ThreadingPolicy = ThreadingPolicy.MultiThreaded;
         options.WindowSize = new(1600, 900);
+        options.VSync = true;
     }
 );
 
@@ -123,6 +124,8 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 // material = new(Shader.Find("Basic/Shader1")!);
 // material.SetColor("u_Color", Color.Bisque);
 
+// TODO: EventSource count of Render submits and submits for disposal
+
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
 
@@ -133,8 +136,9 @@ app.Update += () => {
 
     Renderer.Submit(
         () => {
-            SilkWindow.MainWindow.imGuiController.Update((float)SilkWindow.MainWindow.silkWindow.Time);
-            gui.OnRender((float)SilkWindow.MainWindow.silkWindow.Time);
+            // Log.Information("Debug: {Variable}", Time.DeltaTime);
+            SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
+            gui.OnRender(Time.DeltaTime);
             
             var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
             var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;

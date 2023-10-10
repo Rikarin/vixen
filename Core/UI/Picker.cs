@@ -27,7 +27,7 @@ public class Picker : View {
                 }
             }
 
-            ImGui.EndPopup();
+            ImGui.EndCombo();
         }
         
         base.Render();

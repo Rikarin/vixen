@@ -12,9 +12,11 @@ public class GridRow : View {
     }
 
     public override void Render() {
-        foreach (var child in children) {
-            child.Render();
+        children[0].Render();
+        
+        foreach (var child in children[1..]) {
             ImGui.NextColumn();
+            child.Render();
         }
 
         base.Render();

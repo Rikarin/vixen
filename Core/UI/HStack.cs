@@ -3,18 +3,18 @@ using ImGuiNET;
 namespace Rin.Core.UI;
 
 public class HStack : View {
-    readonly View[] items;
+    readonly View[] children;
 
-    public HStack(View[] items) {
-        this.items = items;
+    public HStack(View[] children) {
+        this.children = children;
     }
 
     public override void Render() {
-        items[0].Render();
+        children[0].Render();
         
-        foreach (var item in items[1..]) {
+        foreach (var child in children[1..]) {
             ImGui.SameLine();
-            item.Render();
+            child.Render();
         }
         
         base.Render();

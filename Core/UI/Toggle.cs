@@ -4,9 +4,9 @@ namespace Rin.Core.UI;
 
 public class Toggle : View {
     readonly State<bool> isOn;
-    string label;
+    readonly string? label;
 
-    public Toggle(string label, State<bool> isOn) {
+    public Toggle(string? label, State<bool> isOn) {
         this.label = label;
         this.isOn = isOn;
     }
@@ -19,7 +19,7 @@ public class Toggle : View {
     public override void Render() {
         var value = isOn.Value;
 
-        if (ImGui.Checkbox(label, ref value)) {
+        if (ImGui.Checkbox($"{label}###{ViewContext.GetId()}", ref value)) {
             isOn.SetNext(value);
         }
         

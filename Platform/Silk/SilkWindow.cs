@@ -47,9 +47,6 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
         Initialize(options);
     }
 
-    // public IInternalGuiRenderer CreateGuiRenderer() => throw new NotImplementedException();
-    // new SilkImGuiRenderer(new(Gl, silkWindow, input));
-
     public bool GetKey(Core.Abstractions.Key key) => keyPressed[(int)key];
     public bool GetKeyDown(Core.Abstractions.Key key) => keyDown.HasValue && (int)keyDown.Value == (int)key;
     public bool GetKeyUp(Core.Abstractions.Key key) => keyUp.HasValue && (int)keyUp.Value == (int)key;
@@ -79,12 +76,11 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
         swapChain.InitializeSurface(silkWindow);
 
         var size = new Size(silkWindow.Size.X, silkWindow.Size.Y);
-        swapChain.Create(ref size, false);
+        swapChain.Create(ref size, options.VSync);
         Swapchain = swapChain;
         
-        
         // TODO: move this away
-        imGuiController = new ImGuiController(
+        imGuiController = new(
             VulkanContext.Vulkan,
             silkWindow,
             input,

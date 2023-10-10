@@ -41,6 +41,5 @@ public class TransformView : View {
                 )
             ).Style(new TableStyle { HasHeader = false })
         );
-        
     // @formatter:on
 }

@@ -10,10 +10,12 @@ sealed class ConsolePane : Pane {
             EditorSink.Messages.Clear();
         }
 
-        ImGui.BeginChild("console");
-        foreach (var message in EditorSink.Messages) {
-            ImGui.Text(message);
+        if (ImGui.BeginChild("console")) {
+            foreach (var message in EditorSink.Messages) {
+                ImGui.Text(message);
+            }
+
+            ImGui.EndChild();
         }
-        ImGui.EndChild();
     }
 }

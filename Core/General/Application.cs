@@ -4,6 +4,7 @@ using Rin.Platform.Silk;
 using Rin.Platform.Vulkan;
 using Rin.Rendering;
 using Serilog;
+using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
 
@@ -16,9 +17,10 @@ public class Application : IDisposable {
 
     readonly ILogger log = Log.ForContext<Application>();
     readonly IRenderThread renderThread;
+    readonly Stopwatch timer = new();
 
     public bool IsRunning { get; private set; }
-    public bool IsMinimized {get; private set; }
+    public bool IsMinimized { get; private set; }
     public Window MainWindow { get; }
 
     public Application(ApplicationOptions options) {
@@ -36,11 +38,13 @@ public class Application : IDisposable {
             o => {
                 o.Title = options.Name;
                 o.Size = options.WindowSize;
-            });
-        
+                o.VSync = options.VSync;
+            }
+        );
+
         MainWindow.Resize += OnWindowResize;
         MainWindow.Closing += OnWindowClose;
-        
+
         var vulkanRenderer = new VulkanRenderer();
         Renderer.Initialize(MainWindow.Handle.Swapchain, vulkanRenderer);
         renderThread.Pump();
@@ -56,15 +60,20 @@ public class Application : IDisposable {
         // queue.Enqueue(action);
     }
 
+
     public void Run() {
         IsRunning = true;
         var silkWindow = MainWindow.Handle as SilkWindow;
+        timer.Start();
 
         while (IsRunning) {
+            Time.DeltaTime = timer.ElapsedMilliseconds / 1000f;
+            timer.Restart();
+
             using (var _ = ApplicationEventSource.MainThreadWaitTime) {
                 renderThread.BlockUntilRenderComplete();
             }
-            
+
             log.Verbose("============= APPLICATION ======================");
             silkWindow.silkWindow.DoEvents();
 
@@ -91,12 +100,28 @@ public class Application : IDisposable {
         }
 
         Log.Information("stopped working");
-        
+
         renderThread.Terminate();
 
-    //     while (running) {
-    //         ExecuteMainThreadQueue();
-    //     }
+        //     while (running) {
+        //         ExecuteMainThreadQueue();
+        //     }
+    }
+
+    public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
+        var options = new ApplicationOptions {
+            Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded, VSync = true
+        };
+        configureOptions?.Invoke(options);
+
+        return new(options);
+    }
+
+    public void Dispose() {
+        renderThread.Dispose();
+
+        MainWindow.Resize -= OnWindowResize;
+        MainWindow.Closing -= OnWindowClose;
     }
 
     // void ExecuteMainThreadQueue() {
@@ -115,19 +140,9 @@ public class Application : IDisposable {
         IsRunning = false;
     }
 
-    public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
-        var options = new ApplicationOptions { Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded };
-        configureOptions?.Invoke(options);
-
-        return new(options);
-    }
-
-    public void Dispose() {
-        renderThread.Dispose();
-
-        MainWindow.Resize -= OnWindowResize;
-        MainWindow.Closing -= OnWindowClose;
-    }
-
     public event Action? Update;
+}
+
+public static class Time {
+    public static float DeltaTime { get; internal set; }
 }
