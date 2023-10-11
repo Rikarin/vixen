@@ -1,3 +1,5 @@
 namespace Rin.Platform.Abstractions.Rendering;
 
-public interface IShader { }
+public interface IShader {
+    string Name { get; }
+}

@@ -3,6 +3,10 @@ using System.Numerics;
 namespace Rin.Platform.Abstractions.Rendering; 
 
 public interface IMaterial {
+    public string? Name { get; }
+    public IShader Shader { get; }
+    public MaterialFlags Flags { get; }
+    
     void Set(string name, int value);
     void Set(string name, float value);
     void Set(string name, bool value);
@@ -10,7 +14,6 @@ public interface IMaterial {
     void Set(string name, Vector3 value);
     void Set(string name, Vector4 value);
     void Set(string name, Matrix4x4 value);
-    
     void Set(string name, ITexture2D value);
     void Set(string name, ITexture2D value, int arrayIndex);
     void Set(string name, ITextureCube value);
@@ -21,6 +24,10 @@ public interface IMaterial {
     bool GetBool(string name);
     Vector2 GetVector2(string name);
     Vector3 GetVector3(string name);
-    
+    Vector4 GetVector4(string name);
+    Matrix4x4 GetMatrix4x4(string name);
+    ITexture2D GetTexture2D(string name);
+    ITextureCube GetTextureCube(string name);
+
     // TODO
 }

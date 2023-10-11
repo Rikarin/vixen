@@ -7,6 +7,7 @@ using Serilog;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using Profiler = Rin.Diagnostics.Profiler;
 
 [assembly: InternalsVisibleTo("Rin.Editor")]
 
@@ -24,9 +25,9 @@ public class Application : IDisposable {
     public Window MainWindow { get; }
 
     public Application(ApplicationOptions options) {
-        ApplicationEventSource.Log.Startup();
         Current = this;
 
+        using var initializationProfileScope = ApplicationProfiling.StartInitialization();
         Renderer.Options.FramesInFlight = 3; // TODO: this needs to be loaded based on number of images in swapchain
 
         renderThread = new RenderThread(options.ThreadingPolicy);
@@ -49,7 +50,6 @@ public class Application : IDisposable {
         Renderer.Initialize(MainWindow.Handle.Swapchain, vulkanRenderer);
         renderThread.Pump();
 
-        // Setup profiler
         // Setup Renderer.SetConfig (static)
     }
 
@@ -62,7 +62,7 @@ public class Application : IDisposable {
             Time.DeltaTime = timer.ElapsedMilliseconds / 1000f;
             timer.Restart();
 
-            using (var _ = ApplicationEventSource.MainThreadWaitTime) {
+            using (var _ = ApplicationProfiling.StartWaitTime()) {
                 renderThread.BlockUntilRenderComplete();
             }
 
@@ -74,7 +74,7 @@ public class Application : IDisposable {
 
             // TODO: if not minimized
             if (!IsMinimized) {
-                using var workTimeWatcher = ApplicationEventSource.MainThreadWorkTime;
+                using var workProfilingScope = ApplicationProfiling.StartWorkTime();
 
                 Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
                 Renderer.BeginFrame();
@@ -111,6 +111,8 @@ public class Application : IDisposable {
 
         MainWindow.Resize -= OnWindowResize;
         MainWindow.Closing -= OnWindowClose;
+        
+        Profiler.Shutdown();
     }
 
     void OnWindowResize(Size newSize) {

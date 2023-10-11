@@ -59,9 +59,9 @@ public sealed class DescriptorSetManager {
         }
     }
 
-    public void SetInput(string name, ITexture2D texture) {
+    public void SetInput(string name, ITexture2D texture, int index = 0) {
         if (inputDeclarations.TryGetValue(name, out var declaration)) {
-            inputResources[declaration.Set][declaration.Binding].Set(texture);
+            inputResources[declaration.Set][declaration.Binding].Set(texture, index);
         } else {
             log.Warning("Render Pass {RenderPassName} - Input {InputName} not found", options.DebugName, name);
         }

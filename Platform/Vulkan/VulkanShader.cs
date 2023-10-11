@@ -9,12 +9,12 @@ namespace Rin.Platform.Vulkan;
 
 public sealed class VulkanShader : IShader, IDisposable {
     readonly ILogger log = Log.ForContext<IShader>();
-    readonly string name;
     readonly List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
 
     readonly Dictionary<int, List<DescriptorPoolSize>> typeCounts = new();
     readonly Dictionary<int, DescriptorSetLayout> descriptorSetLayouts = new();
 
+    public string Name { get; }
     public ShaderResource.ReflectionData ReflectionData { get; internal set; }
     public IReadOnlyDictionary<int, DescriptorSetLayout> DescriptorSetLayouts => descriptorSetLayouts.AsReadOnly();
 
@@ -29,7 +29,7 @@ public sealed class VulkanShader : IShader, IDisposable {
 
 
     public VulkanShader(string name) {
-        this.name = name;
+        Name = name;
     }
 
     public unsafe void LoadAndCreateShaders(ShaderCollection data) {
@@ -51,7 +51,7 @@ public sealed class VulkanShader : IShader, IDisposable {
                 .EnsureSuccess();
             VulkanUtils.SetDebugObjectName(
                 ObjectType.ShaderModule,
-                $"{name}:{shaderStage}",
+                $"{Name}:{shaderStage}",
                 module.Handle
             );
 

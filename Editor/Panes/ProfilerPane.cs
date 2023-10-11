@@ -1,4 +1,5 @@
 using ImGuiNET;
+using Rin.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 
@@ -9,8 +10,39 @@ sealed class ProfilerPane : Pane {
     static readonly Color LightBlue = Color.FromArgb(255, 1, 151, 235);
     static readonly Color Pink = Color.FromArgb(255, 255, 25, 163);
     static readonly Color Yellow = Color.FromArgb(255, 255, 194, 5);
-    
+
     public ProfilerPane() : base("Profiler") { }
+
+    void PlotLineMetric(string name, Color? color = null, float? max = null) {
+        if (Profiler.TryGetMetrics(name, out var entry)) {
+            ImGui.Text(name);
+            // ImGui.Text($"{entry.DisplayName} [Min: {entry.Min:f3} Max: {entry.Max:f3}] ({entry.DisplayUnits})");
+
+            if (color.HasValue) {
+                ImGui.PushStyleColor(ImGuiCol.PlotLines, color.Value.ToVector4());
+            }
+
+            var data = entry.Select(x => (float)x).ToArray();
+
+            if (data.Length == 0) {
+                return;
+            }
+
+            ImGui.PlotLines(
+                $"##{name}",
+                ref data[0],
+                data.Length,
+                0,
+                string.Empty,
+                0,
+                max ?? float.MaxValue
+            );
+
+            if (color.HasValue) {
+                ImGui.PopStyleColor();
+            }
+        }
+    }
 
     void PlotLine(string name, Color? color = null, float? max = null) {
         if (ProfilerData.Data.TryGetValue(name, out var entry)) {
@@ -45,23 +77,25 @@ sealed class ProfilerPane : Pane {
 
     protected override void OnRender() {
         ImGui.PushItemWidth(-1);
-        
+
+        // Log.Information("Debug: {Variable}", Profiler.Metrics.Keys);
+
         ImGui.Text("CPU");
         ImGui.Separator();
         PlotLine("cpu-usage", Cyan);
         PlotLine("monitor-lock-contention-count");
         PlotProgress("cpu-usage", 100);
-        
+
         ImGui.Spacing();
         ImGui.Spacing();
         ImGui.Text("Engine");
         ImGui.Separator();
-        PlotLine("render-submit-count", Cyan);
-        PlotLine("render-submit-disposal-count", Cyan);
-        PlotLine("main-thread-work-time", LightBlue);
-        PlotLine("main-thread-wait-time", Yellow);
-        PlotLine("render-work-time", Cyan);
-        PlotLine("render-wait-time", Pink);
+        PlotLineMetric("Rin.Renderer.SubmitCount", Cyan);
+        PlotLineMetric("Rin.Renderer.SubmitDisposalCount", Cyan);
+        PlotLineMetric("Rin.Application.WorkTime", LightBlue);
+        PlotLineMetric("Rin.Application.WaitTime", Yellow);
+        PlotLineMetric("Rin.Renderer.WorkTime", Cyan);
+        PlotLineMetric("Rin.Renderer.WaitTime", Pink);
 
         ImGui.Spacing();
         ImGui.Spacing();
@@ -93,16 +127,20 @@ sealed class ProfilerPane : Pane {
         PlotLine("time-in-jit", Color.MediumPurple);
         PlotLine("methods-jitted-count", Color.MediumPurple);
         PlotLine("il-bytes-jitted", Color.MediumPurple);
+        
+        ImGui.Spacing();
+        ImGui.Spacing();
+        ImGui.Text("Misc");
+        ImGui.Separator();
+        PlotLine("working-set", Color.MediumPurple);
+        PlotLine("monitor-lock-contention-count", Color.MediumPurple);
+        PlotLine("alloc-rate", Color.MediumPurple);
+        PlotLine("active-timer-count", Color.MediumPurple);
+        PlotLine("exception-count", Color.MediumPurple);
+        PlotLine("loh-size", Color.MediumPurple);
+        PlotLine("poh-size", Color.MediumPurple);
+        PlotLine("assembly-count", Color.MediumPurple);
 
         ImGui.PopItemWidth();
-        // working-set: 253.181952
-        // monitor-lock-contention-count: 355
-        // alloc-rate: 10828320
-        // active-timer-count: 0
-        // exception-count: 0
-        // loh-size: 319544
-        // poh-size: 97264
-        // assembly-count: 83
-
     }
 }

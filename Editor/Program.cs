@@ -1,5 +1,6 @@
 ﻿using Rin.Core.Abstractions;
 using Rin.Core.General;
+using Rin.Diagnostics;
 using Rin.Editor;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
@@ -10,8 +11,8 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using System.Drawing;
+using Profiler = Rin.Diagnostics.Profiler;
 
-var eventSourceListener = new EventSourcesListener();
 
 Thread.CurrentThread.Name = "Main";
 
@@ -129,6 +130,9 @@ gui.OnStart();
 
 // TODO: render first quad thru vulkan
 
+Profiler.Initialize(options => options.AddRollingExporter(1000));
+
+
 app.Update += () => {
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
@@ -136,7 +140,6 @@ app.Update += () => {
 
     Renderer.Submit(
         () => {
-            // Log.Information("Debug: {Variable}", Time.DeltaTime);
             SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
             gui.OnRender(Time.DeltaTime);
             

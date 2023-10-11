@@ -1,9 +1,10 @@
-using Serilog;
 using System.Diagnostics.Tracing;
+
+namespace Rin.Diagnostics;
 
 sealed class EventSourcesListener : EventListener {
     protected override void OnEventSourceCreated(EventSource eventSource) {
-        if (!eventSource.Name.StartsWith("Rin.") && !eventSource.Name.Equals("System.Runtime")) {
+        if (!eventSource.Name.Equals("System.Runtime")) {
             return;
         }
 
@@ -40,9 +41,6 @@ public static class ProfilerData {
             entry = new();
             Data[key] = entry;
         }
-
-        // Log.Information("Debug: {Variable}", data.Keys);
-        // Log.Information("Debug: {Variable}", data);
 
         // TODO: optimize by SIMD
         for (var i = 0; i < entry.MeanData.Length - 1; i++) {

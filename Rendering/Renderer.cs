@@ -54,12 +54,12 @@ public static class Renderer {
 
     // TODO: make this internal
     public static void WaitAndRender(IRenderThread thread) {
-        using (var _ = RenderingEventSource.RenderWaitTime) {
+        using (var _ = RendererProfiling.StartWaitTime()) {
             thread.WaitAndSet(RenderThreadState.Kick, RenderThreadState.Busy);
         }
 
-        RenderingEventSource.Log.ReportSubmitCount(commandQueue[RenderQueueIndex].Count);
-        using (var _ = RenderingEventSource.RenderWorkTime) {
+        RendererProfiling.SubmitCount.Record(commandQueue[RenderQueueIndex].Count);
+        using (var _ = RendererProfiling.StartWorkTime()) {
             commandQueue[RenderQueueIndex].Execute();
             thread.Set(RenderThreadState.Idle);
         }
@@ -67,7 +67,7 @@ public static class Renderer {
 
     public static void DisposeQueue(int currentBufferIndex) {
         var queue = GetRenderDisposeQueue(currentBufferIndex);
-        RenderingEventSource.Log.ReportSubmitDisposalCount(queue.Count);
+        RendererProfiling.SubmitDisposalCount.Record(queue.Count);
         queue.Execute();
     }
 
