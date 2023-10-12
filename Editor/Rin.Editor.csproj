@@ -20,14 +20,10 @@
         <PackageReference Include="Silk.NET.SPIRV.Cross.Native" Version="2.17.1-build3832.0" />
         <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.1" />
         <PackageReference Include="YamlDotNet" Version="13.4.0" />
-        <PackageReference Include="MessagePack" Version="2.5.108" />
+<!--        <PackageReference Include="MessagePack" Version="2.5.108" />-->
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Rin.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Diagnostics\" />
     </ItemGroup>
 </Project>

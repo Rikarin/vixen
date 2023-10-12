@@ -15,7 +15,7 @@ public class MyCustomView : View {
     readonly State<float> slider = new();
     readonly State<int> dragInt = new();
 
-    readonly TransformView transformView = new();
+    // readonly TransformView transformView = new();
 
     readonly string[] test = { "foo", "bar", "strings" };
 
@@ -87,8 +87,8 @@ public class MyCustomView : View {
                 )
             ),
             
-            Button("outside"),
-            transformView
+            Button("outside")
+            // transformView
         );
     // @formatter:on
     

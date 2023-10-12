@@ -36,7 +36,7 @@ sealed class ProjectPane : Pane {
             }
 
             var selected = file == selectedPath;
-            var clicked = ImGui.Selectable(Path.GetFileName(file), ref selected, ImGuiSelectableFlags.SpanAllColumns);
+            var clicked = ImGui.Selectable("    " + Path.GetFileName(file), ref selected, ImGuiSelectableFlags.SpanAllColumns);
             ContextMenuView(new EmptyView(), path).Render();
 
             if (clicked) {

@@ -1,10 +1,22 @@
+using Arch.Core;
+using Arch.Persistence;
+using Arch.System;
+using Rin.Core.Components;
+using Serilog;
+using System.Text;
+
 namespace Rin.Core.General;
 
 // TODO: finish this
 public static class SceneManager {
-    static Dictionary<string, Scene> loadedScenes = new();
+    static ArchJsonSerializer serializer;
+    static Dictionary<string, Scene> loadedScenes;
 
-    public static Scene ActiveScene { get; private set; }
+    public static Scene? ActiveScene { get; private set; }
+
+    public static void Initialize() {
+        serializer = new();
+    }
 
     public static Scene CreateScene(string name) {
         var scene = new Scene(name, string.Empty);
@@ -15,9 +27,32 @@ public static class SceneManager {
         return scene;
     }
 
-    public static void SetActiveScene(Scene scene) {
-        ActiveScene = scene;
+    public static void SetActiveScene(Scene? scene) {
+        if (scene != null) {
+            // TODO: not sure about this as we need to reuse the same instance??
+            // ActiveScene?.Systems.Dispose();
+
+            scene.Systems.Initialize();
+            ActiveScene = scene;
+        }
     }
 
-    static Scene LoadScene(string path) => throw new NotImplementedException();
+    public static Scene? LoadScene(string path) {
+        if (File.Exists(path)) {
+            try {
+                var json = File.ReadAllText(path, Encoding.UTF8);
+                var world = serializer.FromJson(json);
+                return new("foo bar", path, world);
+            } catch {
+                Log.Information("Unable to load Scene");
+            }
+        }
+
+        return null;
+    }
+
+    public static void SaveScene(Scene scene) {
+        var json = serializer.ToJson(scene.World);
+        File.WriteAllText("Scene01.json", json, Encoding.UTF8);
+    }
 }

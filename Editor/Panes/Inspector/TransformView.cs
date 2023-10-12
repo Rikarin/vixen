@@ -1,46 +1,70 @@
 using Rin.Core.UI;
+using Rin.Editor.States;
 
 namespace Rin.Editor.Panes.Inspector;
 
 public class TransformView : View {
-    public class RowData {
-        public string Name { get; set; }
-        public State<float> X { get; } = new();
-        public State<float> Y { get; } = new();
-        public State<float> Z { get; } = new();
-    }
+    readonly TransformViewData data;
 
-    // TODO: not static
-    static RowData[] data = {
-        new() { Name = "Position" },
-        new() { Name = "Rotation" },
-        new() { Name = "Scale" }
-    };
+    public TransformView(TransformViewData data) {
+        this.data = data;
+    }
     
     // @formatter:off
     protected override View Body =>
-        CollapsingView("Transform",
-            Table(data,
-                TableColumn<RowData>("Name", x => x.Name),
-                TableColumn<RowData>("X", data => 
-                    HStack(
-                        Drag(data.X),
-                        Text("X")
+        CollapsingView("Local Transform",
+            VStack(
+                Grid(
+                    GridRow(
+                        Text("Position"),
+                        HStack(
+                            Drag(data.Position.X),
+                            Text("X")
+                        ),
+                        HStack(
+                            Drag(data.Position.Y),
+                            Text("Y")
+                        ),
+                        HStack(
+                            Drag(data.Position.Z),
+                            Text("Z")
+                        )
                     )
                 ),
-                TableColumn<RowData>("Y", data => 
-                    HStack(
-                        Drag(data.Y),
-                        Text("Y")
+                Grid(
+                    GridRow(
+                        Text("Rotation"),
+                        HStack(
+                            Drag(data.Rotation.X),
+                            Text("X")
+                        ),
+                        HStack(
+                            Drag(data.Rotation.Y),
+                            Text("Y")
+                        ),
+                        HStack(
+                            Drag(data.Rotation.Z),
+                            Text("Z")
+                        ),
+                        HStack(
+                            Drag(data.Rotation.W),
+                            Text("W")
+                        )
                     )
                 ),
-                TableColumn<RowData>("Z", data => 
-                    HStack(
-                        Drag(data.Z),
-                        Text("Z")
+                Grid(
+                    GridRow(
+                        Text("Scale"),
+                        Drag(data.Scale)
                     )
                 )
-            ).Style(new TableStyle { HasHeader = false })
+            )
         );
     // @formatter:on
+}
+
+public class TransformViewData {
+    public Vector3State Position { get; } = new();
+    public QuaternionState Rotation { get; } = new();
+    public State<float> Scale { get; } = new();
 }

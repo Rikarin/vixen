@@ -1,4 +1,8 @@
-﻿using Rin.Core.Abstractions;
+﻿using Arch.Core;
+using Arch.Core.Extensions;
+using Arch.Relationships;
+using Rin.Core.Abstractions;
+using Rin.Core.Components;
 using Rin.Core.General;
 using Rin.Diagnostics;
 using Rin.Editor;
@@ -11,6 +15,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using System.Drawing;
+using System.Numerics;
 using Profiler = Rin.Diagnostics.Profiler;
 
 
@@ -36,6 +41,8 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 
+SceneManager.Initialize();
+
 var project = Project.CreateProject("Example 1", "../Examples/Project1");
 Project.OpenProject = project;
 project.Save();
@@ -43,6 +50,19 @@ project.Save();
 var editor = new EditorManager(project);
 editor.Watch();
 
+SceneManager.SetActiveScene(SceneManager.LoadScene("Scene01.json"));
+if (SceneManager.ActiveScene == null) {
+    SceneManager.SetActiveScene(SceneManager.CreateScene("TestScene 1"));
+    
+    var world1 = SceneManager.ActiveScene!.World;
+    var parent = world1.Create<LocalTransform, LocalToWorld>();
+    var player = world1.Create<LocalTransform, LocalToWorld>();
+    player.AddRelationship<Parent>(parent);
+
+    parent.Set(new LocalTransform(new(5, 6, 7), Quaternion.Identity, 1));
+    player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
+    player.Add(new MeshFilter());
+}
 
 var app = Application.CreateDefault(
     options => {
@@ -95,6 +115,36 @@ swapchainRenderPass.Bake();
 
 var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
+
+
+// ECS Test
+var world = SceneManager.ActiveScene!.World;
+
+
+
+var query = new QueryDescription().WithAll<LocalTransform>();
+
+// world.Query(
+//     query,
+//     (ref LocalTransform t) => {
+//         t = t with { Position = t.Position with { X = 42 } };
+//     }
+// );
+
+// ref var children = ref parent.GetRelationships<Parent>();
+// var parentTransform = parent.Get<LocalTransform>();
+//
+// foreach (var child in children) {
+//     var local = child.Key.Get<LocalTransform>();
+//     Log.Information("Debug: {Variable}", local);
+// }
+
+
+
+
+
+
+
 // vertexArray = VertexArray.Create();
 // float[] vertices = {
 //     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
@@ -128,12 +178,31 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
 
+// TODO: VulkanMaterial, DescriptorSetManager, VulkanRenderer, VulkanShader(CreateDescriptors)
+// TODO: RenderCommandBuffer(Submit, Statistics)
+// TODO: Texture2D, TextureCube
+// TODO: ComputePass, ComputePipeline
+// TODO: Renderer(All shapes and passes)
+
+// TODO: ECS, Assimp(mesh loader)
+
 // TODO: render first quad thru vulkan
 
 Profiler.Initialize(options => options.AddRollingExporter(1000));
 
-
 app.Update += () => {
+    var systems = SceneManager.ActiveScene!.Systems;
+    systems.BeforeUpdate(Time.DeltaTime);
+    systems.Update(Time.DeltaTime);
+    systems.AfterUpdate(Time.DeltaTime);
+    
+world.Query(
+    query,
+    (ref LocalToWorld t) => {
+        // Log.Information("Debug: {Variable}", t.Value.ToString());
+    }
+);
+    
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
     Renderer.EndRenderPass(commandBuffer);
@@ -187,4 +256,6 @@ app.Update += () => {
 // }
 
 app.Run();
+
+SceneManager.ActiveScene.Save();
 return 0;

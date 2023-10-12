@@ -3,14 +3,17 @@ namespace Rin.Core.UI;
 public class State<T> {
     event Action<T> callbacks;
     
-    public T Value { get; private set; }
+    public T Value { get; protected set; }
 
     public void Subscribe(Action<T> callback) {
         callbacks += callback;
     }
 
-    public void SetNext(T value) {
+    public virtual void SetNext(T value, bool sendEvent = true) {
         Value = value;
-        callbacks?.Invoke(value);
+        
+        if (sendEvent) {
+            callbacks?.Invoke(value);
+        }
     }
 }

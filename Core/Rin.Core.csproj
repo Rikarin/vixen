@@ -6,13 +6,17 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog" Version="3.0.1"/>
+<!--        <PackageReference Include="Arch" Version="1.2.6.8-alpha" />-->
+<!--        <PackageReference Include="Arch" Version="1.2.6" />-->
+        <PackageReference Include="Arch.Persistence" Version="1.0.2" />
+        <PackageReference Include="Arch.Relationships" Version="1.0.1" />
+        <PackageReference Include="Arch.System" Version="1.0.2" />
+        <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.2" />
+        <PackageReference Include="Serilog" Version="3.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj"/>
-        <ProjectReference Include="..\Platform\Rin.Platform.csproj"/>
-        <ProjectReference Include="..\Renderer\Rin.Rendering.csproj" />
-        <ProjectReference Include="..\Rendering\Rin.Rendering.csproj" />
+        <ProjectReference Include="..\Core.Abstractions\Rin.Core.Abstractions.csproj" />
+        <ProjectReference Include="..\Platform\Rin.Platform.csproj" />
     </ItemGroup>
 </Project>
