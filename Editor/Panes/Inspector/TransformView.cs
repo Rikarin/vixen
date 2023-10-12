@@ -1,5 +1,4 @@
 using Rin.Core.UI;
-using Rin.Editor.States;
 
 namespace Rin.Editor.Panes.Inspector;
 
@@ -61,10 +60,4 @@ public class TransformView : View {
             )
         );
     // @formatter:on
-}
-
-public class TransformViewData {
-    public Vector3State Position { get; } = new();
-    public QuaternionState Rotation { get; } = new();
-    public State<float> Scale { get; } = new();
 }

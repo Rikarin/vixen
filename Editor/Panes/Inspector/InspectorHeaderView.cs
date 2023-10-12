@@ -17,6 +17,7 @@ public class InspectorHeaderView : View {
             HStack(
                 Toggle(data.IsEnabled),
                 TextField(data.Name),
+                TextField(data.EntityId),
                 Toggle("Static", data.IsStatic)
             ),
             Grid(
@@ -38,15 +39,20 @@ public class InspectorHeaderView : View {
     public class InspectorHeaderData {
         readonly Entity entity;
 
-        public State<bool> IsEnabled { get; set; } = new();
-        public State<string> Name { get; set; } = new();
-        public State<bool> IsStatic { get; set; } = new();
+        public State<string> EntityId { get; } = new();
+        // public State<string> EntityVersion { get; } = new();
 
-        public State<string> Tag { get; set; } = new();
-        public State<string> Layer { get; set; } = new();
+        public State<bool> IsEnabled { get; } = new();
+        public State<string> Name { get; } = new();
+        public State<bool> IsStatic { get; } = new();
+
+        public State<string> Tag { get; } = new();
+        public State<string> Layer { get; } = new();
 
         public InspectorHeaderData(Entity entity) {
             this.entity = entity;
+            
+            EntityId.SetNext(entity.Id.ToString());
 
             var world = SceneManager.ActiveScene!.World;
             IsEnabled.SetNext(!world.Has<IsDisabledTag>(entity));

@@ -67,8 +67,8 @@ if (SceneManager.ActiveScene == null) {
     player.Add(new Name("Player"));
     
     
-    parent.Add<IsScriptEnabledTag>();
-    parent.Add(new TestScript());
+    player.Add<IsScriptEnabledTag>();
+    player.Add(new PlayerControllerScript());
     
     
     Entity child = default;
@@ -274,8 +274,20 @@ return 0;
 
 
 
-public class TestScript : Script {
+public class PlayerControllerScript : Script {
     public override void OnUpdate() {
-        // Log.Information("update");
+        ref var transform = ref Entity.Get<LocalTransform>();
+        
+        if (Input.GetKey(Key.W)) {
+            transform.Position += transform.Forward * Time.DeltaTime;
+        } else if (Input.GetKey(Key.S)) {
+            transform.Position += -transform.Forward * Time.DeltaTime;
+        }
+        
+        if (Input.GetKey(Key.A)) {
+            transform.Position += -transform.Right * Time.DeltaTime;
+        } else if (Input.GetKey(Key.D)) {
+            transform.Position += transform.Right * Time.DeltaTime;
+        }
     }
 }

@@ -7,27 +7,26 @@ using Rin.Editor.States;
 namespace Rin.Editor.Panes.Inspector;
 
 sealed class InspectorPane : Pane {
+    readonly TransformViewData data = new();
     World World => SceneManager.ActiveScene!.World;
     Entity SelectedEntity => HierarchyPane.Selected!.Value;
 
     public InspectorPane() : base("Inspector") { }
 
-    TransformViewData LoadTransform() {
-        var data = new TransformViewData();
-
+    void LoadTransform() {
         var localTransform = World.Get<LocalTransform>(HierarchyPane.Selected.Value);
         data.Position.SetNext(localTransform.Position);
         data.Rotation.SetNext(localTransform.Rotation);
         data.Scale.SetNext(localTransform.Scale);
-
-        return data;
+        
+        data.ResetDirty();
     }
 
     void SaveTransform(TransformViewData data) {
-        if (!HierarchyPane.Selected.HasValue) {
+        if (!HierarchyPane.Selected.HasValue || !data.IsDirty) {
             return;
         }
-
+        
         Application.InvokeOnMainThread(
             () => {
                 World.Set(
@@ -36,6 +35,8 @@ sealed class InspectorPane : Pane {
                 );
             }
         );
+
+        data.ResetDirty();
     }
 
     Vector4State[] LoadLocalToWorld() {
@@ -54,7 +55,7 @@ sealed class InspectorPane : Pane {
         if (!HierarchyPane.Selected.HasValue) {
             return;
         }
-        
+
         InspectorHeaderView.InspectorHeaderData headerData = new(SelectedEntity);
 
         new InspectorHeaderView(headerData, Gui.Project.Tags.ToArray(), Gui.Project.Tags.ToArray()).Render();
@@ -64,7 +65,7 @@ sealed class InspectorPane : Pane {
         foreach (var component in World.GetAllComponents(SelectedEntity)) {
             switch (component) {
                 case LocalTransform:
-                    var data = LoadTransform();
+                    LoadTransform();
                     components.Add(new TransformView(data));
                     afterRender.Add(() => SaveTransform(data));
                     break;
