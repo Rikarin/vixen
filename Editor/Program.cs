@@ -18,7 +18,6 @@ using System.Drawing;
 using System.Numerics;
 using Profiler = Rin.Diagnostics.Profiler;
 
-
 Thread.CurrentThread.Name = "Main";
 
 Log.Logger = new LoggerConfiguration()
@@ -50,7 +49,7 @@ project.Save();
 var editor = new EditorManager(project);
 editor.Watch();
 
-SceneManager.SetActiveScene(SceneManager.LoadScene("Scene01.json"));
+// SceneManager.SetActiveScene(SceneManager.LoadScene("Scene01.json"));
 if (SceneManager.ActiveScene == null) {
     SceneManager.SetActiveScene(SceneManager.CreateScene("TestScene 1"));
     
@@ -59,15 +58,33 @@ if (SceneManager.ActiveScene == null) {
     var player = world1.Create<LocalTransform, LocalToWorld>();
     player.AddRelationship<Parent>(parent);
 
+    Log.Information("parent {id}", parent.Id);
+    Log.Information("playeer {id}", player.Id);
+
     parent.Set(new LocalTransform(new(5, 6, 7), Quaternion.Identity, 1));
     player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
     player.Add(new MeshFilter());
+    player.Add(new Name("Player"));
+    
+    
+    parent.Add<IsScriptEnabledTag>();
+    parent.Add(new TestScript());
+    
+    
+    Entity child = default;
+    for (var i = 0; i < 10; i++) {
+        child = world1.Create();
+        child.AddRelationship<Parent>(parent);
+    }
+
+    var child2 = world1.Create();
+    child2.AddRelationship<Parent>(child);
 }
 
 var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
-        options.ThreadingPolicy = ThreadingPolicy.MultiThreaded;
+        options.ThreadingPolicy = ThreadingPolicy.SingleThreaded;
         options.WindowSize = new(1600, 900);
         options.VSync = true;
     }
@@ -118,11 +135,8 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 
 
 // ECS Test
-var world = SceneManager.ActiveScene!.World;
-
-
-
-var query = new QueryDescription().WithAll<LocalTransform>();
+// var world = SceneManager.ActiveScene!.World;
+// var query = new QueryDescription().WithAll<LocalTransform>();
 
 // world.Query(
 //     query,
@@ -191,17 +205,14 @@ gui.OnStart();
 Profiler.Initialize(options => options.AddRollingExporter(1000));
 
 app.Update += () => {
-    var systems = SceneManager.ActiveScene!.Systems;
-    systems.BeforeUpdate(Time.DeltaTime);
-    systems.Update(Time.DeltaTime);
-    systems.AfterUpdate(Time.DeltaTime);
+
     
-world.Query(
-    query,
-    (ref LocalToWorld t) => {
-        // Log.Information("Debug: {Variable}", t.Value.ToString());
-    }
-);
+// world.Query(
+//     query,
+//     (ref LocalToWorld t) => {
+//         // Log.Information("Debug: {Variable}", t.Value.ToString());
+//     }
+// );
     
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
@@ -257,5 +268,14 @@ world.Query(
 
 app.Run();
 
-SceneManager.ActiveScene.Save();
+SceneManager.ActiveScene.Systems.Dispose();
+// SceneManager.ActiveScene.Save();
 return 0;
+
+
+
+public class TestScript : Script {
+    public override void OnUpdate() {
+        // Log.Information("update");
+    }
+}

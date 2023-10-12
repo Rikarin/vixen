@@ -4,6 +4,7 @@ using Rin.Platform.Silk;
 using Rin.Platform.Vulkan;
 using Rin.Rendering;
 using Serilog;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
@@ -19,6 +20,7 @@ public class Application : IDisposable {
     readonly ILogger log = Log.ForContext<Application>();
     readonly IRenderThread renderThread;
     readonly Stopwatch timer = new();
+    readonly ConcurrentQueue<Action> mainThreadQueue = new();
 
     public bool IsRunning { get; private set; }
     public bool IsMinimized { get; private set; }
@@ -79,6 +81,12 @@ public class Application : IDisposable {
                 Renderer.Submit(MainWindow.Handle.Swapchain.BeginFrame);
                 Renderer.BeginFrame();
 
+                var systems = SceneManager.ActiveScene!.Systems;
+                systems.BeforeUpdate(Time.DeltaTime);
+                systems.Update(Time.DeltaTime);
+                systems.AfterUpdate(Time.DeltaTime);
+                
+                ExecuteMainThreadQueue();
                 Update?.Invoke();
 
                 Renderer.EndFrame();
@@ -115,6 +123,10 @@ public class Application : IDisposable {
         Profiler.Shutdown();
     }
 
+    public static void InvokeOnMainThread(Action action) {
+        Current.mainThreadQueue.Enqueue(action);
+    }
+
     void OnWindowResize(Size newSize) {
         Log.Information("OnResize: {Variable}", newSize);
         Renderer.Submit(() => MainWindow.Handle.Swapchain.OnResize(newSize));
@@ -125,9 +137,16 @@ public class Application : IDisposable {
         IsRunning = false;
     }
 
-    public event Action? Update;
-}
+    void ExecuteMainThreadQueue() {
+        while (mainThreadQueue.TryDequeue(out var action)) {
+            try {
+                
+                action();
+            } catch (Exception e) {
+                log.Error(e, "Main Thread Queue");
+            }
+        }
+    }
 
-public static class Time {
-    public static float DeltaTime { get; internal set; }
+    public event Action? Update;
 }

@@ -1,7 +1,4 @@
-using Arch.Core;
 using Arch.Persistence;
-using Arch.System;
-using Rin.Core.Components;
 using Serilog;
 using System.Text;
 
@@ -47,11 +44,12 @@ public static class SceneManager {
                 Log.Information("Unable to load Scene");
             }
         }
-
+    
         return null;
     }
-
+    
     public static void SaveScene(Scene scene) {
+        scene.World.TrimExcess();
         var json = serializer.ToJson(scene.World);
         File.WriteAllText("Scene01.json", json, Encoding.UTF8);
     }

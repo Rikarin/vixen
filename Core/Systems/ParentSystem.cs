@@ -2,9 +2,9 @@ using Arch.Core;
 using Arch.Relationships;
 using Arch.System;
 using Arch.System.SourceGenerator;
-using Serilog;
+using Rin.Core.Components;
 
-namespace Rin.Core.Components;
+namespace Rin.Core.Systems;
 
 public partial class ParentSystem : BaseSystem<World, float> {
     public ParentSystem(World world) : base(world) { }
@@ -22,15 +22,10 @@ public partial class ParentSystem : BaseSystem<World, float> {
     [Query]
     [All<Relationship<Parent>>]
     public void AddChildrenToParent(in Entity child) {
-        var parent = child.GetParent();
-        if (parent.HasValue) {
-            if (!parent.Value.HasRelationship<Child>(child)) {
-                parent.Value.AddRelationship<Child>(child);
-                
-                Log.Information("Adding Child P {P} C {C}", parent.Value.Id, child.Id);
-            }
-        } else {
-            Log.Error("Doesn't have parent");
+        var parent = child.GetParent()!.Value;
+        
+        if (!parent.HasRelationship<Child>(child)) {
+            parent.AddRelationship<Child>(child);
         }
     }
 }

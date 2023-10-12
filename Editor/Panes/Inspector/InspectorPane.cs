@@ -28,9 +28,13 @@ sealed class InspectorPane : Pane {
             return;
         }
 
-        World.Set(
-            HierarchyPane.Selected.Value,
-            new LocalTransform(data.Position.Value, data.Rotation.Value, data.Scale.Value)
+        Application.InvokeOnMainThread(
+            () => {
+                World.Set(
+                    HierarchyPane.Selected.Value,
+                    new LocalTransform(data.Position.Value, data.Rotation.Value, data.Scale.Value)
+                );
+            }
         );
     }
 
@@ -72,10 +76,14 @@ sealed class InspectorPane : Pane {
                 case MeshFilter:
                     components.Add(new MeshFilterView());
                     break;
-                
+
+                case IsDisabledTag: break;
+                case Name: break;
+
                 case ITag:
                     components.Add(new GenericComponentView("tag"));
                     break;
+
 
                 default:
                     if (!component.GetType().IsGenericType) {
@@ -91,7 +99,7 @@ sealed class InspectorPane : Pane {
         foreach (var callback in afterRender) {
             callback();
         }
-        
+
         headerData.Apply();
     }
 }

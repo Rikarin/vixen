@@ -5,22 +5,21 @@ using ImGuiNET;
 using Rin.Core.Components;
 using Rin.Core.General;
 using Rin.Core.UI;
-using Serilog;
 
 namespace Rin.Editor.Panes;
 
 sealed class HierarchyPane : Pane {
-    // TODO: move this to EditorManager
     readonly QueryDescription rootQuery = new QueryDescription().WithNone<Relationship<Parent>>();
-        
+
+    // TODO: move this to EditorManager
     public static Entity? Selected { get; set; }
 
     public HierarchyPane() : base("Hierarchy") { }
 
     void RenderEntity(Entity entity) {
         var world = SceneManager.ActiveScene.World;
-        var name = $"Entity {entity.Id}";
-        
+        var name = $"[Entity {entity.Id}]";
+
         if (world.TryGet(entity, typeof(Name), out var nameObj)) {
             name = $"{((Name)nameObj).Value}##{entity.Id}";
         }
@@ -36,10 +35,10 @@ sealed class HierarchyPane : Pane {
                 | ImGuiTreeNodeFlags.SpanFullWidth
             );
 
-            if (ImGui.IsItemClicked()) {
+            if (ImGui.IsItemClicked() || ImGui.IsItemFocused()) {
                 Selected = entity;
             }
-            
+
             ContextMenu(entity).Render();
 
             if (isOpened) {
@@ -50,34 +49,15 @@ sealed class HierarchyPane : Pane {
                 ImGui.TreePop();
             }
         } else {
-            if (ImGui.Selectable($"     {name}", Selected == entity, ImGuiSelectableFlags.SpanAllColumns)) {
+            if (ImGui.Selectable($"         {name}", Selected == entity, ImGuiSelectableFlags.SpanAllColumns)) {
                 Selected = entity;
             }
-            
-            ContextMenu(entity).Render();
-        }
-    }
 
-    protected override void OnRender() {
-
-        var scene = SceneManager.ActiveScene;
-        if (scene == null) {
-            return;
-        }
-
-        if (ImGui.BeginChild("hierarchy")) {
-            var isOpened = ImGui.TreeNodeEx(
-                scene.Name,
-                ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth
-            );
-            
-            ContextMenu(null).Render();
-            if (isOpened) {
-                scene.World.Query(rootQuery, (in Entity entity) => RenderEntity(entity));
-                ImGui.TreePop();
+            if (ImGui.IsItemFocused()) {
+                Selected = entity;
             }
 
-            ImGui.EndChild();
+            ContextMenu(entity).Render();
         }
     }
 
@@ -90,7 +70,6 @@ sealed class HierarchyPane : Pane {
         );
         // @formatter:on
 
-
         return view;
     }
 
@@ -100,12 +79,38 @@ sealed class HierarchyPane : Pane {
             CreateEntityType.GameObject => new ComponentType[] { typeof(LocalToWorld), typeof(LocalTransform) },
             _ => Array.Empty<ComponentType>()
         };
-        
-        var newEntity = SceneManager.ActiveScene.World.Create(types);
-        Log.Information("Debug: {Variable}", parent.HasValue);
 
-        if (parent.HasValue) {
-            newEntity.AddRelationship<Parent>(parent.Value);
+        Application.InvokeOnMainThread(
+            () => {
+                var newEntity = SceneManager.ActiveScene.World.Create(types);
+                Selected = newEntity;
+
+                if (parent.HasValue) {
+                    newEntity.AddRelationship<Parent>(parent.Value);
+                }
+            }
+        );
+    }
+
+    protected override void OnRender() {
+        var scene = SceneManager.ActiveScene;
+        if (scene == null) {
+            return;
+        }
+
+        if (ImGui.BeginChild("hierarchy")) {
+            var isOpened = ImGui.TreeNodeEx(
+                scene.Name,
+                ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth
+            );
+
+            ContextMenu(null).Render();
+            if (isOpened) {
+                scene.World.Query(rootQuery, (in Entity entity) => RenderEntity(entity));
+                ImGui.TreePop();
+            }
+
+            ImGui.EndChild();
         }
     }
 }
