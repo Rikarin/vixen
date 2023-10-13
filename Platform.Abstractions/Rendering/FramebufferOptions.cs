@@ -11,15 +11,14 @@ public sealed class FramebufferOptions {
     // TODO: use options pattern?
     public bool ClearColorOnLoad { get; set; } = true;
     public bool ClearDepthOnLoad { get; set; } = true;
-
     public FramebufferAttachmentOptions Attachments { get; set; }
 
+    public bool Blend { get; set; } = true;
+    public FramebufferBlendMode BlendMode { get; set; }
     public bool IsSwapChainTarget { get; set; }
     public bool Transfer { get; set; }
-
     public IImage2D? ExistingImage { get; set; }
     public List<int> ExistingImageLayers { get; set; }
-
     public Dictionary<int, IImage2D>? ExistingImages { get; set; }
 
 

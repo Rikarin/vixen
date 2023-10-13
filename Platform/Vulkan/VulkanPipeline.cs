@@ -7,7 +7,7 @@ namespace Rin.Platform.Vulkan;
 
 sealed class VulkanPipeline : IPipeline, IDisposable {
     PipelineCache cache;
-    
+
     public Pipeline VkPipeline { get; private set; }
     public PipelineLayout VkLayout { get; private set; }
 
@@ -106,7 +106,47 @@ sealed class VulkanPipeline : IPipeline, IDisposable {
                         }
                     );
                 } else {
-                    throw new NotImplementedException();
+                    for (var i = 0; i < colorAttachmentCount; i++) {
+                        if (!framebuffer.Options.Blend) {
+                            break;
+                        }
+
+                        var state = new PipelineColorBlendAttachmentState { ColorWriteMask = (ColorComponentFlags)0xF };
+
+                        var attachmentOptions = framebuffer.Options.Attachments.Attachments[i];
+                        var blendMode = framebuffer.Options.BlendMode == FramebufferBlendMode.None
+                            ? attachmentOptions.BlendMode
+                            : framebuffer.Options.BlendMode;
+
+                        state.BlendEnable = attachmentOptions.Blend;
+                        state.ColorBlendOp = BlendOp.Add;
+                        state.AlphaBlendOp = BlendOp.Add;
+                        state.SrcAlphaBlendFactor = BlendFactor.One;
+                        state.DstAlphaBlendFactor = BlendFactor.Zero;
+
+                        switch (blendMode) {
+                            case FramebufferBlendMode.SrcAlphaOneMinusSrcAlpha:
+                                state.SrcColorBlendFactor = BlendFactor.SrcAlpha;
+                                state.DstColorBlendFactor = BlendFactor.OneMinusSrcAlpha;
+                                state.SrcAlphaBlendFactor = BlendFactor.SrcAlpha;
+                                state.DstAlphaBlendFactor = BlendFactor.OneMinusSrcAlpha;
+                                break;
+
+                            case FramebufferBlendMode.OneZero:
+                                state.SrcColorBlendFactor = BlendFactor.One;
+                                state.DstColorBlendFactor = BlendFactor.Zero;
+                                break;
+
+                            case FramebufferBlendMode.ZeroSrcColor:
+                                state.SrcColorBlendFactor = BlendFactor.Zero;
+                                state.DstColorBlendFactor = BlendFactor.SrcColor;
+                                break;
+
+                            default: throw new ArgumentOutOfRangeException();
+                        }
+
+                        blendAttachmentStates.Add(state);
+                    }
                 }
 
                 using var blendAttachmentStatesMemoryHandle =
