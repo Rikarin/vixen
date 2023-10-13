@@ -2,19 +2,26 @@ using Arch.Core;
 
 namespace Rin.Core.Components;
 
-public record struct IsScriptEnabledTag : ITag;
+public record struct IsScriptEnabled(bool IsInitialized) : ITag;
 
-public abstract class Script {
-    bool initialized;
-    protected Entity Entity { get; private set; }
+
+// TODO: Not sure about the Entity and Initialize methods
+public interface IScript {
+    Entity Entity { get; }
+    
+    void OnStart();
+    void OnUpdate();
+    void Initialize(Entity entity);
+}
+
+public abstract class Script : IScript {
+    public Entity Entity { get; private set; }
     
     public virtual void OnStart() { }
     public virtual void OnUpdate() { }
 
-    internal void Initialize(Entity entity) {
-        if (!initialized) {
-            Entity = entity;
-            OnStart();
-        }
+    public void Initialize(Entity entity) {
+        Entity = entity;
+        OnStart();
     }
 }

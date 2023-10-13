@@ -4,7 +4,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public class VulkanImageView : IImageView, IDisposable {
+sealed class VulkanImageView : IImageView, IDisposable {
     readonly ImageViewOptions options;
     ImageView imageView;
 

@@ -2,7 +2,7 @@ using Rin.Platform.Abstractions.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class RenderPassInput {
+sealed class RenderPassInput {
     public RenderPassResourceType Type { get; set; }
     public List<object> Input { get; } = new();
 

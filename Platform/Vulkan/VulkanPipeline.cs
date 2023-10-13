@@ -5,11 +5,11 @@ using PrimitiveTopology = Rin.Platform.Abstractions.Rendering.PrimitiveTopology;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanPipeline : IPipeline, IDisposable {
-    PipelineLayout layout;
+sealed class VulkanPipeline : IPipeline, IDisposable {
     PipelineCache cache;
     
     public Pipeline VkPipeline { get; private set; }
+    public PipelineLayout VkLayout { get; private set; }
 
     public bool IsDynamicLineWidth =>
         Options.Topology is PrimitiveTopology.Lines or PrimitiveTopology.LineStrip || Options.WireFrame;
@@ -31,7 +31,7 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
 
                 vk.DestroyPipeline(device, VkPipeline, null);
                 vk.DestroyPipelineCache(device, cache, null);
-                vk.DestroyPipelineLayout(device, layout, null);
+                vk.DestroyPipelineLayout(device, VkLayout, null);
             }
         );
     }
@@ -69,7 +69,7 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
 
                     vk.CreatePipelineLayout(device, pipelineLayoutCreateInfo, null, out var pipelineLayout)
                         .EnsureSuccess();
-                    layout = pipelineLayout;
+                    VkLayout = pipelineLayout;
                 }
 
                 // Input Assembly
@@ -222,8 +222,8 @@ public sealed class VulkanPipeline : IPipeline, IDisposable {
                 using var shaderStagesMemoryHandle = shaderStages.Pin();
 
                 var pipelineCreateInfo = new GraphicsPipelineCreateInfo(StructureType.GraphicsPipelineCreateInfo) {
-                    Layout = layout,
-                    RenderPass = framebuffer.RenderPass,
+                    Layout = VkLayout,
+                    RenderPass = framebuffer.VkRenderPass,
                     StageCount = (uint)shaderStages.Length,
                     PStages = (PipelineShaderStageCreateInfo*)shaderStagesMemoryHandle.Pointer,
                     PInputAssemblyState = &inputAssemblyState,

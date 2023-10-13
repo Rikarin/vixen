@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace Rin.Platform.Vulkan;
 
 // TODO: consider moving this outside of platform as there aren't many references on vulkan
-public static class ShaderResource {
+static class ShaderResource {
     public sealed class ReflectionData {
         public Dictionary<int, ShaderDescriptorSet> ShaderDescriptorSets { get; set; } = new();
         public Dictionary<string, ShaderResourceDeclaration> Resources { get; set; } = new();

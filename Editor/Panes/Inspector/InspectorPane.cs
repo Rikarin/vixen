@@ -56,13 +56,16 @@ sealed class InspectorPane : Pane {
             return;
         }
 
-        InspectorHeaderView.InspectorHeaderData headerData = new(SelectedEntity);
-
+        InspectorHeaderData headerData = new(SelectedEntity);
         new InspectorHeaderView(headerData, Gui.Project.Tags.ToArray(), Gui.Project.Tags.ToArray()).Render();
         var components = new List<View>();
         List<Action> afterRender = new();
 
         foreach (var component in World.GetAllComponents(SelectedEntity)) {
+            if (component == null) {
+                continue;
+            }
+
             switch (component) {
                 case LocalTransform:
                     LoadTransform();
@@ -84,7 +87,6 @@ sealed class InspectorPane : Pane {
                 case ITag:
                     components.Add(new GenericComponentView("tag"));
                     break;
-
 
                 default:
                     if (!component.GetType().IsGenericType) {

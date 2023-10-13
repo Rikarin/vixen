@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanShader : IShader, IDisposable {
+sealed class VulkanShader : IShader, IDisposable {
     readonly ILogger log = Log.ForContext<IShader>();
     readonly List<PipelineShaderStageCreateInfo> pipelineShaderStageCreateInfos = new();
 

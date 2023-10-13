@@ -1,6 +1,7 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Relationships;
+using ImGuiNET;
 using Rin.Core.Abstractions;
 using Rin.Core.Components;
 using Rin.Core.General;
@@ -67,7 +68,7 @@ if (SceneManager.ActiveScene == null) {
     player.Add(new Name("Player"));
     
     
-    player.Add<IsScriptEnabledTag>();
+    player.Add<IsScriptEnabled>();
     player.Add(new PlayerControllerScript());
     
     
@@ -84,7 +85,7 @@ if (SceneManager.ActiveScene == null) {
 var app = Application.CreateDefault(
     options => {
         options.Name = "Project 1";
-        options.ThreadingPolicy = ThreadingPolicy.SingleThreaded;
+        options.ThreadingPolicy = ThreadingPolicy.MultiThreaded;
         options.WindowSize = new(1600, 900);
         options.VSync = true;
     }
@@ -133,10 +134,12 @@ swapchainRenderPass.Bake();
 var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
 
+var quadTest = new QuadTest();
+
 
 // ECS Test
-// var world = SceneManager.ActiveScene!.World;
-// var query = new QueryDescription().WithAll<LocalTransform>();
+var world = SceneManager.ActiveScene!.World;
+var query = new QueryDescription().WithAll<LocalToWorld>();
 
 // world.Query(
 //     query,
@@ -153,6 +156,15 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 //     Log.Information("Debug: {Variable}", local);
 // }
 
+
+// Editor Camera
+// var editorCamera = SceneManager.ActiveScene.World.Create<LocalToWorld, LocalTransform, EditorCamera, Name>();
+var editorCamera = SceneManager.ActiveScene.World.Create(
+    new LocalToWorld(),
+    new LocalTransform(),
+    new EditorCamera(),
+    new Name("Editor Camera")
+);
 
 
 
@@ -192,30 +204,39 @@ var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("Runtim
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
 
-// TODO: VulkanMaterial, DescriptorSetManager, VulkanRenderer, VulkanShader(CreateDescriptors)
+// TODO: VulkanPipeline
+// TODO: DescriptorSetManager
+// TODO: VulkanMaterial
+// TODO: VulkanRenderer
+// TODO: VulkanShader(CreateDescriptors)
 // TODO: RenderCommandBuffer(Submit, Statistics)
 // TODO: Texture2D, TextureCube
 // TODO: ComputePass, ComputePipeline
 // TODO: Renderer(All shapes and passes)
 
-// TODO: ECS, Assimp(mesh loader)
-
+// TODO: use options pattern for ObjectFactory
+// TODO: Assimp(mesh loader)
 // TODO: render first quad thru vulkan
 
 Profiler.Initialize(options => options.AddRollingExporter(1000));
 
 app.Update += () => {
-
-    
-// world.Query(
-//     query,
-//     (ref LocalToWorld t) => {
-//         // Log.Information("Debug: {Variable}", t.Value.ToString());
-//     }
-// );
-    
     commandBuffer.Begin();
     Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
+    
+    // var material = new VulkanMaterial(testShader.Handle, "foobar");
+    //
+    // world.Query(
+    //     query,
+    //     (ref LocalToWorld t) => {
+    //         Log.Information("Debug: {Variable}", t.Value.ToString());
+    //         Renderer.RenderQuad(commandBuffer, swapchainRenderPass.Pipeline, material, t.Value);
+    //     }
+    // );
+   
+    
+    
+    
     Renderer.EndRenderPass(commandBuffer);
 
     Renderer.Submit(
@@ -275,6 +296,10 @@ return 0;
 
 
 public class PlayerControllerScript : Script {
+    public override void OnStart() {
+        Log.Information("start");
+    }
+
     public override void OnUpdate() {
         ref var transform = ref Entity.Get<LocalTransform>();
         
@@ -288,6 +313,12 @@ public class PlayerControllerScript : Script {
             transform.Position += -transform.Right * Time.DeltaTime;
         } else if (Input.GetKey(Key.D)) {
             transform.Position += transform.Right * Time.DeltaTime;
+        }
+        
+        if (Input.GetKey(Key.Space)) {
+            transform.Position += transform.Up * Time.DeltaTime;
+        } else if (Input.GetKey(Key.ShiftLeft)) {
+            transform.Position += -transform.Up * Time.DeltaTime;
         }
     }
 }

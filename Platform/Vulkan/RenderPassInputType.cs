@@ -1,6 +1,6 @@
 namespace Rin.Platform.Vulkan;
 
-public enum RenderPassInputType : ushort {
+enum RenderPassInputType : ushort {
     None = 0, // TODO: remove none??
     UniformBuffer,
     StorageBuffer,

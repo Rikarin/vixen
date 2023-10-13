@@ -3,7 +3,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public static class ImageFormatExtensions {
+static class ImageFormatExtensions {
     public static Format ToVulkanImageFormat(this ImageFormat format) =>
         format switch {
             ImageFormat.Red8Un => Format.R8Unorm,

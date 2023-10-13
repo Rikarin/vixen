@@ -1,6 +1,7 @@
 using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Diagnostics;
 using Rin.Platform.Abstractions.Rendering;
+using System.Numerics;
 
 namespace Rin.Rendering;
 
@@ -98,6 +99,14 @@ public static class Renderer {
 
     public static void SubmitDisposal(Action action) =>
         Submit(() => GetRenderDisposeQueue(CurrentFrameIndex_RT).Push(action));
+
+    public static void RenderQuad(
+        IRenderCommandBuffer commandBuffer,
+        IPipeline pipeline,
+        IMaterial material,
+        Matrix4x4 transform
+    ) =>
+        renderer.RenderQuad(commandBuffer, pipeline, material, transform);
 }
 
 public class RendererOptions {

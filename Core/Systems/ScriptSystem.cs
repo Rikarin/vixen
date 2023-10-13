@@ -10,11 +10,15 @@ public partial class ScriptSystem : BaseSystem<World, float> {
     public ScriptSystem(World world) : base(world) { }
 
     [Query]
-    [All<IsScriptEnabledTag>]
-    public void Transform(in Entity entity) {
+    [All<IsScriptEnabled>]
+    public void Transform(in Entity entity, ref IsScriptEnabled isScriptEnabled) {
         foreach (var component in entity.GetAllComponents()) {
-            if (component is Script script) {
-                script.Initialize(entity);
+            if (component is IScript script) {
+                if (!isScriptEnabled.IsInitialized) {
+                    script.Initialize(entity);
+                    isScriptEnabled.IsInitialized = true;
+                }
+                
                 script.OnUpdate();
             }
         }

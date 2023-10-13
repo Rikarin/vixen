@@ -2,7 +2,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public static class VulkanSampler {
+static class VulkanSampler {
     public static ResourceAllocationCounts Resources { get; } = new();
 
     public static unsafe Sampler CreateSampler(SamplerCreateInfo createInfo) {

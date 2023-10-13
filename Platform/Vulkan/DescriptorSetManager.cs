@@ -5,7 +5,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class DescriptorSetManager {
+sealed class DescriptorSetManager {
     readonly ILogger log = Log.ForContext<DescriptorSetManager>();
     
     readonly DescriptorSetManagerOptions options;

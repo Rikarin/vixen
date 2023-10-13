@@ -6,7 +6,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public class VulkanImage2D : IImage2D, IDisposable {
+sealed class VulkanImage2D : IImage2D, IDisposable {
     readonly List<ImageView> perLayerImageViews = new();
     readonly Dictionary<int, ImageView> perMipImageViews = new();
 
@@ -36,6 +36,8 @@ public class VulkanImage2D : IImage2D, IDisposable {
             throw new ArgumentOutOfRangeException(nameof(options.Size));
         }
     }
+
+    public ImageView GetLayerImageView(int layer) => perLayerImageViews[layer];
 
     public void Dispose() {
         Release();
@@ -83,7 +85,7 @@ public class VulkanImage2D : IImage2D, IDisposable {
         );
     }
 
-    public unsafe void CreatePerSpecificLayerImageViews(IEnumerable<int> layerIndices) {
+    public unsafe void CreatePerSpecificLayerImageViews_RT(IEnumerable<int> layerIndices) {
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;
 
         foreach (var layer in layerIndices) {
@@ -111,7 +113,7 @@ public class VulkanImage2D : IImage2D, IDisposable {
         }
     }
 
-    unsafe void Invalidate_RT() {
+    public unsafe void Invalidate_RT() {
         Release();
 
         var device = VulkanContext.CurrentDevice.VkLogicalDevice;

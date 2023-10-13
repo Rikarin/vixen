@@ -16,26 +16,26 @@ public class LocalToWorldView : View {
             Table(rows,
                 TableColumn<Vector4State>("X", row => 
                     HStack(
-                        Drag(row.X),
-                        Text("X")
+                        Text("X"),
+                        Drag(row.X)
                     )
                 ),
                 TableColumn<Vector4State>("Y", row => 
                     HStack(
-                        Drag(row.Y),
-                        Text("Y")
+                        Text("Y"),
+                        Drag(row.Y)
                     )
                 ),
                 TableColumn<Vector4State>("Z", row => 
                     HStack(
-                        Drag(row.Z),
-                        Text("Z")
+                        Text("Z"),
+                        Drag(row.Z)
                     )
                 ),
                 TableColumn<Vector4State>("W", row => 
                     HStack(
-                        Drag(row.W),
-                        Text("W")
+                        Text("W"),
+                        Drag(row.W)
                     )
                 )
             ).Style(new TableStyle { HasHeader = false })

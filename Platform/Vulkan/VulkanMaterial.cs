@@ -3,17 +3,21 @@ using System.Numerics;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanMaterial : IMaterial {
+sealed class VulkanMaterial : IMaterial {
     DescriptorSetManager descriptorSetManager;
-    
+
+    // TODO: not sure about this
+    readonly Memory<byte> bufferTest = new byte[42];
+
     public string? Name { get; }
     public IShader Shader { get; }
     public MaterialFlags Flags { get; private set; }
+    public ReadOnlyMemory<byte> UniformStorageBuffer => bufferTest;
 
     public VulkanMaterial(IShader shader, string? name) {
         Shader = shader;
         Name = name;
-        
+
         Initialize();
     }
 
@@ -28,7 +32,10 @@ public sealed class VulkanMaterial : IMaterial {
     public void Set(string name, Vector4 value) => InternalSet(name, value);
     public void Set(string name, Matrix4x4 value) => InternalSet(name, value);
     public void Set(string name, ITexture2D value) => descriptorSetManager.SetInput(name, value);
-    public void Set(string name, ITexture2D value, int arrayIndex) => descriptorSetManager.SetInput(name, value, arrayIndex);
+
+    public void Set(string name, ITexture2D value, int arrayIndex) =>
+        descriptorSetManager.SetInput(name, value, arrayIndex);
+
     public void Set(string name, ITextureCube value) => descriptorSetManager.SetInput(name, value);
     public void Set(string name, IImageView value) => descriptorSetManager.SetInput(name, value);
 
@@ -44,24 +51,18 @@ public sealed class VulkanMaterial : IMaterial {
 
     void InternalSet<T>(string name, T value) { }
 
-    T InternalGet<T>(string name) {
-        throw new NotImplementedException();
-    }
+    T InternalGet<T>(string name) => throw new NotImplementedException();
 
-    T GetResource<T>(string name) {
-        throw new NotImplementedException();
-    }
+    T GetResource<T>(string name) => throw new NotImplementedException();
 
     void Initialize() {
         Flags |= MaterialFlags.DepthText | MaterialFlags.Blend;
 
-        var dsmOptions = new DescriptorSetManagerOptions() {
-            DebugName = Name ?? $"{Shader.Name} (Material)",
-            Shader = Shader as VulkanShader,
-            DefaultResources = true
+        var dsmOptions = new DescriptorSetManagerOptions {
+            DebugName = Name ?? $"{Shader.Name} (Material)", Shader = Shader as VulkanShader, DefaultResources = true
         };
-        descriptorSetManager = new(dsmOptions);
-        
+        // descriptorSetManager = new(dsmOptions);
+
         // TODO
     }
 }

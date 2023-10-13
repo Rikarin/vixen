@@ -12,9 +12,22 @@ public class InspectorView : View {
     // @formatter:off
     protected override View Body =>
         VStack(
+            ForEach(views, view => VStack(
+                Spacing(),
+                Spacing(),
+                Spacing(),
+                Spacing(),
+                view
+            )),
+            
             Spacing(),
             Spacing(),
-            VStack(views)
+            Spacing(),
+            Spacing(),
+            Spacing(),
+            Spacing(),
+            Spacing(),
+            Button("Add Component")
         );
     // formatter:on
 }

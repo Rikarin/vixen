@@ -6,7 +6,7 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanUniformBuffer : IUniformBuffer {
+sealed class VulkanUniformBuffer : IUniformBuffer {
     readonly byte[] localBuffer;
     readonly Allocation? allocation;
     readonly Buffer vkBuffer;

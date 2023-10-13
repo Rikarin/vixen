@@ -6,7 +6,7 @@ using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanRenderCommandBuffer : IRenderCommandBuffer {
+sealed class VulkanRenderCommandBuffer : IRenderCommandBuffer {
     const int MaxUserQueries = 16;
     readonly string debugName;
     readonly bool ownedBySwapchain;

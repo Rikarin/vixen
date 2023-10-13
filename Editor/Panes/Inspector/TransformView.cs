@@ -17,16 +17,16 @@ public class TransformView : View {
                     GridRow(
                         Text("Position"),
                         HStack(
-                            Drag(data.Position.X),
-                            Text("X")
+                            Text("X"),
+                            Drag(data.Position.X)
                         ),
                         HStack(
-                            Drag(data.Position.Y),
-                            Text("Y")
+                            Text("Y"),
+                            Drag(data.Position.Y)
                         ),
                         HStack(
-                            Drag(data.Position.Z),
-                            Text("Z")
+                            Text("Z"),
+                            Drag(data.Position.Z)
                         )
                     )
                 ),
@@ -34,20 +34,20 @@ public class TransformView : View {
                     GridRow(
                         Text("Rotation"),
                         HStack(
-                            Drag(data.Rotation.X),
-                            Text("X")
+                            Text("X"),
+                            Drag(data.Rotation.X)
                         ),
                         HStack(
-                            Drag(data.Rotation.Y),
-                            Text("Y")
+                            Text("Y"),
+                            Drag(data.Rotation.Y)
                         ),
                         HStack(
-                            Drag(data.Rotation.Z),
-                            Text("Z")
+                            Text("Z"),
+                            Drag(data.Rotation.Z)
                         ),
                         HStack(
-                            Drag(data.Rotation.W),
-                            Text("W")
+                            Text("W"),
+                            Drag(data.Rotation.W)
                         )
                     )
                 ),

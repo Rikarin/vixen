@@ -4,22 +4,24 @@ using Rin.Platform.Internal;
 using Rin.Platform.Silk;
 using Rin.Rendering;
 using Silk.NET.Vulkan;
+using System.Diagnostics;
 using System.Drawing;
 using AttachmentLoadOp = Silk.NET.Vulkan.AttachmentLoadOp;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
+sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     // Not sure if use list or dictionary
-    readonly List<IImage2D> attachmentImages = new();
+    readonly List<IImage2D?> attachmentImages = new();
+
     public List<ClearValue> ClearValues { get; } = new();
     public FramebufferOptions Options { get; }
     public Size Size { get; private set; }
     public IImage2D? DepthImage { get; private set; }
-    public RenderPass RenderPass { get; private set; }
     public int ColorAttachmentCount => Options.IsSwapChainTarget ? 1 : attachmentImages.Count;
 
-    internal Framebuffer? vkFramebuffer { get; private set; }
+    internal RenderPass VkRenderPass { get; private set; }
+    internal Framebuffer? VkFramebuffer { get; private set; }
 
     public VulkanFramebuffer(FramebufferOptions options) {
         Options = options;
@@ -27,10 +29,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
         if (options.Size == null) {
             Size = SilkWindow.MainWindow.Size;
         } else {
-            Size = new(
-                (int)(options.Size.Value.Width * options.Scale),
-                (int)(options.Size.Value.Height * options.Scale)
-            );
+            Size = options.Size.Value.Multiply(options.Scale);
         }
 
         var attachmentIndex = 0;
@@ -49,14 +48,14 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                     if (attachment.Format.IsDepthFormat()) {
                         DepthImage = value;
                     } else {
-                        attachmentImages.Add(null); // TODO: not sure about this
+                        attachmentImages.Add(null);
                     }
                 } else if (attachment.Format.IsDepthFormat()) {
                     var imageOptions = new ImageOptions {
                         Format = attachment.Format,
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
-                        Size = Size, // TODO: check as this is implemented differently
+                        Size = Size,
                         DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-DepthAttachment{attachmentIndex}"
                     };
                     DepthImage = ObjectFactory.CreateImage2D(imageOptions);
@@ -65,7 +64,7 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                         Format = attachment.Format,
                         Usage = ImageUsage.Attachment,
                         Transfer = options.Transfer,
-                        Size = Size, // TODO: check as this is implemented differently
+                        Size = Size,
                         DebugName = $"{options.DebugName ?? "Unknown FrameBuffer"}-ColorAttachment{attachmentIndex}"
                     };
                     attachmentImages.Add(ObjectFactory.CreateImage2D(imageOptions));
@@ -88,12 +87,12 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
 
         Renderer.Submit(
             () => {
-                Size = newSize;
+                Size = newSize.Multiply(Options.Scale);
                 if (!Options.IsSwapChainTarget) {
                     Invalidate_RT();
                 } else {
                     var vkSwapchain = SilkWindow.MainWindow.Swapchain as VulkanSwapChain; // TODO
-                    RenderPass = vkSwapchain.RenderPass.Value;
+                    VkRenderPass = vkSwapchain.RenderPass.Value;
 
                     ClearValues.Clear();
                     ClearValues.Add(new(new(0, 0, 0, 1)));
@@ -103,14 +102,14 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     }
 
     unsafe void Release() {
-        if (vkFramebuffer == null) {
+        if (VkFramebuffer == null) {
             return;
         }
 
         Renderer.SubmitDisposal(
             () => VulkanContext.Vulkan.DestroyFramebuffer(
                 VulkanContext.CurrentDevice.VkLogicalDevice,
-                vkFramebuffer.Value,
+                VkFramebuffer.Value,
                 null
             )
         );
@@ -131,20 +130,17 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
     }
 
     unsafe void Invalidate_RT() {
-        // TODO: this is not called right now
-        throw new NotImplementedException();
-
-        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         var vk = VulkanContext.Vulkan;
+        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
 
         Release();
 
         var attachmentDescriptions = new List<AttachmentDescription>();
         var colorAttachmentReferences = new List<AttachmentReference>();
-        // var depthAttachmentReference = new De
+        var depthAttachmentReference = new AttachmentReference();
 
-        // TODO: this was resized
         ClearValues.Clear();
+        var createImages = attachmentImages.Count == 0;
 
         if (Options.ExistingFramebuffer != null) {
             attachmentImages.Clear();
@@ -159,11 +155,15 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                 } else if (Options.ExistingFramebuffer != null) {
                     var fb = Options.ExistingFramebuffer as VulkanFramebuffer;
                     DepthImage = fb.DepthImage;
-                } else if (Options.ExistingImages.TryGetValue(attachmentIndex, out var existingImage)) {
+                } else if (
+                    Options.ExistingImages != null
+                    && Options.ExistingImages.TryGetValue(attachmentIndex, out var existingImage)
+                ) {
                     DepthImage = existingImage;
                 } else {
-                    DepthImage = new VulkanImage2D(new() { Size = Size }); // TODO: not sure about this size
-                    DepthImage.Invalidate();
+                    var vkDepthImage = DepthImage as VulkanImage2D;
+                    vkDepthImage.Options.Size = Size;
+                    vkDepthImage.Invalidate_RT();
                 }
 
                 var loadOp = GetAttachmentLoadOp(attachment);
@@ -179,43 +179,189 @@ public sealed class VulkanFramebuffer : IFramebuffer, IDisposable {
                             loadOp == AttachmentLoadOp.Clear
                                 ? ImageLayout.Undefined
                                 : ImageLayout.DepthStencilReadOnlyOptimal,
-                        FinalLayout = ImageLayout.ReadOnlyOptimal // TODO: check this as it was implemented differently
+                        FinalLayout = ImageLayout.DepthStencilReadOnlyOptimal
                     }
                 );
 
-                // TODO: depth stencil reference
+                depthAttachmentReference = new(
+                    (uint)attachmentIndex,
+                    ImageLayout.DepthStencilAttachmentOptimal
+                );
                 ClearValues.Add(new() { DepthStencil = new(Options.DepthClearValue, 0) });
             } else {
-                throw new NotImplementedException();
+                if (Options.ExistingFramebuffer != null) {
+                    var existingImage = (Options.ExistingFramebuffer as VulkanFramebuffer).GetImage(attachmentIndex);
+                    attachmentImages.Add(existingImage);
+                } else if (
+                    Options.ExistingImages != null
+                    && Options.ExistingImages.TryGetValue(attachmentIndex, out var existingImage)
+                ) {
+                    Trace.Assert(
+                        !existingImage.Options.Format.IsDepthFormat(),
+                        "Trying to attach depth image as color attachment"
+                    );
+                    attachmentImages[attachmentIndex] = existingImage;
+                } else {
+                    if (createImages) {
+                        attachmentImages.Add(
+                            (VulkanImage2D)ObjectFactory.CreateImage2D(
+                                new() {
+                                    Format = attachment.Format,
+                                    Usage = ImageUsage.Attachment,
+                                    Transfer = Options.Transfer,
+                                    Size = Size
+                                }
+                            )
+                        );
+                    } else {
+                        var image = attachmentImages[attachmentIndex] as VulkanImage2D;
+                        image.Options.Size = Size;
+
+                        if (image.Options.Layers == 1) {
+                            image.Invalidate_RT();
+                        } else if (attachmentIndex == 0 && Options.ExistingImageLayers[0] == 0) {
+                            image.Invalidate_RT();
+                            image.CreatePerSpecificLayerImageViews_RT(Options.ExistingImageLayers);
+                        } else if (attachmentIndex == 0) {
+                            image.CreatePerSpecificLayerImageViews_RT(Options.ExistingImageLayers);
+                        }
+                    }
+                }
+
+                var loadOp = GetAttachmentLoadOp(attachment);
+                attachmentDescriptions.Add(
+                    new() {
+                        Format = attachment.Format.ToVulkanImageFormat(),
+                        Samples = SampleCountFlags.Count1Bit,
+                        LoadOp = loadOp,
+                        StoreOp = AttachmentStoreOp.Store,
+                        StencilLoadOp = AttachmentLoadOp.DontCare,
+                        StencilStoreOp = AttachmentStoreOp.DontCare,
+                        InitialLayout =
+                            loadOp == AttachmentLoadOp.Clear
+                                ? ImageLayout.Undefined
+                                : ImageLayout.ShaderReadOnlyOptimal,
+                        FinalLayout = ImageLayout.ShaderReadOnlyOptimal
+                    }
+                );
+
+                var c = Options.ClearColor;
+                ClearValues.Add(new() { Color = new(c.R, c.G, c.B, c.A) });
+                colorAttachmentReferences.Add(new((uint)attachmentIndex, ImageLayout.ColorAttachmentOptimal));
             }
         }
 
+        using var colorAttachmentsMemoryHandle =
+            new Memory<AttachmentReference>(colorAttachmentReferences.ToArray()).Pin();
+        var subpassDescription = new SubpassDescription {
+            PipelineBindPoint = PipelineBindPoint.Graphics,
+            ColorAttachmentCount = (uint)colorAttachmentReferences.Count,
+            PColorAttachments = (AttachmentReference*)colorAttachmentsMemoryHandle.Pointer
+        };
 
-        // TODO: stuff
+        if (DepthImage != null) {
+            subpassDescription.PDepthStencilAttachment = &depthAttachmentReference;
+        }
 
+        var dependencies = new List<SubpassDependency>();
+        if (attachmentImages.Count != 0) {
+            dependencies.Add(
+                new() {
+                    SrcSubpass = ~0U,
+                    SrcStageMask = PipelineStageFlags.FragmentShaderBit,
+                    DstStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+                    SrcAccessMask = AccessFlags.ShaderReadBit,
+                    DstAccessMask = AccessFlags.ColorAttachmentWriteBit,
+                    DependencyFlags = DependencyFlags.ByRegionBit
+                }
+            );
+
+            dependencies.Add(
+                new() {
+                    DstSubpass = ~0U,
+                    SrcStageMask = PipelineStageFlags.ColorAttachmentOutputBit,
+                    DstStageMask = PipelineStageFlags.FragmentShaderBit,
+                    SrcAccessMask = AccessFlags.ColorAttachmentWriteBit,
+                    DstAccessMask = AccessFlags.ShaderReadBit,
+                    DependencyFlags = DependencyFlags.ByRegionBit
+                }
+            );
+        }
+
+        if (DepthImage != null) {
+            dependencies.Add(
+                new() {
+                    SrcSubpass = ~0U,
+                    SrcStageMask = PipelineStageFlags.FragmentShaderBit,
+                    DstStageMask = PipelineStageFlags.EarlyFragmentTestsBit,
+                    SrcAccessMask = AccessFlags.ShaderReadBit,
+                    DstAccessMask = AccessFlags.DepthStencilAttachmentWriteBit,
+                    DependencyFlags = DependencyFlags.ByRegionBit
+                }
+            );
+
+            dependencies.Add(
+                new() {
+                    DstSubpass = ~0U,
+                    SrcStageMask = PipelineStageFlags.LateFragmentTestsBit,
+                    DstStageMask = PipelineStageFlags.FragmentShaderBit,
+                    SrcAccessMask = AccessFlags.DepthStencilAttachmentWriteBit,
+                    DstAccessMask = AccessFlags.ShaderReadBit,
+                    DependencyFlags = DependencyFlags.ByRegionBit
+                }
+            );
+        }
 
         // Create Render Pass
+        using var attachmentDescriptorsMemoryHandle =
+            new Memory<AttachmentDescription>(attachmentDescriptions.ToArray()).Pin();
+        using var dependenciesMemoryHandle = new Memory<SubpassDependency>(dependencies.ToArray()).Pin();
         var renderPassCreateInfo = new RenderPassCreateInfo(StructureType.RenderPassCreateInfo) {
-            // TODO
-            // AttachmentCount = 0
+            PAttachments = (AttachmentDescription*)attachmentDescriptorsMemoryHandle.Pointer,
+            AttachmentCount = (uint)attachmentDescriptions.Count,
+            SubpassCount = 1,
+            PSubpasses = &subpassDescription,
+            DependencyCount = (uint)dependencies.Count,
+            PDependencies = (SubpassDependency*)dependenciesMemoryHandle.Pointer
         };
 
         vk.CreateRenderPass(device, renderPassCreateInfo, null, out var renderPass).EnsureSuccess();
         VulkanUtils.SetDebugObjectName(ObjectType.RenderPass, Options.DebugName, renderPass.Handle);
-        RenderPass = renderPass;
+        VkRenderPass = renderPass;
 
+        // Attachments
+        var attachments = new List<ImageView>();
+        for (var i = 0; i < attachmentImages.Count; i++) {
+            var vkImage = attachmentImages[i] as VulkanImage2D;
+            if (vkImage.Options.Layers > 1) {
+                attachments.Add(vkImage.GetLayerImageView(Options.ExistingImageLayers[i]));
+            } else {
+                attachments.Add(vkImage.ImageInfo.ImageView.Value);
+            }
+        }
 
-        // TODO
+        if (DepthImage != null) {
+            var vkImage = DepthImage as VulkanImage2D;
+            if (Options.ExistingImage != null && vkImage.Options.Layers > 1) {
+                attachments.Add(vkImage.GetLayerImageView(Options.ExistingImageLayers[0]));
+            } else {
+                attachments.Add(vkImage.ImageInfo.ImageView.Value);
+            }
+        }
 
-
+        var attachmentsMemoryHandle = new Memory<ImageView>(attachments.ToArray()).Pin();
         var framebufferCreateInfo = new FramebufferCreateInfo(StructureType.FramebufferCreateInfo) {
-            // TODO
-            RenderPass = renderPass, Width = (uint)Size.Width, Height = (uint)Size.Height, Layers = 1
+            PAttachments = (ImageView*)attachmentsMemoryHandle.Pointer,
+            AttachmentCount = (uint)attachments.Count,
+            RenderPass = renderPass,
+            Width = (uint)Size.Width,
+            Height = (uint)Size.Height,
+            Layers = 1
         };
 
         vk.CreateFramebuffer(device, framebufferCreateInfo, null, out var framebuffer).EnsureSuccess();
         VulkanUtils.SetDebugObjectName(ObjectType.Framebuffer, Options.DebugName, framebuffer.Handle);
-        vkFramebuffer = framebuffer;
+        VkFramebuffer = framebuffer;
     }
 
     AttachmentLoadOp GetAttachmentLoadOp(FramebufferTextureOptions textureOptions) {

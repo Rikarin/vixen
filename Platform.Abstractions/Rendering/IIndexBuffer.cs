@@ -6,6 +6,3 @@ public interface IIndexBuffer : IDisposable {
 
     public void SetData(ReadOnlySpan<byte> data);
 }
-
-// public abstract RendererId RendererId { get; }
-// public abstract void Bind();

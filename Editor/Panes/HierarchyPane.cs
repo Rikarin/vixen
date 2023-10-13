@@ -38,7 +38,7 @@ sealed class HierarchyPane : Pane {
             if (ImGui.IsItemClicked() || ImGui.IsItemFocused()) {
                 Selected = entity;
             }
-
+            Drag(entity);
             ContextMenu(entity).Render();
 
             if (isOpened) {
@@ -57,7 +57,33 @@ sealed class HierarchyPane : Pane {
                 Selected = entity;
             }
 
+            Drag(entity);
             ContextMenu(entity).Render();
+        }
+    }
+
+    unsafe void Drag(Entity? entity) {
+        if (entity.HasValue && ImGui.BeginDragDropSource()) {
+            var entities = stackalloc Entity[] { entity.Value };
+            ImGui.SetDragDropPayload("Entity", (IntPtr)entities, (uint)sizeof(Entity));
+            ImGui.EndDragDropSource();
+        }
+
+        if (ImGui.BeginDragDropTarget()) {
+            var payload = ImGui.AcceptDragDropPayload("Entity");
+            if (payload.NativePtr != null) {
+                var dropPayload = (Entity*)payload.Data;
+                var parent = (*dropPayload).GetParent();
+                if (parent.HasValue) {
+                    (*dropPayload).RemoveRelationship<Parent>(parent.Value);
+                }
+
+                if (entity.HasValue) {
+                    (*dropPayload).AddRelationship<Parent>(entity.Value);
+                }
+            }
+            
+            ImGui.EndDragDropTarget();
         }
     }
 
@@ -104,6 +130,7 @@ sealed class HierarchyPane : Pane {
                 ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.DefaultOpen | ImGuiTreeNodeFlags.SpanFullWidth
             );
 
+            Drag(null);
             ContextMenu(null).Render();
             if (isOpened) {
                 scene.World.Query(rootQuery, (in Entity entity) => RenderEntity(entity));

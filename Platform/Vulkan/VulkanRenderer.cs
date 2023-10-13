@@ -1,12 +1,14 @@
 using Rin.Platform.Abstractions.Rendering;
+using Rin.Platform.Internal;
 using Rin.Platform.Silk;
 using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
+using System.Numerics;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanRenderer : IRenderer {
+sealed class VulkanRenderer : IRenderer {
     readonly ILogger log = Log.ForContext<IRenderer>();
     readonly List<int> descriptorPoolAllocationCount = new();
     readonly List<DescriptorPool> descriptorPools = new();
@@ -17,6 +19,10 @@ public sealed class VulkanRenderer : IRenderer {
     DescriptorPool materialDescriptorPool;
 
     int drawCallCount;
+
+
+    IVertexBuffer quadVertexBuffer;
+    IIndexBuffer quadIndexBuffer;
 
 
     public RenderingApi Api => RenderingApi.Vulkan;
@@ -62,6 +68,25 @@ public sealed class VulkanRenderer : IRenderer {
                 }
             }
         );
+        
+        // TODO: stuff
+
+
+        var data = stackalloc [] {
+            new QuadVertex(new(-1, -1, 0), Vector2.Zero),
+            new QuadVertex(new(1, -1, 0), new(1, 0)),
+            new QuadVertex(new(1, 1, 0), new(1, 1)),
+            new QuadVertex(new(-1, 1, 0), new(0, 1)),
+        };
+        quadVertexBuffer = ObjectFactory.CreateVertexBuffer(new ReadOnlySpan<byte>(data, 4 * sizeof(QuadVertex)));
+
+        var indices = stackalloc [] { 0, 1, 2, 2, 3, 0 };
+        quadIndexBuffer = ObjectFactory.CreateIndexBuffer(new ReadOnlySpan<byte>(indices, 6 * sizeof(int)));
+
+
+
+
+        // TODO: stuff
     }
 
     public void Shutdown() {
@@ -120,29 +145,27 @@ public sealed class VulkanRenderer : IRenderer {
 
                 var viewport = new Viewport { MinDepth = 0, MaxDepth = 1 };
                 var renderPassBeginInfo = new RenderPassBeginInfo(StructureType.RenderPassBeginInfo) {
-                    RenderPass = framebuffer.RenderPass
+                    RenderPass = framebuffer.VkRenderPass
                 };
 
                 if (framebuffer.Options.IsSwapChainTarget) {
                     var swapchain = SilkWindow.MainWindow.Swapchain as VulkanSwapChain; // TODO
                     width = swapchain.Size.Width;
                     height = swapchain.Size.Height;
-                    
+
                     renderPassBeginInfo.Framebuffer = swapchain.CurrentFramebuffer;
 
                     viewport.Y = swapchain.Size.Height;
                     viewport.Width = swapchain.Size.Width;
                     viewport.Height = -swapchain.Size.Height;
                 } else {
-                    renderPassBeginInfo.Framebuffer = framebuffer.vkFramebuffer.Value;
-                    
+                    renderPassBeginInfo.Framebuffer = framebuffer.VkFramebuffer.Value;
+
                     viewport.Width = framebuffer.Size.Width;
                     viewport.Height = framebuffer.Size.Height;
                 }
-                
-                renderPassBeginInfo.RenderArea = new() {
-                    Extent = new((uint)width, (uint)height)
-                };
+
+                renderPassBeginInfo.RenderArea = new() { Extent = new((uint)width, (uint)height) };
 
                 fixed (ClearValue* clearValues = framebuffer.ClearValues.ToArray()) {
                     renderPassBeginInfo.ClearValueCount = (uint)framebuffer.ClearValues.Count;
@@ -154,7 +177,7 @@ public sealed class VulkanRenderer : IRenderer {
                 if (explicitClear) {
                     throw new NotImplementedException();
                 }
-                
+
                 vk.CmdSetViewport(commandBuffer, 0, 1, viewport);
 
                 var scissor = new Rect2D { Extent = new((uint)width, (uint)height) };
@@ -191,4 +214,52 @@ public sealed class VulkanRenderer : IRenderer {
             }
         );
     }
+
+    public unsafe void RenderQuad(
+        IRenderCommandBuffer commandBuffer,
+        IPipeline pipeline,
+        IMaterial material,
+        Matrix4x4 transform
+    ) {
+        Renderer.Submit(
+            () => {
+                var vk = VulkanContext.Vulkan;
+                var vkCommandBuffer = (commandBuffer as VulkanRenderCommandBuffer).ActiveCommandBuffer.Value;
+                var vkLayout = (pipeline as VulkanPipeline).VkLayout;
+
+                var offsets = new[] { 0ul };
+                var vbMeshBuffer = (quadVertexBuffer as VulkanVertexBuffer).VkBuffer;
+                vk.CmdBindVertexBuffers(vkCommandBuffer, 0, &vbMeshBuffer, offsets);
+
+                var ibMeshBuffer = (quadIndexBuffer as VulkanIndexBuffer).VkBuffer;
+                vk.CmdBindIndexBuffer(vkCommandBuffer, ibMeshBuffer, 0, IndexType.Uint32);
+
+                var transformArray = stackalloc float[16];
+                Matrix4x4Extensions.FillShaderArray(ref transform, transformArray);
+                    vk.CmdPushConstants(
+                        vkCommandBuffer,
+                        vkLayout,
+                        ShaderStageFlags.VertexBit,
+                        0,
+                        16u * sizeof(float),
+                        transformArray
+                    );
+
+                var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
+                using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();
+                vk.CmdPushConstants(
+                    vkCommandBuffer,
+                    vkLayout,
+                    ShaderStageFlags.FragmentBit,
+                    16u * sizeof(float),
+                    (uint)uniformStorageBuffer.Length,
+                    uniformBufferMemoryHandle.Pointer
+                );
+                
+                vk.CmdDrawIndexed(vkCommandBuffer, (uint)quadIndexBuffer.Count, 1, 0, 0, 0);
+            }
+        );
+    }
+
+    record struct QuadVertex(Vector3 Position, Vector2 TexCoord);
 }

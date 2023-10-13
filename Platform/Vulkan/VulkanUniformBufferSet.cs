@@ -4,7 +4,7 @@ using Rin.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanUniformBufferSet : IUniformBufferSet {
+sealed class VulkanUniformBufferSet : IUniformBufferSet {
     readonly List<IUniformBuffer> uniformBuffers;
 
     public VulkanUniformBufferSet(int size, int framesInFlight) {

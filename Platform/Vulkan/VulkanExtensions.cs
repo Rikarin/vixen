@@ -5,7 +5,7 @@ using VkPrimitiveTopology = Silk.NET.Vulkan.PrimitiveTopology;
 
 namespace Rin.Platform.Vulkan;
 
-public static class VulkanExtensions {
+static class VulkanExtensions {
     public static RenderPassInputType ToRenderPassInputType(this DescriptorType type) =>
         type switch {
             DescriptorType.CombinedImageSampler => RenderPassInputType.ImageSampler2D,

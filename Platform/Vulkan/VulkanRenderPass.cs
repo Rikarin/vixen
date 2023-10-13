@@ -2,7 +2,7 @@ using Rin.Platform.Abstractions.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
-public sealed class VulkanRenderPass : IRenderPass {
+sealed class VulkanRenderPass : IRenderPass {
     readonly DescriptorSetManager descriptorSetManager;
 
     public RenderPassOptions Options { get; }
