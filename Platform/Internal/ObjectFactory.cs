@@ -118,4 +118,11 @@ public static class ObjectFactory {
             default: throw new ArgumentOutOfRangeException();
         }
     }
+    
+    public static IMaterial CreateMaterial(IShader shader, string name) {
+        switch (Renderer.CurrentApi) {
+            case RenderingApi.Vulkan: return new VulkanMaterial(shader, name);
+            default: throw new ArgumentOutOfRangeException();
+        }
+    }
 }

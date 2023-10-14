@@ -49,6 +49,8 @@ sealed class VulkanMaterial : IMaterial {
     public ITexture2D GetTexture2D(string name) => GetResource<ITexture2D>(name);
     public ITextureCube GetTextureCube(string name) => GetResource<ITextureCube>(name);
 
+    public void Prepare() => descriptorSetManager.InvalidateAndUpdate();
+
     void InternalSet<T>(string name, T value) { }
 
     T InternalGet<T>(string name) => throw new NotImplementedException();
@@ -58,11 +60,18 @@ sealed class VulkanMaterial : IMaterial {
     void Initialize() {
         Flags |= MaterialFlags.DepthText | MaterialFlags.Blend;
 
-        var dsmOptions = new DescriptorSetManagerOptions {
-            DebugName = Name ?? $"{Shader.Name} (Material)", Shader = Shader as VulkanShader, DefaultResources = true
-        };
-        descriptorSetManager = new(dsmOptions);
-
+        descriptorSetManager = new(
+            new() {
+                DebugName = Name ?? $"{Shader.Name} (Material)",
+                Shader = Shader as VulkanShader,
+                DefaultResources = true,
+                StartSet = 0,
+                EndSet = 0
+            }
+        );
+        
         // TODO
+        
+        descriptorSetManager.Bake();
     }
 }

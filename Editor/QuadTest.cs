@@ -39,8 +39,9 @@ public class QuadTest {
         var renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
         renderPass.SetInput("u_Camera", uniformCamera);
         renderPass.Bake();
-        
-        // var material = ObjectFactory.createma
+
+        var material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
+        material.Prepare();
     }
 
     struct UniformCamera {

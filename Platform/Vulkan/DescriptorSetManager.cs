@@ -25,8 +25,6 @@ sealed class DescriptorSetManager {
     public bool HasDescriptorSets => descriptorSets.Count > 0 && descriptorSets[0].Count > 0;
     public IReadOnlyList<List<DescriptorSet>> DescriptorSets => descriptorSets.AsReadOnly();
 
-    
-
     public DescriptorSetManager(DescriptorSetManagerOptions options) {
         this.options = options;
         Initialize();
@@ -96,7 +94,6 @@ sealed class DescriptorSetManager {
         }
     }
 
-
     public unsafe void Bake() {
         Log.Information("Start baking");
         if (!Validate()) {
@@ -155,18 +152,27 @@ sealed class DescriptorSetManager {
                     };
 
                     switch (input.Type) {
+                        case RenderPassResourceType.StorageBuffer:
                         case RenderPassResourceType.UniformBuffer: {
-                            var buffer = input.Input[0] as VulkanUniformBuffer;
-                            SetBuffer(ref storedWriteDescriptor, buffer.DescriptorBufferInfo, input, set, binding, true);
+                            var buffer = input.Input[0] as IVulkanBuffer;
+                            SetBuffer(
+                                ref storedWriteDescriptor,
+                                buffer.DescriptorBufferInfo,
+                                input,
+                                set,
+                                binding,
+                                true
+                            );
                             break;
                         }
 
+                        case RenderPassResourceType.StorageBufferSet:
                         case RenderPassResourceType.UniformBufferSet: {
-                            var buffer = input.Input[0] as VulkanUniformBufferSet;
+                            var buffer = input.Input[0] as IVulkanBufferSet;
 
                             SetBuffer(
                                 ref storedWriteDescriptor,
-                                ((VulkanUniformBuffer)buffer.Get(frameIndex)).DescriptorBufferInfo,
+                                ((VulkanUniformBuffer)buffer.GetVulkanBuffer(frameIndex)).DescriptorBufferInfo,
                                 input,
                                 set,
                                 binding,
@@ -174,36 +180,16 @@ sealed class DescriptorSetManager {
                             );
                             break;
                         }
-                        
-                        case RenderPassResourceType.StorageBuffer: {
-                            var buffer = input.Input[0] as VulkanStorageBuffer;
-                            SetBuffer(ref storedWriteDescriptor, buffer.DescriptorBufferInfo, input, set, binding, true);
-                            break;
-                        }
 
-                        case RenderPassResourceType.StorageBufferSet: {
-                            var buffer = input.Input[0] as VulkanStorageBufferSet;
-
-                            SetBuffer(
-                                ref storedWriteDescriptor,
-                                ((VulkanStorageBuffer)buffer.Get(frameIndex)).DescriptorBufferInfo,
-                                input,
-                                set,
-                                binding,
-                                true
-                            );
-                            break;
-                        }
-                        
                         case RenderPassResourceType.Texture2D:
                             throw new NotImplementedException();
-                        
+
                         case RenderPassResourceType.TextureCube:
                             throw new NotImplementedException();
-                        
+
                         case RenderPassResourceType.Image2D:
                             throw new NotImplementedException();
-                        
+
                         default: throw new ArgumentOutOfRangeException();
                     }
 
@@ -226,14 +212,114 @@ sealed class DescriptorSetManager {
         }
     }
 
-    public void InvalidateAndUpdate() {
-        // throw new NotImplementedException();
+    public unsafe void InvalidateAndUpdate() {
+        var currentFrameIndex = Renderer.CurrentFrameIndex_RT;
+
+        foreach (var (set, inputs) in inputResources) {
+            foreach (var (binding, input) in inputs) {
+                Log.Information("{set} {binfing} {frame}", set, binding, currentFrameIndex);
+                var resourceHandlers = writeDescriptorMap[currentFrameIndex][set][binding].ResourceHandlers;
+                
+                switch (input.Type) {
+                    case RenderPassResourceType.StorageBuffer:
+                    case RenderPassResourceType.UniformBuffer: {
+                        var bufferInfo = ((IVulkanBuffer)input.Input[0]).DescriptorBufferInfo;
+                        if (!resourceHandlers.Contains(bufferInfo.Buffer)) {
+                            invalidatedInputResources[set][binding] = input;
+                        }
+                        break;
+                    }
+                    
+                    case RenderPassResourceType.StorageBufferSet:
+                    case RenderPassResourceType.UniformBufferSet: {
+                        var inputSet = (IVulkanBufferSet)input.Input[0];
+                        var bufferInfo = inputSet.GetVulkanBuffer(currentFrameIndex).DescriptorBufferInfo;
+                        if (!resourceHandlers.Contains(bufferInfo.Buffer)) {
+                            invalidatedInputResources[set][binding] = input;
+                        }
+                        break;
+                    }
+                    
+                    case RenderPassResourceType.Texture2D:
+                        throw new NotImplementedException();
+                    case RenderPassResourceType.TextureCube:
+                        throw new NotImplementedException();
+                    case RenderPassResourceType.Image2D:
+                        throw new NotImplementedException();
+                    
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+        }
+
+        if (invalidatedInputResources.Count == 0) {
+            return;
+        }
+
+        foreach (var (set, setData) in invalidatedInputResources) {
+            List<WriteDescriptorSet> updateDescriptors = new();
+
+            foreach (var (binding, input) in setData) {
+                var wd = writeDescriptorMap[currentFrameIndex][set][binding];
+                var storedWriteDescriptor = wd.WriteDescriptorSet;
+                
+                switch (input.Type) {
+                    case RenderPassResourceType.StorageBuffer:
+                    case RenderPassResourceType.UniformBuffer: {
+                        var buffer = input.Input[0] as IVulkanBuffer;
+
+                        var dbi = new[] { buffer.DescriptorBufferInfo };
+                        var memHandle = new Memory<DescriptorBufferInfo>(dbi).Pin();
+                        storedWriteDescriptor.PBufferInfo = (DescriptorBufferInfo*)memHandle.Pointer;
+
+                        wd.ResourceMemmoryHandlers[0] = memHandle;
+                        wd.ResourceHandlers[0] = storedWriteDescriptor.PBufferInfo->Buffer;
+                        break;
+                    }
+
+                    case RenderPassResourceType.StorageBufferSet:
+                    case RenderPassResourceType.UniformBufferSet: {
+                        var bufferSet = input.Input[0] as IVulkanBufferSet;
+                        var buffer = bufferSet.GetVulkanBuffer(currentFrameIndex);
+
+                        var dbi = new[] { buffer.DescriptorBufferInfo };
+                        var memHandle = new Memory<DescriptorBufferInfo>(dbi).Pin();
+                        storedWriteDescriptor.PBufferInfo = (DescriptorBufferInfo*)memHandle.Pointer;
+
+                        wd.ResourceMemmoryHandlers[0] = memHandle;
+                        wd.ResourceHandlers[0] = storedWriteDescriptor.PBufferInfo->Buffer;
+                        break;
+                    }
+                    
+                    case RenderPassResourceType.Texture2D:
+                        throw new NotImplementedException();
+                    case RenderPassResourceType.TextureCube:
+                        throw new NotImplementedException();
+                    case RenderPassResourceType.Image2D:
+                        throw new NotImplementedException();
+                }
+
+                wd.WriteDescriptorSet = storedWriteDescriptor;
+                writeDescriptorMap[currentFrameIndex][set][binding] = wd;
+            }
+
+            Log.Information("invalidating=========");
+            
+            VulkanContext.Vulkan.UpdateDescriptorSets(
+                VulkanContext.CurrentDevice.VkLogicalDevice,
+                updateDescriptors.ToArray(),
+                0, null
+                );
+        }
+
+        invalidatedInputResources.Clear();
     }
 
     public bool Validate() {
         var shaderDescriptorSets = options.Shader.ShaderDescriptorSets;
 
-        for (var set = options.StartSet; set <= options.StopSet; set++) {
+        for (var set = options.StartSet; set <= options.EndSet; set++) {
             if (set >= shaderDescriptorSets.Count) {
                 break;
             }
@@ -270,7 +356,6 @@ sealed class DescriptorSetManager {
         return true;
     }
 
-
     unsafe void SetBuffer(
         ref WriteDescriptor storedWriteDescriptor,
         in DescriptorBufferInfo bufferInfo,
@@ -299,7 +384,7 @@ sealed class DescriptorSetManager {
         var shaderDescriptorSets = options.Shader.ShaderDescriptorSets;
         var framesInFlight = Renderer.Options.FramesInFlight;
 
-        for (var set = options.StartSet; set <= options.StopSet; set++) {
+        for (var set = options.StartSet; set <= options.EndSet; set++) {
             if (set >= shaderDescriptorSets.Count) {
                 break;
             }
@@ -364,21 +449,6 @@ sealed class DescriptorSetManager {
             }
         }
     }
-
-    // IList<int> GetBufferSets() {
-    //     List<int> sets = new();
-    //     // Find all descriptor sets that have either UniformBufferSet or StorageBufferSet descriptors
-    //     foreach (var (set, resources) in inputResources) {
-    //         foreach (var (binding, input) in resources) {
-    //             if (input.Type is RenderPassResourceType.UniformBufferSet or RenderPassResourceType.StorageBufferSet) {
-    //                 sets.Add(set);
-    //                 // TODO: break ???
-    //             }
-    //         }
-    //     }
-    //
-    //     return sets;
-    // }
 
     bool IsInvalidated(int set, int binding) =>
         invalidatedInputResources.TryGetValue(set, out var bindings) && bindings.ContainsKey(binding);

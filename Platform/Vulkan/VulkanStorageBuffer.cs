@@ -6,7 +6,7 @@ using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanStorageBuffer : IStorageBuffer {
+sealed class VulkanStorageBuffer : IStorageBuffer, IVulkanBuffer {
     readonly StorageBufferOptions options;
 
     int size;

@@ -4,7 +4,7 @@ using Rin.Rendering;
 
 namespace Rin.Platform.Vulkan;
 
-sealed class VulkanStorageBufferSet : IStorageBufferSet {
+sealed class VulkanStorageBufferSet : IStorageBufferSet, IVulkanBufferSet {
     readonly List<IStorageBuffer> storageBuffers;
 
     public VulkanStorageBufferSet(StorageBufferOptions options, int size, int framesInFlight) {
@@ -21,6 +21,8 @@ sealed class VulkanStorageBufferSet : IStorageBufferSet {
     public IStorageBuffer Get() => Get(Renderer.CurrentFrameIndex);
     public IStorageBuffer Get_RT() => Get(Renderer.CurrentFrameIndex_RT);
     public IStorageBuffer Get(int frame) => storageBuffers[frame];
+    
+    public IVulkanBuffer GetVulkanBuffer(int frame) => (IVulkanBuffer)storageBuffers[frame];
 
     public void Set(IStorageBuffer storageBuffer, int frame) {
         storageBuffers[frame] = storageBuffer;

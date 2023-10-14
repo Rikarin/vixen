@@ -30,4 +30,7 @@ public interface IMaterial {
     ITextureCube GetTextureCube(string name);
 
     // TODO
+
+
+    void Prepare();
 }
