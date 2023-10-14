@@ -1,6 +1,9 @@
+using Rin.Core.Abstractions;
+using Rin.Core.Math;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
+using System.Drawing;
 using System.Numerics;
 
 namespace Rin.Editor;
@@ -42,12 +45,14 @@ public class QuadTest {
         renderPass.Bake();
 
         material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
-        // material.Set("pushConstants.someVariable", 42);
+        material.Set("u_Settings.Scale", 42);
         material.Prepare();
     }
 
     public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
         Renderer.BeginRenderPass(commandBuffer, renderPass);
+        // var trans2 = Matrix.TRS(Vector3.One, Quaternion.Identity, Vector3.One);
+        
         Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
         Renderer.EndRenderPass(commandBuffer); 
     }

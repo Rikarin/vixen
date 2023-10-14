@@ -219,7 +219,6 @@ sealed class DescriptorSetManager {
 
         foreach (var (set, inputs) in inputResources) {
             foreach (var (binding, input) in inputs) {
-                Log.Information("{set} {binfing} {frame}", set, binding, currentFrameIndex);
                 var resourceHandlers = writeDescriptorMap[currentFrameIndex][set][binding].ResourceHandlers;
 
                 switch (input.Type) {

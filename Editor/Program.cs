@@ -1,7 +1,6 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.Relationships;
-using ImGuiNET;
 using Rin.Core.Abstractions;
 using Rin.Core.Components;
 using Rin.Core.General;
@@ -172,23 +171,23 @@ app.Update += () => {
         }
     );
 
-    // Renderer.Submit(
-    //     () => {
-    //         SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
-    //         gui.OnRender(Time.DeltaTime);
-    //         
-    //         var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
-    //         var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
-    //
-    //         if (vkCmd.ActiveCommandBuffer.HasValue) {
-    //             SilkWindow.MainWindow.imGuiController.Render(
-    //                 vkCmd.ActiveCommandBuffer.Value,
-    //                 sw.CurrentFramebuffer,
-    //                 new((uint)sw.Size.Width, (uint)sw.Size.Height)
-    //             );
-    //         }
-    //     }
-    // );
+    Renderer.Submit(
+        () => {
+            SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
+            gui.OnRender(Time.DeltaTime);
+            
+            var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
+            var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
+    
+            if (vkCmd.ActiveCommandBuffer.HasValue) {
+                SilkWindow.MainWindow.imGuiController.Render(
+                    vkCmd.ActiveCommandBuffer.Value,
+                    sw.CurrentFramebuffer,
+                    new((uint)sw.Size.Width, (uint)sw.Size.Height)
+                );
+            }
+        }
+    );
 
     commandBuffer.End();
 
@@ -206,22 +205,7 @@ app.Update += () => {
     // }
 };
 
-// TODO: Example of creating a few objects
-// {
-// var box = new GameObject();
-// box.AddComponent<Transform>();
-//     var meshFilter = box.AddComponent<MeshFilter>();
-//     meshFilter.Mesh = Mesh.CreateBox();
-//
-//     // This should render object in the scene
-//     box.AddComponent<MeshRenderer>();
-//     
-//     // Create scene
-//     // Load scene
-// }
-
 app.Run();
-
 SceneManager.ActiveScene.Systems.Dispose();
 // SceneManager.ActiveScene.Save();
 return 0;

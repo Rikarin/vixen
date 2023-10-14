@@ -17,8 +17,9 @@ public partial class LocalToWorldSystem : BaseSystem<World, float> {
         if (!parent.HasValue || !parent.Value.TryGet<LocalToWorld>(out var parentTransform)) {
             parentTransform = new(Matrix4x4.Identity);
         }
-        
+
         var scale = localTransform.Scale;
-        localToWorld.Value = Matrix.TRS(localTransform.Position, localTransform.Rotation, new(scale, scale, scale)) * parentTransform.Value;
+        localToWorld.Value = Matrix.TRS(localTransform.Position, localTransform.Rotation, new(scale, scale, scale))
+            * parentTransform.Value;
     }
 }

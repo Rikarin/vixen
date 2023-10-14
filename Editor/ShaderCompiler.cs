@@ -264,8 +264,6 @@ public class ShaderCompiler {
         log.Debug("Push Constant Buffers:");
         var pushConstantBuffers = shaderResources.GetResourceListForType(ResourceType.PushConstant);
         foreach (var resource in pushConstantBuffers) {
-            // Log.Information("IsActive DEBUG: {Variable}", resource.IsActive);
-
             var bufferOffset = 0;
             if (ReflectionData.PushConstantRanges.Count > 0) {
                 var last = ReflectionData.PushConstantRanges[^1];
@@ -274,7 +272,9 @@ public class ShaderCompiler {
 
             ReflectionData.PushConstantRanges.Add(
                 new() {
-                    ShaderStage = shaderStage, Size = resource.DeclaredStructSize - bufferOffset, Offset = bufferOffset
+                    // TODO: verify this
+                    // ShaderStage = shaderStage, Size = resource.DeclaredStructSize - bufferOffset, Offset = bufferOffset
+                    ShaderStage = shaderStage, Size = resource.DeclaredStructSize, Offset = bufferOffset
                 }
             );
 
@@ -283,7 +283,8 @@ public class ShaderCompiler {
             }
 
             var shaderBuffer = new ShaderBuffer {
-                Name = resource.Name, Size = resource.DeclaredStructSize - bufferOffset
+                // TODO: verify also this
+                Name = resource.Name, Size = resource.DeclaredStructSize //- bufferOffset
             };
 
             for (var i = 0; i < resource.MemberCount; i++) {

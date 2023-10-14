@@ -4,6 +4,7 @@ using Rin.Platform.Silk;
 using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Rin.Platform.Vulkan;
@@ -77,6 +78,7 @@ sealed class VulkanRenderer : IRenderer {
             new QuadVertex(new(1, 1, 0), new(1, 1)), new QuadVertex(new(-1, 1, 0), new(0, 1))
         };
         quadVertexBuffer = ObjectFactory.CreateVertexBuffer(new ReadOnlySpan<byte>(data, 4 * sizeof(QuadVertex)));
+        Debug.Assert(sizeof(QuadVertex) == 3 * 4 + 2 * 4);
 
         var indices = stackalloc[] { 0, 1, 2, 2, 3, 0 };
         quadIndexBuffer = ObjectFactory.CreateIndexBuffer(new(indices, 6 * sizeof(int)));
@@ -251,16 +253,16 @@ sealed class VulkanRenderer : IRenderer {
                     transformArray
                 );
                 
-                var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
-                using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();
-                vk.CmdPushConstants(
-                    vkCommandBuffer,
-                    vkLayout,
-                    ShaderStageFlags.FragmentBit,
-                    16u * sizeof(float),
-                    (uint)uniformStorageBuffer.Length,
-                    uniformBufferMemoryHandle.Pointer
-                );
+                // var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
+                // using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();
+                // vk.CmdPushConstants(
+                //     vkCommandBuffer,
+                //     vkLayout,
+                //     ShaderStageFlags.FragmentBit,
+                //     16u * sizeof(float),
+                //     (uint)uniformStorageBuffer.Length,
+                //     uniformBufferMemoryHandle.Pointer
+                // );
 
                 vk.CmdDrawIndexed(vkCommandBuffer, (uint)quadIndexBuffer.Count, 1, 0, 0, 0);
             }
