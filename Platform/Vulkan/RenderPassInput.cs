@@ -4,43 +4,43 @@ namespace Rin.Platform.Vulkan;
 
 sealed class RenderPassInput {
     public RenderPassResourceType Type { get; set; }
-    public List<object> Input { get; } = new();
+    public Dictionary<int, object> Input { get; } = new();
 
     public RenderPassInput() { }
 
     public RenderPassInput(IUniformBuffer uniformBuffer) {
         Type = RenderPassResourceType.UniformBuffer;
-        Input.Add(uniformBuffer);
+        Input.Add(0, uniformBuffer);
     }
 
     public RenderPassInput(IUniformBufferSet uniformBufferSet) {
         Type = RenderPassResourceType.UniformBufferSet;
-        Input.Add(uniformBufferSet);
+        Input.Add(0, uniformBufferSet);
     }
 
     public RenderPassInput(IStorageBuffer storageBuffer) {
         Type = RenderPassResourceType.StorageBuffer;
-        Input.Add(storageBuffer);
+        Input.Add(0, storageBuffer);
     }
 
     public RenderPassInput(IStorageBufferSet storageBufferSet) {
         Type = RenderPassResourceType.StorageBufferSet;
-        Input.Add(storageBufferSet);
+        Input.Add(0, storageBufferSet);
     }
     
     public RenderPassInput(ITexture2D texture2D) {
         Type = RenderPassResourceType.Texture2D;
-        Input.Add(texture2D);
+        Input.Add(0, texture2D);
     }
     
     public RenderPassInput(ITextureCube textureCube) {
         Type = RenderPassResourceType.TextureCube;
-        Input.Add(textureCube);
+        Input.Add(0, textureCube);
     }
     
     public RenderPassInput(IImage2D image) {
         Type = RenderPassResourceType.Image2D;
-        Input.Add(image);
+        Input.Add(0, image);
     }
 
     public void Set(IUniformBuffer uniformBuffer, int index = 0) {

@@ -2,11 +2,16 @@ using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using System.Drawing;
+using System.Numerics;
 
 namespace Rin.Editor;
 
 public class QuadTest {
     public QuadTest() {
+        var uniformCamera = ObjectFactory.CreateUniformBufferSet(19 * sizeof(float));
+        
+        
+        
         var shaderImporter = new ShaderImporter("Assets/Shaders/Quad.shader");
         var shader = shaderImporter.GetShader();
 
@@ -32,8 +37,14 @@ public class QuadTest {
         };
 
         var renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
+        renderPass.SetInput("u_Camera", uniformCamera);
         renderPass.Bake();
         
         // var material = ObjectFactory.createma
+    }
+
+    struct UniformCamera {
+        Matrix4x4 position;
+        Vector3 test123;
     }
 }

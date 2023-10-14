@@ -1,18 +1,21 @@
+using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Rendering;
 using Serilog;
 using Silk.NET.Vulkan;
+using System.Buffers;
 
 namespace Rin.Platform.Vulkan;
 
 sealed class DescriptorSetManager {
     readonly ILogger log = Log.ForContext<DescriptorSetManager>();
-    
+
     readonly DescriptorSetManagerOptions options;
     readonly Dictionary<int, Dictionary<int, RenderPassInput>> inputResources = new();
     readonly Dictionary<int, Dictionary<int, RenderPassInput>> invalidatedInputResources = new();
     readonly Dictionary<string, RenderPassInputDeclaration> inputDeclarations = new();
 
+    // [frameIndex][set][binding]
     readonly List<Dictionary<int, Dictionary<int, WriteDescriptor>>> writeDescriptorMap = new();
 
     // Per Frame in Flight
@@ -20,11 +23,13 @@ sealed class DescriptorSetManager {
 
     DescriptorPool descriptorPool;
     public bool HasDescriptorSets => descriptorSets.Count > 0 && descriptorSets[0].Count > 0;
+    public IReadOnlyList<List<DescriptorSet>> DescriptorSets => descriptorSets.AsReadOnly();
 
+    
 
     public DescriptorSetManager(DescriptorSetManagerOptions options) {
         this.options = options;
-        Init();
+        Initialize();
     }
 
     public void SetInput(string name, IUniformBuffer uniformBuffer) {
@@ -93,6 +98,7 @@ sealed class DescriptorSetManager {
 
 
     public unsafe void Bake() {
+        Log.Information("Start baking");
         if (!Validate()) {
             log.Error("[Render Pass ({RenderPass})] Bake - Validation failed", options.DebugName);
         }
@@ -106,6 +112,8 @@ sealed class DescriptorSetManager {
             new(DescriptorType.InputAttachment, 1000)
         };
 
+        var vk = VulkanContext.Vulkan;
+        var device = VulkanContext.CurrentDevice.VkLogicalDevice;
         fixed (DescriptorPoolSize* poolSizesPtr = poolSizes) {
             var poolInfo = new DescriptorPoolCreateInfo(StructureType.DescriptorPoolCreateInfo) {
                 Flags = DescriptorPoolCreateFlags.FreeDescriptorSetBit,
@@ -114,30 +122,112 @@ sealed class DescriptorSetManager {
                 PPoolSizes = poolSizesPtr
             };
 
-            var device = VulkanContext.CurrentDevice.VkLogicalDevice;
             VulkanContext.Vulkan.CreateDescriptorPool(device, poolInfo, null, out var pool).EnsureSuccess();
             descriptorPool = pool;
         }
 
+        var descriptorSetCount = Renderer.Options.FramesInFlight;
         // TODO: not sure about this
         descriptorSets.Clear();
 
+        Log.Information("Input Declarations: {Variable}", inputDeclarations);
+        Log.Information("Input Resources: {Variable}", inputResources);
         foreach (var (set, setData) in inputResources) {
-            
+            for (var frameIndex = 0; frameIndex < descriptorSetCount; frameIndex++) {
+                var dsl = options.Shader.DescriptorSetLayouts[set];
+
+                var descriptorSetAllocInfo = new DescriptorSetAllocateInfo(StructureType.DescriptorSetAllocateInfo) {
+                    PSetLayouts = &dsl, DescriptorSetCount = 1, DescriptorPool = descriptorPool
+                };
+
+                vk.AllocateDescriptorSets(device, descriptorSetAllocInfo, out var descriptorSet).EnsureSuccess();
+                descriptorSets.Add(new());
+                descriptorSets[frameIndex].Add(descriptorSet);
+
+                var writeDescriptorMap = this.writeDescriptorMap[frameIndex][set];
+                List<List<DescriptorImageInfo>> imageInfos = new();
+
+                Log.Information("Set: {Variable}", set);
+                foreach (var (binding, input) in setData) {
+                    var storedWriteDescriptor = writeDescriptorMap[binding];
+                    storedWriteDescriptor.WriteDescriptorSet = storedWriteDescriptor.WriteDescriptorSet with {
+                        DstSet = descriptorSet
+                    };
+
+                    switch (input.Type) {
+                        case RenderPassResourceType.UniformBuffer: {
+                            var buffer = input.Input[0] as VulkanUniformBuffer;
+                            SetBuffer(ref storedWriteDescriptor, buffer.DescriptorBufferInfo, input, set, binding, true);
+                            break;
+                        }
+
+                        case RenderPassResourceType.UniformBufferSet: {
+                            var buffer = input.Input[0] as VulkanUniformBufferSet;
+
+                            SetBuffer(
+                                ref storedWriteDescriptor,
+                                ((VulkanUniformBuffer)buffer.Get(frameIndex)).DescriptorBufferInfo,
+                                input,
+                                set,
+                                binding,
+                                true
+                            );
+                            break;
+                        }
+                        
+                        case RenderPassResourceType.StorageBuffer: {
+                            var buffer = input.Input[0] as VulkanStorageBuffer;
+                            SetBuffer(ref storedWriteDescriptor, buffer.DescriptorBufferInfo, input, set, binding, true);
+                            break;
+                        }
+
+                        case RenderPassResourceType.StorageBufferSet: {
+                            var buffer = input.Input[0] as VulkanStorageBufferSet;
+
+                            SetBuffer(
+                                ref storedWriteDescriptor,
+                                ((VulkanStorageBuffer)buffer.Get(frameIndex)).DescriptorBufferInfo,
+                                input,
+                                set,
+                                binding,
+                                true
+                            );
+                            break;
+                        }
+                        
+                        case RenderPassResourceType.Texture2D:
+                            throw new NotImplementedException();
+                        
+                        case RenderPassResourceType.TextureCube:
+                            throw new NotImplementedException();
+                        
+                        case RenderPassResourceType.Image2D:
+                            throw new NotImplementedException();
+                        
+                        default: throw new ArgumentOutOfRangeException();
+                    }
+
+                    writeDescriptorMap[binding] = storedWriteDescriptor;
+                }
+
+                List<WriteDescriptorSet> writeDescriptors = new();
+                foreach (var (binding, input) in writeDescriptorMap) {
+                    if (!IsInvalidated(set, binding)) {
+                        writeDescriptors.Add(input.WriteDescriptorSet);
+                        Log.Information("Debug: {Variable}", input.WriteDescriptorSet.DescriptorType);
+                    }
+                }
+
+                if (writeDescriptors.Count > 0) {
+                    vk.UpdateDescriptorSets(device, writeDescriptors.ToArray(), 0, null);
+                    log.Debug("Render pass update {Size} descriptors in set {Set}", writeDescriptors.Count, set);
+                }
+            }
         }
-        
-        // TODO: finish this
-
-
-
-        // foreach (var entry in writeDescriptorMap) {
-        //     if (!IsInvalidated(set, entry.Keys))
-        // }
     }
 
-
     public void InvalidateAndUpdate() {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
     }
 
     public bool Validate() {
@@ -163,7 +253,7 @@ sealed class DescriptorSetManager {
                         set,
                         binding
                     );
-                    
+
                     log.Error(
                         "[Render Pass ({RenderPass})] Required resource is {Name} ({Type})",
                         options.DebugName,
@@ -172,7 +262,7 @@ sealed class DescriptorSetManager {
                     );
                     return false;
                 }
-                
+
                 // TODO: finish these checks. Not important for now
             }
         }
@@ -180,7 +270,32 @@ sealed class DescriptorSetManager {
         return true;
     }
 
-    void Init() {
+
+    unsafe void SetBuffer(
+        ref WriteDescriptor storedWriteDescriptor,
+        in DescriptorBufferInfo bufferInfo,
+        in RenderPassInput input,
+        int set,
+        int binding,
+        bool defer
+    ) {
+        var dbi = new[] { bufferInfo };
+        var memHandle = new Memory<DescriptorBufferInfo>(dbi).Pin();
+        storedWriteDescriptor.WriteDescriptorSet = storedWriteDescriptor.WriteDescriptorSet with {
+            PBufferInfo = (DescriptorBufferInfo*)memHandle.Pointer
+        };
+
+        storedWriteDescriptor.ResourceMemmoryHandlers.Add(memHandle);
+        // TODO: not sure about this
+        storedWriteDescriptor.ResourceHandlers.Add(storedWriteDescriptor.WriteDescriptorSet.PBufferInfo->Buffer);
+
+        // Defer if resource doesn't exist
+        if (defer && storedWriteDescriptor.WriteDescriptorSet.PBufferInfo->Buffer.Handle == 0) {
+            invalidatedInputResources[set][binding] = input;
+        }
+    }
+
+    void Initialize() {
         var shaderDescriptorSets = options.Shader.ShaderDescriptorSets;
         var framesInFlight = Renderer.Options.FramesInFlight;
 
@@ -190,38 +305,40 @@ sealed class DescriptorSetManager {
             }
 
             var shaderDescriptor = shaderDescriptorSets[set];
-            foreach (var entry in shaderDescriptor.WriteDescriptorSets) {
-                var binding = (int)entry.Value.DstBinding;
+            foreach (var (name, writeDescriptorSet) in shaderDescriptor.WriteDescriptorSets) {
+                var binding = (int)writeDescriptorSet.DstBinding;
                 var inputDeclaration = new RenderPassInputDeclaration(
-                    entry.Value.DescriptorType.ToRenderPassInputType(),
+                    writeDescriptorSet.DescriptorType.ToRenderPassInputType(),
                     set,
                     binding,
-                    (int)entry.Value.DescriptorCount,
-                    entry.Key
+                    (int)writeDescriptorSet.DescriptorCount,
+                    name
                 );
 
                 if (options.DefaultResources || true) {
-                    inputResources[set][binding] = new() { Type = entry.Value.DescriptorType.GetDefaultResourceType() };
+                    inputResources.GetOrCreateDefault(set)[binding] =
+                        new() { Type = writeDescriptorSet.DescriptorType.GetDefaultResourceType() };
 
                     if (inputDeclaration.Type == RenderPassInputType.ImageSampler2D) {
-                        for (var i = 0; i < entry.Value.DescriptorCount; i++) {
-                            inputResources[set][binding].Input.Add(Renderer.WhiteTexture);
+                        for (var i = 0; i < writeDescriptorSet.DescriptorCount; i++) {
+                            inputResources[set][binding].Input.Add(i, Renderer.WhiteTexture);
                         }
                     } else if (inputDeclaration.Type == RenderPassInputType.ImageSampler3D) {
-                        for (var i = 0; i < entry.Value.DescriptorCount; i++) {
-                            inputResources[set][binding].Input.Add(Renderer.BlackCubeTexture);
+                        for (var i = 0; i < writeDescriptorSet.DescriptorCount; i++) {
+                            inputResources[set][binding].Input.Add(i, Renderer.BlackCubeTexture);
                         }
                     }
                 }
 
                 for (var frameIndex = 0; frameIndex < framesInFlight; frameIndex++) {
-                    writeDescriptorMap[frameIndex][set][binding] = new() {
-                        WriteDescriptorSet = entry.Value, ResourceHandlers = new()
+                    writeDescriptorMap.Add(new());
+                    writeDescriptorMap[frameIndex].GetOrCreateDefault(set)[binding] = new() {
+                        WriteDescriptorSet = writeDescriptorSet
                     };
                 }
 
                 if (shaderDescriptor.ImageSamplers.TryGetValue(binding, out var imageSampler)) {
-                    if (entry.Value.DescriptorType is DescriptorType.SampledImage
+                    if (writeDescriptorSet.DescriptorType is DescriptorType.SampledImage
                         or DescriptorType.CombinedImageSampler) {
                         var type = imageSampler.Dimension switch {
                             1 => RenderPassInputType.ImageSampler1D,
@@ -231,7 +348,7 @@ sealed class DescriptorSetManager {
                         };
 
                         inputDeclaration = inputDeclaration with { Type = type };
-                    } else if (entry.Value.DescriptorType == DescriptorType.StorageImage) {
+                    } else if (writeDescriptorSet.DescriptorType == DescriptorType.StorageImage) {
                         var type = imageSampler.Dimension switch {
                             1 => RenderPassInputType.StorageImage1D,
                             2 => RenderPassInputType.StorageImage2D,
@@ -243,10 +360,25 @@ sealed class DescriptorSetManager {
                     }
                 }
 
-                inputDeclarations[entry.Key] = inputDeclaration;
+                inputDeclarations[name] = inputDeclaration;
             }
         }
     }
+
+    // IList<int> GetBufferSets() {
+    //     List<int> sets = new();
+    //     // Find all descriptor sets that have either UniformBufferSet or StorageBufferSet descriptors
+    //     foreach (var (set, resources) in inputResources) {
+    //         foreach (var (binding, input) in resources) {
+    //             if (input.Type is RenderPassResourceType.UniformBufferSet or RenderPassResourceType.StorageBufferSet) {
+    //                 sets.Add(set);
+    //                 // TODO: break ???
+    //             }
+    //         }
+    //     }
+    //
+    //     return sets;
+    // }
 
     bool IsInvalidated(int set, int binding) =>
         invalidatedInputResources.TryGetValue(set, out var bindings) && bindings.ContainsKey(binding);
@@ -254,6 +386,9 @@ sealed class DescriptorSetManager {
 
     struct WriteDescriptor {
         public WriteDescriptorSet WriteDescriptorSet { get; set; }
-        public List<object> ResourceHandlers { get; set; }
+        public List<object> ResourceHandlers { get; set; } = new();
+        public List<MemoryHandle> ResourceMemmoryHandlers { get; set; } = new();
+
+        public WriteDescriptor() { }
     }
 }

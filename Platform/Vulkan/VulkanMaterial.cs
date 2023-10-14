@@ -61,7 +61,7 @@ sealed class VulkanMaterial : IMaterial {
         var dsmOptions = new DescriptorSetManagerOptions {
             DebugName = Name ?? $"{Shader.Name} (Material)", Shader = Shader as VulkanShader, DefaultResources = true
         };
-        // descriptorSetManager = new(dsmOptions);
+        descriptorSetManager = new(dsmOptions);
 
         // TODO
     }

@@ -1,4 +1,5 @@
 using Rin.Platform.Abstractions.Rendering;
+using Silk.NET.Vulkan;
 
 namespace Rin.Platform.Vulkan;
 
@@ -42,6 +43,14 @@ sealed class VulkanRenderPass : IRenderPass {
         }
 
         throw new ArgumentOutOfRangeException();
+    }
+
+    public List<DescriptorSet> GetDescriptorSets(int frameIndex) {
+        if (frameIndex > 0 && descriptorSetManager.DescriptorSets.Count == 1) {
+            return descriptorSetManager.DescriptorSets[0];
+        }
+
+        return descriptorSetManager.DescriptorSets[frameIndex];
     }
 
     public void SetInput(string name, IUniformBufferSet uniformBufferSet) {

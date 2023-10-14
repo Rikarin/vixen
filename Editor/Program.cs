@@ -25,7 +25,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.RendererContext", LogEventLevel.Information)
     .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
-    .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
+    // .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
 
     // For debugging pipeline
     // .MinimumLevel.Verbose()
@@ -204,7 +204,6 @@ var editorCamera = SceneManager.ActiveScene.World.Create(
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
 
-// TODO: VulkanPipeline
 // TODO: DescriptorSetManager
 // TODO: VulkanMaterial
 // TODO: VulkanRenderer

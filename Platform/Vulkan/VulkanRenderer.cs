@@ -68,22 +68,18 @@ sealed class VulkanRenderer : IRenderer {
                 }
             }
         );
-        
+
         // TODO: stuff
 
 
-        var data = stackalloc [] {
-            new QuadVertex(new(-1, -1, 0), Vector2.Zero),
-            new QuadVertex(new(1, -1, 0), new(1, 0)),
-            new QuadVertex(new(1, 1, 0), new(1, 1)),
-            new QuadVertex(new(-1, 1, 0), new(0, 1)),
+        var data = stackalloc[] {
+            new QuadVertex(new(-1, -1, 0), Vector2.Zero), new QuadVertex(new(1, -1, 0), new(1, 0)),
+            new QuadVertex(new(1, 1, 0), new(1, 1)), new QuadVertex(new(-1, 1, 0), new(0, 1))
         };
         quadVertexBuffer = ObjectFactory.CreateVertexBuffer(new ReadOnlySpan<byte>(data, 4 * sizeof(QuadVertex)));
 
-        var indices = stackalloc [] { 0, 1, 2, 2, 3, 0 };
-        quadIndexBuffer = ObjectFactory.CreateIndexBuffer(new ReadOnlySpan<byte>(indices, 6 * sizeof(int)));
-
-
+        var indices = stackalloc[] { 0, 1, 2, 2, 3, 0 };
+        quadIndexBuffer = ObjectFactory.CreateIndexBuffer(new(indices, 6 * sizeof(int)));
 
 
         // TODO: stuff
@@ -192,11 +188,21 @@ sealed class VulkanRenderer : IRenderer {
                 }
 
                 var vkRenderPass = renderPass as VulkanRenderPass;
-                // renderPass.Prepare();
+                renderPass.Prepare();
                 if (vkRenderPass.HasDescriptorSets) {
-                    // TODO
-                    // const auto& descriptorSets = vulkanRenderPass->GetDescriptorSets(frameIndex);
-                    // vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, vulkanPipeline->GetVulkanPipelineLayout(), vulkanRenderPass->GetFirstSetIndex(), (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, nullptr);
+                    var descriptorSets = vkRenderPass.GetDescriptorSets(Renderer.CurrentFrameIndex_RT);
+                    fixed (DescriptorSet* data = descriptorSets.ToArray()) {
+                        vk.CmdBindDescriptorSets(
+                            commandBuffer,
+                            PipelineBindPoint.Graphics,
+                            pipeline.VkLayout,
+                            (uint)renderPass.FirstSetIndex,
+                            (uint)descriptorSets.Count,
+                            data,
+                            0,
+                            null
+                        );
+                    }
                 }
             }
         );
@@ -236,14 +242,14 @@ sealed class VulkanRenderer : IRenderer {
 
                 var transformArray = stackalloc float[16];
                 Matrix4x4Extensions.FillShaderArray(ref transform, transformArray);
-                    vk.CmdPushConstants(
-                        vkCommandBuffer,
-                        vkLayout,
-                        ShaderStageFlags.VertexBit,
-                        0,
-                        16u * sizeof(float),
-                        transformArray
-                    );
+                vk.CmdPushConstants(
+                    vkCommandBuffer,
+                    vkLayout,
+                    ShaderStageFlags.VertexBit,
+                    0,
+                    16u * sizeof(float),
+                    transformArray
+                );
 
                 var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
                 using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();
@@ -255,7 +261,7 @@ sealed class VulkanRenderer : IRenderer {
                     (uint)uniformStorageBuffer.Length,
                     uniformBufferMemoryHandle.Pointer
                 );
-                
+
                 vk.CmdDrawIndexed(vkCommandBuffer, (uint)quadIndexBuffer.Count, 1, 0, 0, 0);
             }
         );

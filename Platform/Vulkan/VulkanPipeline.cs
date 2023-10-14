@@ -112,7 +112,6 @@ sealed class VulkanPipeline : IPipeline, IDisposable {
                         }
 
                         var state = new PipelineColorBlendAttachmentState { ColorWriteMask = (ColorComponentFlags)0xF };
-
                         var attachmentOptions = framebuffer.Options.Attachments.Attachments[i];
                         var blendMode = framebuffer.Options.BlendMode == FramebufferBlendMode.None
                             ? attachmentOptions.BlendMode

@@ -10,6 +10,22 @@ shader "Common/Quad" {
         pass {
             HLSLPROGRAM
 
+            struct Camera {
+                [[vk::location(0)]]
+                float4x4 Position;
+                
+                [[vk::location(1)]]
+                float3 Test123;
+            };
+
+            struct Camera2 {
+                [[vk::location(0)]]
+                float4x4 Position;
+                
+                [[vk::location(1)]]
+                float3 Test123;
+            };
+
             struct VSInput {
                 [[vk::location(0)]]
                 float3 a_Position : POSITION0;
@@ -25,16 +41,26 @@ shader "Common/Quad" {
                 float2 TexCoord : TEXCOORD0;
             };
 
+
+//            [[vk::binding(0)]]
+//            RWTexture2D<float> u_Texture;
+            
+            [[vk::binding(0, 0)]]
+            ConstantBuffer<Camera2> u_RandomFloat;
+            
+            [[vk::binding(0, 1)]]
+            ConstantBuffer<Camera> u_Camera;
+
+            
             VSOutput vert(VSInput input) {
                 VSOutput output = (VSOutput)0;
                 output.Pos = float4(input.a_Position.xy, 0, 1.0);
+                output.Pos = float4(u_RandomFloat.Test123, 0);
+                output.Pos = float4(u_Camera.Test123, u_RandomFloat.Test123.x);
                 output.TexCoord = input.a_TexCoord;
 
                 return output;
             }
-
-            [[vk::binding(0)]]
-            RWTexture2D<float> u_Texture;
 
             struct InputFromFrag {
                 float2 TexCoord;
