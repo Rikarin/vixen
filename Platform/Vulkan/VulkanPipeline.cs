@@ -53,18 +53,16 @@ sealed class VulkanPipeline : IPipeline, IDisposable {
                     );
                 }
 
-                using var pushConstantRangeMemoryHandle =
-                    new Memory<PushConstantRange>(pushConstantRange.ToArray()).Pin();
-
                 // Descriptor Set Layouts
                 var descriptorSetLayouts = shader.DescriptorSetLayouts;
+                fixed (PushConstantRange* pushConstantRangePtr = pushConstantRange.ToArray())
                 fixed (DescriptorSetLayout* descriptorSetLayoutPtr = descriptorSetLayouts.Values.ToArray()) {
                     var pipelineLayoutCreateInfo =
                         new PipelineLayoutCreateInfo(StructureType.PipelineLayoutCreateInfo) {
                             SetLayoutCount = (uint)descriptorSetLayouts.Count,
                             PSetLayouts = descriptorSetLayoutPtr,
                             PushConstantRangeCount = (uint)pushConstantRange.Count,
-                            PPushConstantRanges = (PushConstantRange*)pushConstantRangeMemoryHandle.Pointer
+                            PPushConstantRanges = pushConstantRangePtr
                         };
 
                     vk.CreatePipelineLayout(device, pipelineLayoutCreateInfo, null, out var pipelineLayout)

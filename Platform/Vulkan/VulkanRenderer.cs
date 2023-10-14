@@ -250,7 +250,7 @@ sealed class VulkanRenderer : IRenderer {
                     16u * sizeof(float),
                     transformArray
                 );
-
+                
                 var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
                 using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();
                 vk.CmdPushConstants(

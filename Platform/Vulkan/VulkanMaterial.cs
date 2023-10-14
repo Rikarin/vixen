@@ -1,18 +1,19 @@
+using Rin.Core.Abstractions.Shaders;
 using Rin.Platform.Abstractions.Rendering;
+using Serilog;
+using System.Diagnostics;
 using System.Numerics;
 
 namespace Rin.Platform.Vulkan;
 
 sealed class VulkanMaterial : IMaterial {
     DescriptorSetManager descriptorSetManager;
-
-    // TODO: not sure about this
-    readonly Memory<byte> bufferTest = new byte[42];
+    Memory<byte> uniformStorageBuffer;
 
     public string? Name { get; }
     public IShader Shader { get; }
     public MaterialFlags Flags { get; private set; }
-    public ReadOnlyMemory<byte> UniformStorageBuffer => bufferTest;
+    public ReadOnlyMemory<byte> UniformStorageBuffer => uniformStorageBuffer;
 
     public VulkanMaterial(IShader shader, string? name) {
         Shader = shader;
@@ -21,10 +22,7 @@ sealed class VulkanMaterial : IMaterial {
         Initialize();
     }
 
-    public void Set(string name, int value) {
-        throw new NotImplementedException();
-    }
-
+    public void Set(string name, int value) => InternalSet(name, value);
     public void Set(string name, float value) => InternalSet(name, value);
     public void Set(string name, bool value) => InternalSet(name, value);
     public void Set(string name, Vector2 value) => InternalSet(name, value);
@@ -51,13 +49,32 @@ sealed class VulkanMaterial : IMaterial {
 
     public void Prepare() => descriptorSetManager.InvalidateAndUpdate();
 
-    void InternalSet<T>(string name, T value) { }
+    unsafe void InternalSet<T>(string name, T value) where T : unmanaged {
+        var declaration = FindUniformDeclaration(name);
+        if (declaration == null) {
+            Log.Error("Unable to find uniform {Name}", name);
+            return;
+        }
+        
+        if (sizeof(T) != declaration.Size) {
+            throw new("Bad alignment??");
+        }
+
+        var val = new Span<byte>(&value, sizeof(T));
+        var destination = uniformStorageBuffer.Slice(declaration.Offset, declaration.Size);
+        val.CopyTo(destination.Span);
+
+        // Log.Information("Debug: {Variable}", declaration.Offset);
+        // Log.Information("Debug: {Variable}", declaration.Size);
+        // Log.Information("Debug: {Variable}", uniformStorageBuffer);
+    }
 
     T InternalGet<T>(string name) => throw new NotImplementedException();
 
     T GetResource<T>(string name) => throw new NotImplementedException();
 
     void Initialize() {
+        AllocateMemory();
         Flags |= MaterialFlags.DepthText | MaterialFlags.Blend;
 
         descriptorSetManager = new(
@@ -70,8 +87,29 @@ sealed class VulkanMaterial : IMaterial {
             }
         );
         
-        // TODO
+        // TODO: vulkan material
         
         descriptorSetManager.Bake();
+    }
+
+    ShaderUniform? FindUniformDeclaration(string name) {
+        var shaderBuffers = (Shader as VulkanShader).ReflectionData.ConstantBuffers;
+        Trace.Assert(shaderBuffers.Count <= 1);
+
+        if (shaderBuffers.Count > 0) {
+            if (shaderBuffers.Values.First().Uniforms.TryGetValue(name, out var value)) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    void AllocateMemory() {
+        var buffers = (Shader as VulkanShader).ReflectionData.ConstantBuffers;
+        if (buffers.Count > 0) {
+            var size = buffers.Values.Sum(x => x.Size);
+            uniformStorageBuffer = new byte[size];
+        }
     }
 }

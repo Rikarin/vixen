@@ -10,7 +10,7 @@ sealed class VulkanRenderPass : IRenderPass {
     public bool IsBaked => throw new NotImplementedException();
     public IPipeline Pipeline => Options.Pipeline;
     public IFramebuffer TargetFramebuffer => Options.Pipeline.Options.TargetFramebuffer;
-    public int FirstSetIndex => throw new NotImplementedException();
+    public int FirstSetIndex => descriptorSetManager.FirstSetIndex;
     public bool HasDescriptorSets => descriptorSetManager.HasDescriptorSets;
 
     public VulkanRenderPass(RenderPassOptions options) {

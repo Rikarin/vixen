@@ -1,25 +1,25 @@
-using Rin.Core.Abstractions;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
-using System.Drawing;
+using Rin.Rendering;
 using System.Numerics;
 
 namespace Rin.Editor;
 
 public class QuadTest {
-    public QuadTest() {
+    IPipeline pipeline;
+    IMaterial material;
+    IRenderPass renderPass;
+    
+    public QuadTest(IFramebuffer framebuffer) {
         var uniformCamera = ObjectFactory.CreateUniformBufferSet(19 * sizeof(float));
-        
-        
         
         var shaderImporter = new ShaderImporter("Assets/Shaders/Quad.shader");
         var shader = shaderImporter.GetShader();
 
-        var framebufferOptions = new FramebufferOptions {
-            DebugName = "Quad FB", Attachments = new(ImageFormat.Rgba), ClearColor = Color.Pink
-        };
-
-        var framebuffer = ObjectFactory.CreateFramebuffer(framebufferOptions);
+        // var framebufferOptions = new FramebufferOptions {
+        //     DebugName = "Quad FB", Attachments = new(ImageFormat.Rgba), ClearColor = Color.Pink
+        // };
+        // framebuffer = ObjectFactory.CreateFramebuffer(framebufferOptions);
 
         var pipelineOptions = new PipelineOptions {
             Layout = new(
@@ -32,16 +32,24 @@ public class QuadTest {
             DebugName = "Quad"
         };
 
+        pipeline = ObjectFactory.CreatePipeline(pipelineOptions);
         var renderPassOptions = new RenderPassOptions {
-            DebugName = "Quad", Pipeline = ObjectFactory.CreatePipeline(pipelineOptions)
+            DebugName = "Quad Render Pass", Pipeline = pipeline
         };
 
-        var renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
+        renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
         renderPass.SetInput("u_Camera", uniformCamera);
         renderPass.Bake();
 
-        var material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
+        material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
+        // material.Set("pushConstants.someVariable", 42);
         material.Prepare();
+    }
+
+    public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
+        Renderer.BeginRenderPass(commandBuffer, renderPass);
+        Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
+        Renderer.EndRenderPass(commandBuffer); 
     }
 
     struct UniformCamera {

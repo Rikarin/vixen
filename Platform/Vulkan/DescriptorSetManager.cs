@@ -24,6 +24,7 @@ sealed class DescriptorSetManager {
     DescriptorPool descriptorPool;
     public bool HasDescriptorSets => descriptorSets.Count > 0 && descriptorSets[0].Count > 0;
     public IReadOnlyList<List<DescriptorSet>> DescriptorSets => descriptorSets.AsReadOnly();
+    public int FirstSetIndex => inputResources.Count == 0 ? -1 : inputResources.First().Key;
 
     public DescriptorSetManager(DescriptorSetManagerOptions options) {
         this.options = options;
@@ -157,7 +158,7 @@ sealed class DescriptorSetManager {
                             var buffer = input.Input[0] as IVulkanBuffer;
                             SetBuffer(
                                 ref storedWriteDescriptor,
-                                buffer.DescriptorBufferInfo,
+                                buffer?.DescriptorBufferInfo ?? new DescriptorBufferInfo(),
                                 input,
                                 set,
                                 binding,
@@ -168,11 +169,12 @@ sealed class DescriptorSetManager {
 
                         case RenderPassResourceType.StorageBufferSet:
                         case RenderPassResourceType.UniformBufferSet: {
-                            var buffer = input.Input[0] as IVulkanBufferSet;
+                            var bufferSet = input.Input[0] as IVulkanBufferSet;
+                            var buffer = bufferSet?.GetVulkanBuffer(frameIndex);
 
                             SetBuffer(
                                 ref storedWriteDescriptor,
-                                ((VulkanUniformBuffer)buffer.GetVulkanBuffer(frameIndex)).DescriptorBufferInfo,
+                                buffer?.DescriptorBufferInfo ?? new DescriptorBufferInfo(),
                                 input,
                                 set,
                                 binding,
@@ -219,34 +221,36 @@ sealed class DescriptorSetManager {
             foreach (var (binding, input) in inputs) {
                 Log.Information("{set} {binfing} {frame}", set, binding, currentFrameIndex);
                 var resourceHandlers = writeDescriptorMap[currentFrameIndex][set][binding].ResourceHandlers;
-                
+
                 switch (input.Type) {
                     case RenderPassResourceType.StorageBuffer:
                     case RenderPassResourceType.UniformBuffer: {
-                        var bufferInfo = ((IVulkanBuffer)input.Input[0]).DescriptorBufferInfo;
+                        var bufferInfo = ((IVulkanBuffer)input.Input[0])?.DescriptorBufferInfo ?? new DescriptorBufferInfo();
                         if (!resourceHandlers.Contains(bufferInfo.Buffer)) {
                             invalidatedInputResources[set][binding] = input;
                         }
+
                         break;
                     }
-                    
+
                     case RenderPassResourceType.StorageBufferSet:
                     case RenderPassResourceType.UniformBufferSet: {
                         var inputSet = (IVulkanBufferSet)input.Input[0];
-                        var bufferInfo = inputSet.GetVulkanBuffer(currentFrameIndex).DescriptorBufferInfo;
+                        var bufferInfo = inputSet?.GetVulkanBuffer(currentFrameIndex).DescriptorBufferInfo ?? new DescriptorBufferInfo();
                         if (!resourceHandlers.Contains(bufferInfo.Buffer)) {
                             invalidatedInputResources[set][binding] = input;
                         }
+
                         break;
                     }
-                    
+
                     case RenderPassResourceType.Texture2D:
                         throw new NotImplementedException();
                     case RenderPassResourceType.TextureCube:
                         throw new NotImplementedException();
                     case RenderPassResourceType.Image2D:
                         throw new NotImplementedException();
-                    
+
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -263,13 +267,13 @@ sealed class DescriptorSetManager {
             foreach (var (binding, input) in setData) {
                 var wd = writeDescriptorMap[currentFrameIndex][set][binding];
                 var storedWriteDescriptor = wd.WriteDescriptorSet;
-                
+
                 switch (input.Type) {
                     case RenderPassResourceType.StorageBuffer:
                     case RenderPassResourceType.UniformBuffer: {
                         var buffer = input.Input[0] as IVulkanBuffer;
 
-                        var dbi = new[] { buffer.DescriptorBufferInfo };
+                        var dbi = new[] { buffer?.DescriptorBufferInfo ?? new DescriptorBufferInfo() };
                         var memHandle = new Memory<DescriptorBufferInfo>(dbi).Pin();
                         storedWriteDescriptor.PBufferInfo = (DescriptorBufferInfo*)memHandle.Pointer;
 
@@ -281,9 +285,9 @@ sealed class DescriptorSetManager {
                     case RenderPassResourceType.StorageBufferSet:
                     case RenderPassResourceType.UniformBufferSet: {
                         var bufferSet = input.Input[0] as IVulkanBufferSet;
-                        var buffer = bufferSet.GetVulkanBuffer(currentFrameIndex);
+                        var buffer = bufferSet?.GetVulkanBuffer(currentFrameIndex);
 
-                        var dbi = new[] { buffer.DescriptorBufferInfo };
+                        var dbi = new[] { buffer?.DescriptorBufferInfo ?? new DescriptorBufferInfo() };
                         var memHandle = new Memory<DescriptorBufferInfo>(dbi).Pin();
                         storedWriteDescriptor.PBufferInfo = (DescriptorBufferInfo*)memHandle.Pointer;
 
@@ -291,7 +295,7 @@ sealed class DescriptorSetManager {
                         wd.ResourceHandlers[0] = storedWriteDescriptor.PBufferInfo->Buffer;
                         break;
                     }
-                    
+
                     case RenderPassResourceType.Texture2D:
                         throw new NotImplementedException();
                     case RenderPassResourceType.TextureCube:
@@ -305,12 +309,13 @@ sealed class DescriptorSetManager {
             }
 
             Log.Information("invalidating=========");
-            
+
             VulkanContext.Vulkan.UpdateDescriptorSets(
                 VulkanContext.CurrentDevice.VkLogicalDevice,
                 updateDescriptors.ToArray(),
-                0, null
-                );
+                0,
+                null
+            );
         }
 
         invalidatedInputResources.Clear();
@@ -376,7 +381,7 @@ sealed class DescriptorSetManager {
 
         // Defer if resource doesn't exist
         if (defer && storedWriteDescriptor.WriteDescriptorSet.PBufferInfo->Buffer.Handle == 0) {
-            invalidatedInputResources[set][binding] = input;
+            invalidatedInputResources.GetOrCreateDefault(set)[binding] = input;
         }
     }
 
@@ -402,15 +407,17 @@ sealed class DescriptorSetManager {
 
                 if (options.DefaultResources || true) {
                     inputResources.GetOrCreateDefault(set)[binding] =
-                        new() { Type = writeDescriptorSet.DescriptorType.GetDefaultResourceType() };
+                        new((int)writeDescriptorSet.DescriptorCount) {
+                            Type = writeDescriptorSet.DescriptorType.GetDefaultResourceType()
+                        };
 
                     if (inputDeclaration.Type == RenderPassInputType.ImageSampler2D) {
                         for (var i = 0; i < writeDescriptorSet.DescriptorCount; i++) {
-                            inputResources[set][binding].Input.Add(i, Renderer.WhiteTexture);
+                            inputResources[set][binding].Input[i] = Renderer.WhiteTexture;
                         }
                     } else if (inputDeclaration.Type == RenderPassInputType.ImageSampler3D) {
                         for (var i = 0; i < writeDescriptorSet.DescriptorCount; i++) {
-                            inputResources[set][binding].Input.Add(i, Renderer.BlackCubeTexture);
+                            inputResources[set][binding].Input[i] = Renderer.BlackCubeTexture;
                         }
                     }
                 }

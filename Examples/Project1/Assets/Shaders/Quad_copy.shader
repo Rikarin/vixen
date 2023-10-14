@@ -12,7 +12,18 @@ shader "Common/Quad" {
 
             struct Camera {
                 [[vk::location(0)]]
-                float4x4 ViewProjectionMatrix;
+                float4x4 Position;
+                
+                [[vk::location(1)]]
+                float3 Test123;
+            };
+
+            struct Camera2 {
+                [[vk::location(0)]]
+                float4x4 Position;
+                
+                [[vk::location(1)]]
+                float3 Test123;
             };
 
             struct VSInput {
@@ -24,48 +35,49 @@ shader "Common/Quad" {
             };
 
             struct VSOutput {
+                float4 Pos : SV_POSITION;
+
                 [[vk::location(0)]]
-                float4 Position : POSITION0;
-                
-                [[vk::location(1)]]
                 float2 TexCoord : TEXCOORD0;
             };
 
             struct PushConstants {
-                float4x4 Transform;
+                uint calculateNormals;
+                float someVariable;
+                float4x4 someMatrix;
             };
 
-            [[vk::binding(2, 0)]]
+
+//            [[vk::binding(0)]]
+//            RWTexture2D<float> u_Texture;
+            
+            [[vk::binding(0, 0)]]
+            ConstantBuffer<Camera2> u_RandomFloat;
+            
+            [[vk::binding(0, 1)]]
             ConstantBuffer<Camera> u_Camera;
             
             [[vk::push_constant]]
-            ConstantBuffer<PushConstants> u_Renderer;
+            ConstantBuffer<PushConstants> pushConstants;
+
             
             VSOutput vert(VSInput input) {
                 VSOutput output = (VSOutput)0;
-                output.Position = u_Renderer.Transform * float4(input.a_Position, 1.0);
-//                output.Position = u_Camera.ViewProjectionMatrix * u_Renderer.Transform * float4(input.a_Position, 1.0);
-//                output.Position = float4(input.a_Position, 1.0);
+                output.Pos = float4(input.a_Position.xy, 0, 1.0);
+                output.Pos = float4(u_RandomFloat.Test123, pushConstants.calculateNormals);
+                output.Pos = float4(u_Camera.Test123.x, 0, pushConstants.someVariable, u_RandomFloat.Test123.x);
                 output.TexCoord = input.a_TexCoord;
 
                 return output;
             }
 
-//            struct Settings {
-//                float Scale;
-//            };
-//            
-//            [[vk::push_constant]]
-//            ConstantBuffer<Settings> u_Settings;
-            
             struct InputFromFrag {
-                [[vk::location(1)]]
                 float2 TexCoord;
             };
 
             float4 frag(in InputFromFrag input) : COLOR {
-//                return float4(1, 1 * u_Settings.Scale, 0, 1);
-                return float4(1, 1, 0, 1);
+                return float4(0,0,0,0);
+                // return texture(u_Texture, input.TexCoord);
             }
             ENDHLSL
         }

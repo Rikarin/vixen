@@ -66,11 +66,8 @@ if (SceneManager.ActiveScene == null) {
     player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
     player.Add(new MeshFilter());
     player.Add(new Name("Player"));
-    
-    
     player.Add<IsScriptEnabled>();
     player.Add(new PlayerControllerScript());
-    
     
     Entity child = default;
     for (var i = 0; i < 10; i++) {
@@ -90,13 +87,6 @@ var app = Application.CreateDefault(
         options.VSync = true;
     }
 );
-
-// Test API
-// var scene = SceneManager.CreateScene("Main Scene");
-// SceneManager.SetActiveScene(scene);
-//
-// var boxObj = new GameObject();
-// boxObj.AddComponent<MeshFilter>();
 
 
 var shaderImporter = new ShaderImporter("Assets/Shaders/RenderShader.shader");
@@ -134,28 +124,12 @@ swapchainRenderPass.Bake();
 var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
 
-var quadTest = new QuadTest();
+var quadTest = new QuadTest(framebuffer);
 
 
 // ECS Test
 var world = SceneManager.ActiveScene!.World;
 var query = new QueryDescription().WithAll<LocalToWorld>();
-
-// world.Query(
-//     query,
-//     (ref LocalTransform t) => {
-//         t = t with { Position = t.Position with { X = 42 } };
-//     }
-// );
-
-// ref var children = ref parent.GetRelationships<Parent>();
-// var parentTransform = parent.Get<LocalTransform>();
-//
-// foreach (var child in children) {
-//     var local = child.Key.Get<LocalTransform>();
-//     Log.Information("Debug: {Variable}", local);
-// }
-
 
 // Editor Camera
 // var editorCamera = SceneManager.ActiveScene.World.Create<LocalToWorld, LocalTransform, EditorCamera, Name>();
@@ -167,45 +141,9 @@ var editorCamera = SceneManager.ActiveScene.World.Create(
 );
 
 
-
-
-
-
-// vertexArray = VertexArray.Create();
-// float[] vertices = {
-//     -0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
-//     0.5f, -0.5f, 0.0f, 0.2f, 0.3f, 0.8f, 1.0f,
-//     0.0f,  0.5f, 0.0f, 0.8f, 0.8f, 0.2f, 1.0f
-// };
-//
-// var vertexBuffer = VertexBuffer.Create(vertices);
-// var bufferLayout = new BufferLayout(
-//     new[] {
-//         new BufferElement(ShaderDataType.Float3, "a_Position"), new BufferElement(ShaderDataType.Float4, "a_Color")
-//     }
-// );
-//
-// vertexBuffer.Layout = bufferLayout;
-// vertexArray.AddVertexBuffer(vertexBuffer);
-//
-// int[] indices = { 0, 1, 2 };
-// var indexBuffer = IndexBuffer.Create(indices);
-// vertexArray.SetIndexBuffer(indexBuffer);
-
-// Shader.Create(
-//     "Basic/Shader1",
-//     "../Examples/Project1/Assets/Shaders/Shader.vert",
-//     "../Examples/Project1/Assets/Shaders/Shader.frag"
-// );
-
-// material = new(Shader.Find("Basic/Shader1")!);
-// material.SetColor("u_Color", Color.Bisque);
-
 var gui = new GuiRenderer(app, project);
 gui.OnStart();
 
-// TODO: DescriptorSetManager
-// TODO: VulkanMaterial
 // TODO: VulkanRenderer
 // TODO: VulkanShader(CreateDescriptors)
 // TODO: RenderCommandBuffer(Submit, Statistics)
@@ -217,44 +155,40 @@ gui.OnStart();
 // TODO: Assimp(mesh loader)
 // TODO: render first quad thru vulkan
 
+// Stage 2
+// TODO: DescriptorSetManager(Texture, Image)
+// TODO: VulkanMaterial(Texture, Image)
+
 Profiler.Initialize(options => options.AddRollingExporter(1000));
 
 app.Update += () => {
     commandBuffer.Begin();
-    Renderer.BeginRenderPass(commandBuffer, swapchainRenderPass);
     
-    // var material = new VulkanMaterial(testShader.Handle, "foobar");
-    //
-    // world.Query(
-    //     query,
-    //     (ref LocalToWorld t) => {
-    //         Log.Information("Debug: {Variable}", t.Value.ToString());
-    //         Renderer.RenderQuad(commandBuffer, swapchainRenderPass.Pipeline, material, t.Value);
-    //     }
-    // );
-   
-    
-    
-    
-    Renderer.EndRenderPass(commandBuffer);
-
-    Renderer.Submit(
-        () => {
-            SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
-            gui.OnRender(Time.DeltaTime);
-            
-            var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
-            var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
-
-            if (vkCmd.ActiveCommandBuffer.HasValue) {
-                SilkWindow.MainWindow.imGuiController.Render(
-                    vkCmd.ActiveCommandBuffer.Value,
-                    sw.CurrentFramebuffer,
-                    new((uint)sw.Size.Width, (uint)sw.Size.Height)
-                );
-            }
+    world.Query(
+        query,
+        (ref LocalToWorld t) => {
+            // Log.Information("Debug: {Variable}", t.Value.ToString());
+            quadTest.Render(commandBuffer, t.Value);
         }
     );
+
+    // Renderer.Submit(
+    //     () => {
+    //         SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
+    //         gui.OnRender(Time.DeltaTime);
+    //         
+    //         var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
+    //         var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
+    //
+    //         if (vkCmd.ActiveCommandBuffer.HasValue) {
+    //             SilkWindow.MainWindow.imGuiController.Render(
+    //                 vkCmd.ActiveCommandBuffer.Value,
+    //                 sw.CurrentFramebuffer,
+    //                 new((uint)sw.Size.Width, (uint)sw.Size.Height)
+    //             );
+    //         }
+    //     }
+    // );
 
     commandBuffer.End();
 
