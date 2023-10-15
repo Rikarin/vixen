@@ -133,7 +133,7 @@ sealed class HierarchyPane : Pane {
             Drag(null);
             ContextMenu(null).Render();
             if (isOpened) {
-                scene.World.Query(rootQuery, (in Entity entity) => RenderEntity(entity));
+                scene.World.Query(rootQuery, entity => RenderEntity(entity));
                 ImGui.TreePop();
             }
 
