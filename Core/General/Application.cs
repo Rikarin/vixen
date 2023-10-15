@@ -93,6 +93,9 @@ public class Application : IDisposable {
                 Renderer.Submit(MainWindow.Handle.Swapchain.Present);
 
                 Renderer.IncreaseCurrentFrameIndex();
+                
+                // TODO: move this to Input class
+                silkWindow.ResetInput();
 
                 // silkWindow.silkWindow.DoUpdate();
                 // silkWindow.silkWindow.DoRender();

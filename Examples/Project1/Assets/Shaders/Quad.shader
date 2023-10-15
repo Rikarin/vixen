@@ -56,7 +56,7 @@ shader "Common/Quad" {
             [[vk::push_constant]]
             ConstantBuffer<Settings> u_Settings;
 
-            VSOutput vert(VSInput input, uint VertexIndex : SV_VertexID) {
+            VSOutput vert(VSInput input) {
                 VSOutput output = (VSOutput)0;
                 output.Position = float4(input.a_Position, 1.0) * u_Renderer.Transform * u_Camera.ViewProjectionMatrix;
                 output.TexCoord = input.a_TexCoord;
@@ -65,12 +65,23 @@ shader "Common/Quad" {
             }
 
             struct InputFromFrag {
-                [[vk::location(1)]]
+                [[vk::location(0)]]
                 float2 TexCoord;
             };
 
+            float grid(float2 st, float res) {
+                float2 grid = frac(st);
+                return step(res, grid.x) * step(res, grid.y);
+            }
+
             float4 frag(in InputFromFrag input) : COLOR {
-                return float4(1, 1, 0, 1);
+                float x = grid(input.TexCoord * 16.025, 0.025);
+                float4 color = float4(float3(0.2), 0.5) * (1.0 - x);
+
+                 if (color.a == 0.0)
+                    discard;
+                
+                return color;
             }
             ENDHLSL
         }

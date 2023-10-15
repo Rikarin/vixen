@@ -42,6 +42,7 @@ sealed class GuiRenderer : IDisposable {
         AddPane<GamePane>();
 
         AddPane<ProfilerPane>();
+        AddPane<EditorCameraDebugPane>();
 
         // TODO: Load/Save of opened windows
 
@@ -55,6 +56,7 @@ sealed class GuiRenderer : IDisposable {
         OpenPane<GamePane>();
 
         OpenPane<ProfilerPane>();
+        OpenPane<EditorCameraDebugPane>();
     }
 
     public void Dispose() {

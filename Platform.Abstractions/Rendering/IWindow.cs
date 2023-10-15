@@ -14,6 +14,8 @@ public interface IWindow {
     bool GetKeyDown(Key key);
     bool GetKeyUp(Key key);
     Vector2 GetMouseAxis();
+
+    bool GetMouseButton(MouseButton mouseButton);
     bool GetMouseButtonDown(MouseButton mouseButton);
     bool GetMouseButtonUp(MouseButton mouseButton);
     event Action? Closing;

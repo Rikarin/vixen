@@ -1,4 +1,5 @@
 using Arch.Core;
+using Rin.Core;
 using Rin.Core.General;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
@@ -60,24 +61,13 @@ public class QuadTest {
     }
 
     public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
-        var query = new QueryDescription().WithAll<EditorCamera>();
-        var matrix = Matrix4x4.Identity;
-
-        SceneManager.ActiveScene.World.Query(
-            query,
-            (ref EditorCamera camera) => {
-                matrix = camera.ViewProjection;
-            }
-        );
+        var matrix = SceneManager.ActiveScene.World.GetSingleton<EditorCamera>().ViewProjection;
         
         Renderer.Submit(
             () => {
                 var camera = new UniformCamera { ViewProjectionMatrix = matrix };
                 ubsCamera.Get_RT().SetData_RT(camera);
             });
-
-        // transform = Matrix4x4.Identity;
-        // Log.Information("Debug: {Variable}", transform);
         
         Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
     }

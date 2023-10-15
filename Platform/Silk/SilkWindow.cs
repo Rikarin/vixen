@@ -53,6 +53,8 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
 
     public Vector2 GetMouseAxis() => mouseAxis;
 
+    public bool GetMouseButton(Core.Abstractions.MouseButton mouseButton) => mouseButtonPressed[(int)mouseButton];
+
     public bool GetMouseButtonDown(Core.Abstractions.MouseButton mouseButton) =>
         mouseButtonDown.HasValue && (int)mouseButtonDown.Value == (int)mouseButton;
 
@@ -96,7 +98,7 @@ sealed class SilkWindow : Abstractions.Rendering.IWindow {
     void OnResize(Vector2D<int> obj) => Resize?.Invoke(new(obj.X, obj.Y));
     void OnClosing() => Closing?.Invoke();
 
-    void ResetInput() {
+    public void ResetInput() {
         keyDown = null;
         keyUp = null;
         mouseAxis = Vector2.Zero;

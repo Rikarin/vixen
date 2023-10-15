@@ -91,6 +91,8 @@ Should this be done also for instantiating GameObjects at runtime?
 - Editor one will use *Importers
 - Runtime one will import assets from bundles
 - Game build system
+- Pie menu in Editor when pressing space
+- 3D cursor for adding new objects in editor
 
 
 ## Architecture

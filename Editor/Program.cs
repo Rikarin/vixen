@@ -54,16 +54,18 @@ if (SceneManager.ActiveScene == null) {
     SceneManager.SetActiveScene(SceneManager.CreateScene("TestScene 1"));
     
     var world1 = SceneManager.ActiveScene!.World;
-    var parent = world1.Create<LocalTransform, LocalToWorld>();
+    var parent = world1.Create<LocalTransform, LocalToWorld, MeshFilter>();
     // var player = world1.Create<LocalTransform, LocalToWorld>();
     // player.AddRelationship<Parent>(parent);
 
     parent.Set(new LocalTransform(new(0, 0, 0), Quaternion.Zero, 1));
     // player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
-    // player.Add(new MeshFilter());
     // player.Add(new Name("Player"));
-    parent.Add<IsScriptEnabled>();
-    parent.Add(new PlayerControllerScript());
+    // parent.Add<IsScriptEnabled>();
+    // parent.Add(new PlayerControllerScript());
+    
+    var plane2 = world1.Create<LocalTransform, LocalToWorld, MeshFilter>();
+    plane2.Set(new LocalTransform(new(0, 0, 0), Quaternion.CreateFromAxisAngle(Vector3.UnitX, 90), 1));
     
     // Entity child = default;
     // for (var i = 0; i < 10; i++) {
@@ -126,13 +128,13 @@ var quadTest = new QuadTest(framebuffer);
 
 // ECS Test
 var world = SceneManager.ActiveScene!.World;
-var query = new QueryDescription().WithAll<LocalToWorld>().WithNone<IsDisabledTag>();
+var query = new QueryDescription().WithAll<LocalToWorld, MeshFilter>().WithNone<IsDisabledTag>();
 
 // Editor Camera
 var editorCamera = new EditorCamera(45, new(1280, 720), 0.1f, 1000);
 var editorCameraEntity = SceneManager.ActiveScene.World.Create(
     new IsScriptEnabled(),
-    new LocalTransform(new(-5, 5, 5), Quaternion.Identity, 1),
+    new LocalTransform(new(0, -3.6f,  1.25f), Quaternion.CreateFromAxisAngle(Vector3.UnitX, 45), 1),
     new LocalToWorld(),
     editorCamera,
     new Name("Editor Camera")
@@ -218,30 +220,30 @@ return 0;
 
 
 
-public class PlayerControllerScript : Script {
-    public override void OnStart() {
-        Log.Information("start");
-    }
-
-    public override void OnUpdate() {
-        ref var transform = ref Entity.Get<LocalTransform>();
-        
-        if (Input.GetKey(Key.W)) {
-            transform.Position += transform.Forward * Time.DeltaTime;
-        } else if (Input.GetKey(Key.S)) {
-            transform.Position += -transform.Forward * Time.DeltaTime;
-        }
-        
-        if (Input.GetKey(Key.A)) {
-            transform.Position += -transform.Right * Time.DeltaTime;
-        } else if (Input.GetKey(Key.D)) {
-            transform.Position += transform.Right * Time.DeltaTime;
-        }
-        
-        if (Input.GetKey(Key.Space)) {
-            transform.Position += transform.Up * Time.DeltaTime;
-        } else if (Input.GetKey(Key.ShiftLeft)) {
-            transform.Position += -transform.Up * Time.DeltaTime;
-        }
-    }
-}
+// public class PlayerControllerScript : Script {
+//     public override void OnStart() {
+//         Log.Information("start");
+//     }
+//
+//     public override void OnUpdate() {
+//         ref var transform = ref Entity.Get<LocalTransform>();
+//         
+//         if (Input.GetKey(Key.W)) {
+//             transform.Position += transform.Forward * Time.DeltaTime;
+//         } else if (Input.GetKey(Key.S)) {
+//             transform.Position += -transform.Forward * Time.DeltaTime;
+//         }
+//         
+//         if (Input.GetKey(Key.A)) {
+//             transform.Position += -transform.Right * Time.DeltaTime;
+//         } else if (Input.GetKey(Key.D)) {
+//             transform.Position += transform.Right * Time.DeltaTime;
+//         }
+//         
+//         if (Input.GetKey(Key.Space)) {
+//             transform.Position += transform.Up * Time.DeltaTime;
+//         } else if (Input.GetKey(Key.ShiftLeft)) {
+//             transform.Position += -transform.Up * Time.DeltaTime;
+//         }
+//     }
+// }
