@@ -3,6 +3,7 @@ using Rin.Core.Math;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
+using Serilog;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -44,7 +45,7 @@ public class QuadTest {
         };
 
         renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
-        renderPass.SetInput("u_Camera", ubsCamera);
+        // renderPass.SetInput("u_Camera", ubsCamera);
         renderPass.Bake();
 
         material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
@@ -52,17 +53,26 @@ public class QuadTest {
         material.Prepare();
     }
 
-    public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
+    public void Begin(IRenderCommandBuffer commandBuffer) {
         Renderer.BeginRenderPass(commandBuffer, renderPass);
+    }
+    
+    public void End(IRenderCommandBuffer commandBuffer) {
+        Renderer.EndRenderPass(commandBuffer);
+    }
+
+    public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
         
-        Renderer.Submit(
-            () => {
-                var camera = new UniformCamera { viewProjectionMatrix = VulkanClip };
-                ubsCamera.Get_RT().SetData_RT(camera);
-            });
+        // Renderer.Submit(
+        //     () => {
+        //         var camera = new UniformCamera { viewProjectionMatrix = Matrix4x4.Identity };
+        //         ubsCamera.Get_RT().SetData_RT(camera);
+        //     });
+
+        // transform = Matrix4x4.Identity;
+        Log.Information("Debug: {Variable}", transform);
         
         Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
-        Renderer.EndRenderPass(commandBuffer); 
     }
 
     struct UniformCamera {

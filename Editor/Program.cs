@@ -162,7 +162,9 @@ Profiler.Initialize(options => options.AddRollingExporter(1000));
 
 app.Update += () => {
     commandBuffer.Begin();
-    
+
+    quadTest.Begin(commandBuffer);
+
     world.Query(
         query,
         (ref LocalToWorld t) => {
@@ -170,24 +172,27 @@ app.Update += () => {
             quadTest.Render(commandBuffer, t.Value);
         }
     );
+    
+    quadTest.End(commandBuffer);
 
-    // Renderer.Submit(
-    //     () => {
-    //         SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
-    //         gui.OnRender(Time.DeltaTime);
-    //         
-    //         var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
-    //         var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
-    //
-    //         if (vkCmd.ActiveCommandBuffer.HasValue) {
-    //             SilkWindow.MainWindow.imGuiController.Render(
-    //                 vkCmd.ActiveCommandBuffer.Value,
-    //                 sw.CurrentFramebuffer,
-    //                 new((uint)sw.Size.Width, (uint)sw.Size.Height)
-    //             );
-    //         }
-    //     }
-    // );
+    Renderer.Submit(
+        () => {
+            SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
+            gui.OnRender(Time.DeltaTime);
+            
+            var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
+            var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
+    
+            if (vkCmd.ActiveCommandBuffer.HasValue) {
+                SilkWindow.MainWindow.imGuiController.Render(
+                    vkCmd.ActiveCommandBuffer.Value,
+                    sw.CurrentFramebuffer,
+                    new((uint)sw.Size.Width, (uint)sw.Size.Height)
+                );
+            }
+        }
+    );
+    
 
     commandBuffer.End();
 

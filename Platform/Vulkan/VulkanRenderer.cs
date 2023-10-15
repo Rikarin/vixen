@@ -155,6 +155,7 @@ sealed class VulkanRenderer : IRenderer {
 
                     renderPassBeginInfo.Framebuffer = swapchain.CurrentFramebuffer;
                     
+                    // TODO: adjust this to have +Y up
                     // viewport.Y = swapchain.Size.Height;
                     // viewport.Width = swapchain.Size.Width;
                     // viewport.Height = -swapchain.Size.Height;
@@ -251,16 +252,16 @@ sealed class VulkanRenderer : IRenderer {
                 var ibMeshBuffer = (quadIndexBuffer as VulkanIndexBuffer).VkBuffer;
                 vk.CmdBindIndexBuffer(vkCommandBuffer, ibMeshBuffer, 0, IndexType.Uint32);
 
-                // var transformSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref transform, 1));
-                // vk.CmdPushConstants(
-                //     vkCommandBuffer,
-                //     vkLayout,
-                //     ShaderStageFlags.VertexBit,
-                //     0,
-                //     // 16u * sizeof(float),
-                //     (uint)transformSpan.Length,
-                //     transformSpan
-                // );
+                var transformSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref transform, 1));
+                vk.CmdPushConstants(
+                    vkCommandBuffer,
+                    vkLayout,
+                    ShaderStageFlags.VertexBit,
+                    0,
+                    // 16u * sizeof(float),
+                    (uint)transformSpan.Length,
+                    transformSpan
+                );
                 
                 // var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
                 // using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();

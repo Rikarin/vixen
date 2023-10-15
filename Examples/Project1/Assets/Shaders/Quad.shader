@@ -68,9 +68,9 @@ shader "Common/Quad" {
             
             VSOutput vert(VSInput input, uint VertexIndex : SV_VertexID) {
                 VSOutput output = (VSOutput)0;
-//                output.Position = u_Renderer.Transform * float4(input.a_Position, 1.0);
+                output.Position =  float4(input.a_Position, 1.0) * u_Renderer.Transform;
 //                output.Position = u_Camera.ViewProjectionMatrix * u_Renderer.Transform * float4(input.a_Position, 1.0);
-                output.Position = float4(input.a_Position, 1);
+//                output.Position = float4(input.a_Position, 1);
 ///                output.Position = float4(positions[VertexIndex], 0, 1);
                 output.TexCoord = input.a_TexCoord;
 

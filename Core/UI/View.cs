@@ -80,7 +80,7 @@ public partial class View {
     public Slider Slider(State<int> value, Range range, string format) => new SliderInt(value, range, format);
     
     // Drag
-    public Drag Drag(State<float> value) => new DragFloat(value, new(0, 0), 1);
+    public Drag Drag(State<float> value) => new DragFloat(value, new(0, 0), 0.05f);
     public Drag Drag(State<float> value, float speed) => new DragFloat(value, new(0, 0), speed);
     public Drag Drag(State<float> value, float speed, Range range) => new DragFloat(value, range, speed);
     public Drag Drag(State<float> value, float speed, Range range, string format) => new DragFloat(value, range, speed, format);
