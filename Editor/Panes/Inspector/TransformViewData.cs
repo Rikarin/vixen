@@ -6,6 +6,7 @@ namespace Rin.Editor.Panes.Inspector;
 public class TransformViewData {
     public Vector3State Position { get; } = new();
     public QuaternionState Rotation { get; } = new();
+    // public Vector3State Rotation { get; } = new();
     public State<float> Scale { get; } = new();
     
     public bool IsDirty { get; private set; }

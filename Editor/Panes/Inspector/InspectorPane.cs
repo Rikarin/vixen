@@ -3,7 +3,6 @@ using Rin.Core.Components;
 using Rin.Core.General;
 using Rin.Core.UI;
 using Rin.Editor.States;
-using System.Numerics;
 
 namespace Rin.Editor.Panes.Inspector;
 
@@ -18,6 +17,7 @@ sealed class InspectorPane : Pane {
         var localTransform = World.Get<LocalTransform>(HierarchyPane.Selected.Value);
         data.Position.SetNext(localTransform.Position);
         data.Rotation.SetNext(localTransform.Rotation);
+        // data.Rotation.SetNext(localTransform.Rotation.ToEulerAngles().ToDegrees());
         data.Scale.SetNext(localTransform.Scale);
         
         data.ResetDirty();
@@ -32,6 +32,7 @@ sealed class InspectorPane : Pane {
             () => {
                 World.Set(
                     HierarchyPane.Selected.Value,
+                    // new LocalTransform(data.Position.Value, data.Rotation.Value.ToRadians().ToQuaternion(), data.Scale.Value)
                     new LocalTransform(data.Position.Value, data.Rotation.Value, data.Scale.Value)
                 );
             }
@@ -41,17 +42,13 @@ sealed class InspectorPane : Pane {
     }
 
     Vector4State[] LoadLocalToWorld() {
-        var rows = new Vector4State[] { new(), new(), new(), new(), new() };
+        var rows = new Vector4State[] { new(), new(), new(), new() };
 
         var localToWorld = World.Get<LocalToWorld>(HierarchyPane.Selected.Value).Value;
         rows[0].SetNext(new(localToWorld.M11, localToWorld.M12, localToWorld.M13, localToWorld.M14));
         rows[1].SetNext(new(localToWorld.M21, localToWorld.M22, localToWorld.M23, localToWorld.M24));
         rows[2].SetNext(new(localToWorld.M31, localToWorld.M32, localToWorld.M33, localToWorld.M34));
         rows[3].SetNext(new(localToWorld.M41, localToWorld.M42, localToWorld.M43, localToWorld.M44));
-
-        // var center = Vector4.Transform(new Vector4(0, 0, 0, 1), localToWorld);
-        var center = Vector4.Transform(Vector3.Zero, localToWorld);
-        rows[4].SetNext(center);
 
         return rows;
     }

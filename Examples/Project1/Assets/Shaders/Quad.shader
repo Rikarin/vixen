@@ -9,7 +9,6 @@ shader "Common/Quad" {
         
         pass {
             HLSLPROGRAM
-
             struct Camera {
                 [[vk::location(0)]]
                 float4x4 ViewProjectionMatrix;
@@ -35,8 +34,6 @@ shader "Common/Quad" {
             };
             
             class Settings {
-//                float4x4 Transform;
-
                 float Scale;
                 float Size;
             };
@@ -59,19 +56,9 @@ shader "Common/Quad" {
             [[vk::push_constant]]
             ConstantBuffer<Settings> u_Settings;
 
-            float2 positions[3] = {
-                float2(0.0, -0.5),
-                float2(0.5, 0.5),
-                float2(-0.5, 0.5)
-            };
-            
-            
             VSOutput vert(VSInput input, uint VertexIndex : SV_VertexID) {
                 VSOutput output = (VSOutput)0;
-                output.Position =  float4(input.a_Position, 1.0) * u_Renderer.Transform;
-//                output.Position = u_Camera.ViewProjectionMatrix * u_Renderer.Transform * float4(input.a_Position, 1.0);
-//                output.Position = float4(input.a_Position, 1);
-///                output.Position = float4(positions[VertexIndex], 0, 1);
+                output.Position = float4(input.a_Position, 1.0) * u_Renderer.Transform * u_Camera.ViewProjectionMatrix;
                 output.TexCoord = input.a_TexCoord;
 
                 return output;
@@ -84,7 +71,6 @@ shader "Common/Quad" {
 
             float4 frag(in InputFromFrag input) : COLOR {
                 return float4(1, 1, 0, 1);
-//                return float4(1, 1, 0, 1);
             }
             ENDHLSL
         }

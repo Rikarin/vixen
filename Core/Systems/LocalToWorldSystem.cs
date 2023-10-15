@@ -19,7 +19,7 @@ public partial class LocalToWorldSystem : BaseSystem<World, float> {
         }
 
         var scale = localTransform.Scale;
-        localToWorld.Value = Matrix.TRS(localTransform.Position, localTransform.Rotation, new(scale, scale, scale))
-            * parentTransform.Value;
+        localToWorld.Value = parentTransform.Value
+            * Matrix.TRS(localTransform.Position, localTransform.Rotation, new(scale, scale, scale));
     }
 }

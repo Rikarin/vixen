@@ -55,27 +55,24 @@ if (SceneManager.ActiveScene == null) {
     
     var world1 = SceneManager.ActiveScene!.World;
     var parent = world1.Create<LocalTransform, LocalToWorld>();
-    var player = world1.Create<LocalTransform, LocalToWorld>();
-    player.AddRelationship<Parent>(parent);
+    // var player = world1.Create<LocalTransform, LocalToWorld>();
+    // player.AddRelationship<Parent>(parent);
 
-    Log.Information("parent {id}", parent.Id);
-    Log.Information("playeer {id}", player.Id);
-
-    parent.Set(new LocalTransform(new(5, 6, 7), Quaternion.Identity, 1));
-    player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
-    player.Add(new MeshFilter());
-    player.Add(new Name("Player"));
-    player.Add<IsScriptEnabled>();
-    player.Add(new PlayerControllerScript());
+    parent.Set(new LocalTransform(new(0, 0, 0), Quaternion.Zero, 1));
+    // player.Set(new LocalTransform(new(1, 2, 3), Quaternion.Identity, 1));
+    // player.Add(new MeshFilter());
+    // player.Add(new Name("Player"));
+    parent.Add<IsScriptEnabled>();
+    parent.Add(new PlayerControllerScript());
     
-    Entity child = default;
-    for (var i = 0; i < 10; i++) {
-        child = world1.Create();
-        child.AddRelationship<Parent>(parent);
-    }
-
-    var child2 = world1.Create();
-    child2.AddRelationship<Parent>(child);
+    // Entity child = default;
+    // for (var i = 0; i < 10; i++) {
+    //     child = world1.Create();
+    //     child.AddRelationship<Parent>(parent);
+    // }
+    //
+    // var child2 = world1.Create();
+    // child2.AddRelationship<Parent>(child);
 }
 
 var app = Application.CreateDefault(
@@ -120,6 +117,7 @@ var swapchainRenderPass = ObjectFactory.CreateRenderPass(
 
 swapchainRenderPass.Bake();
 
+// TODO: get new command buffer when viewport changes?
 var commandBuffer = ObjectFactory.CreateRenderCommandBufferFromSwapChain("RuntimeLayer");
 
 
@@ -128,14 +126,15 @@ var quadTest = new QuadTest(framebuffer);
 
 // ECS Test
 var world = SceneManager.ActiveScene!.World;
-var query = new QueryDescription().WithAll<LocalToWorld>();
+var query = new QueryDescription().WithAll<LocalToWorld>().WithNone<IsDisabledTag>();
 
 // Editor Camera
-// var editorCamera = SceneManager.ActiveScene.World.Create<LocalToWorld, LocalTransform, EditorCamera, Name>();
-var editorCamera = SceneManager.ActiveScene.World.Create(
+var editorCamera = new EditorCamera(45, new(1280, 720), 0.1f, 1000);
+var editorCameraEntity = SceneManager.ActiveScene.World.Create(
+    new IsScriptEnabled(),
+    new LocalTransform(new(-5, 5, 5), Quaternion.Identity, 1),
     new LocalToWorld(),
-    new LocalTransform(),
-    new EditorCamera(),
+    editorCamera,
     new Name("Editor Camera")
 );
 
@@ -162,6 +161,8 @@ Profiler.Initialize(options => options.AddRollingExporter(1000));
 
 app.Update += () => {
     commandBuffer.Begin();
+    var size = SilkWindow.MainWindow.Size;
+    editorCamera.SetViewportSize(size);
 
     quadTest.Begin(commandBuffer);
 

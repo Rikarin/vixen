@@ -1,10 +1,8 @@
-using Rin.Core.Abstractions;
-using Rin.Core.Math;
+using Arch.Core;
+using Rin.Core.General;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Rendering;
-using Serilog;
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
@@ -45,7 +43,7 @@ public class QuadTest {
         };
 
         renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
-        // renderPass.SetInput("u_Camera", ubsCamera);
+        renderPass.SetInput("u_Camera", ubsCamera);
         renderPass.Bake();
 
         material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
@@ -62,26 +60,36 @@ public class QuadTest {
     }
 
     public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
+        var query = new QueryDescription().WithAll<EditorCamera>();
+        var matrix = Matrix4x4.Identity;
+
+        SceneManager.ActiveScene.World.Query(
+            query,
+            (ref EditorCamera camera) => {
+                matrix = camera.ViewProjection;
+            }
+        );
         
-        // Renderer.Submit(
-        //     () => {
-        //         var camera = new UniformCamera { viewProjectionMatrix = Matrix4x4.Identity };
-        //         ubsCamera.Get_RT().SetData_RT(camera);
-        //     });
+        Renderer.Submit(
+            () => {
+                var camera = new UniformCamera { ViewProjectionMatrix = matrix };
+                ubsCamera.Get_RT().SetData_RT(camera);
+            });
 
         // transform = Matrix4x4.Identity;
-        Log.Information("Debug: {Variable}", transform);
+        // Log.Information("Debug: {Variable}", transform);
         
         Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
     }
 
     struct UniformCamera {
-        public Matrix4x4 viewProjectionMatrix;
+        public Matrix4x4 ViewProjectionMatrix;
         // Vector3 test123;
     }
     
     //This matrix handles Vulkan's inverted Y and half Z coordinate system
-    static readonly Matrix4x4 VulkanClip = new(1.0f,  0.0f,  0.0f,  0.0f,
+    static readonly Matrix4x4 VulkanClip = new(
+        1.0f,  0.0f,  0.0f,  0.0f,
         0.0f, -1.0f,  0.0f,  0.0f,
         0.0f,  0.0f,  0.5f,  0.0f,
         0.0f,  0.0f,  0.5f,  1.0f);

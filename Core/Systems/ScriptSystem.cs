@@ -3,6 +3,7 @@ using Arch.Core.Extensions;
 using Arch.System;
 using Arch.System.SourceGenerator;
 using Rin.Core.Components;
+using Serilog;
 
 namespace Rin.Core.Systems;
 

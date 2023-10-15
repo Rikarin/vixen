@@ -156,13 +156,12 @@ sealed class VulkanRenderer : IRenderer {
                     renderPassBeginInfo.Framebuffer = swapchain.CurrentFramebuffer;
                     
                     // TODO: adjust this to have +Y up
-                    // viewport.Y = swapchain.Size.Height;
-                    // viewport.Width = swapchain.Size.Width;
-                    // viewport.Height = -swapchain.Size.Height;
-
-                    // viewport.Y = swapchain.Size.Height;
+                    viewport.Y = swapchain.Size.Height;
                     viewport.Width = swapchain.Size.Width;
-                    viewport.Height = swapchain.Size.Height;
+                    viewport.Height = -swapchain.Size.Height;
+
+                    // viewport.Width = swapchain.Size.Width;
+                    // viewport.Height = swapchain.Size.Height;
                 } else {
                     renderPassBeginInfo.Framebuffer = framebuffer.VkFramebuffer.Value;
 
@@ -258,7 +257,6 @@ sealed class VulkanRenderer : IRenderer {
                     vkLayout,
                     ShaderStageFlags.VertexBit,
                     0,
-                    // 16u * sizeof(float),
                     (uint)transformSpan.Length,
                     transformSpan
                 );
