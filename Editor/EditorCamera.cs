@@ -19,6 +19,7 @@ public class EditorCamera : Camera, IScript {
     float yawDelta;
 
     public Entity Entity { get; private set; }
+    public EditorCameraMode Mode { get; private set; }
     public float VerticalFov { get; private set; }
 
     // public float AspectRatio { get; private set; }
@@ -65,20 +66,9 @@ public class EditorCamera : Camera, IScript {
 
     public void OnUpdate() {
         ref var transform = ref Entity.Get<LocalTransform>();
-
         var mousePos = Input.MousePosition;
         var deltaMouse = (mousePos - previousMousePosition) * 0.002f;
         previousMousePosition = mousePos;
-
-        if (Input.GetKey(Key.ShiftLeft)) {
-            if (Input.GetMouseButton(MouseButton.Middle)) {
-                MousePan(deltaMouse);
-            }
-        } else {
-            if (Input.GetMouseButton(MouseButton.Middle)) {
-                MouseRotate(deltaMouse);
-            }
-        }
 
         // TODO: scroll
         if (Input.GetMouseButton(MouseButton.Left)) {
@@ -86,10 +76,8 @@ public class EditorCamera : Camera, IScript {
             MouseZoom(axis.X * 0.1f * Time.DeltaTime);
         }
 
-        var testFly = false;
-        // Fly Cam
         if (Input.GetMouseButton(MouseButton.Right)) {
-            testFly = true;
+            Mode = EditorCameraMode.FlyCam;
             var yawSign = transform.Up.Y < 0 ? -1f : 1f;
             var speed = GetCameraSpeed();
             var upDirection = new Vector3(0, yawSign, 0);
@@ -131,14 +119,25 @@ public class EditorCamera : Camera, IScript {
             );
             Distance = Vector3.Distance(FocalPoint, transform.Position);
             FocalPoint = transform.Position + transform.Forward * Distance;
+        } else {
+            Mode = EditorCameraMode.ArcBall;
+        
+            if (Input.GetKey(Key.ShiftLeft)) {
+                if (Input.GetMouseButton(MouseButton.Middle)) {
+                    MousePan(deltaMouse);
+                }
+            } else {
+                if (Input.GetMouseButton(MouseButton.Middle)) {
+                    MouseRotate(deltaMouse);
+                }
+            } 
         }
 
         // apply smoothing
         transform.Position += positionDelta;
         transform.Rotation *= Quaternion.CreateFromYawPitchRoll(yawDelta, pitchDelta, 0);
 
-        // If arcball
-        if (!testFly) {
+        if (Mode == EditorCameraMode.ArcBall) {
             transform.Position = FocalPoint - transform.Forward * Distance + positionDelta;
         }
 
@@ -217,4 +216,10 @@ public class EditorCamera : Camera, IScript {
     }
 
     float ToRadians(float degrees) => degrees * (MathF.PI / 180);
+}
+
+
+public enum EditorCameraMode {
+    FlyCam,
+    ArcBall
 }

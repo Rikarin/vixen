@@ -13,6 +13,7 @@ sealed class EditorCameraDebugPane : Pane {
         List<(string, string)> data = new();
         EditorCamera camera = SceneManager.ActiveScene.World.GetSingleton<EditorCamera>();
         
+        data.Add(("Mode", camera.Mode.ToString()));
         data.Add(("Focal Point", camera.FocalPoint.ToString()));
         data.Add(("Direction", camera.Direction.ToString()));
         data.Add(("Distance", camera.Distance.ToString()));
