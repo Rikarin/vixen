@@ -146,7 +146,6 @@ gui.OnStart();
 // TODO: VulkanRenderer
 // TODO: VulkanShader(CreateDescriptors)
 // TODO: RenderCommandBuffer(Submit, Statistics)
-// TODO: Texture2D, TextureCube
 // TODO: ComputePass, ComputePipeline
 // TODO: Renderer(All shapes and passes)
 
@@ -155,6 +154,7 @@ gui.OnStart();
 // TODO: render first quad thru vulkan
 
 // Stage 2
+// TODO: Texture2D, TextureCube
 // TODO: DescriptorSetManager(Texture, Image)
 // TODO: VulkanMaterial(Texture, Image)
 
@@ -171,23 +171,23 @@ app.Update += () => {
         }
     );
 
-    Renderer.Submit(
-        () => {
-            SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
-            gui.OnRender(Time.DeltaTime);
-            
-            var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
-            var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
-    
-            if (vkCmd.ActiveCommandBuffer.HasValue) {
-                SilkWindow.MainWindow.imGuiController.Render(
-                    vkCmd.ActiveCommandBuffer.Value,
-                    sw.CurrentFramebuffer,
-                    new((uint)sw.Size.Width, (uint)sw.Size.Height)
-                );
-            }
-        }
-    );
+    // Renderer.Submit(
+    //     () => {
+    //         SilkWindow.MainWindow.imGuiController.Update(Time.DeltaTime);
+    //         gui.OnRender(Time.DeltaTime);
+    //         
+    //         var vkCmd = commandBuffer as VulkanRenderCommandBuffer;
+    //         var sw = SilkWindow.MainWindow.Swapchain as VulkanSwapChain;
+    //
+    //         if (vkCmd.ActiveCommandBuffer.HasValue) {
+    //             SilkWindow.MainWindow.imGuiController.Render(
+    //                 vkCmd.ActiveCommandBuffer.Value,
+    //                 sw.CurrentFramebuffer,
+    //                 new((uint)sw.Size.Width, (uint)sw.Size.Height)
+    //             );
+    //         }
+    //     }
+    // );
 
     commandBuffer.End();
 

@@ -3,9 +3,9 @@ using System.Numerics;
 namespace Rin.Platform.Abstractions.Rendering; 
 
 public interface IMaterial {
-    public string? Name { get; }
-    public IShader Shader { get; }
-    public MaterialFlags Flags { get; }
+    string? Name { get; }
+    IShader Shader { get; }
+    MaterialFlags Flags { get; }
     
     void Set(string name, int value);
     void Set(string name, float value);

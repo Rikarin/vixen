@@ -1,6 +1,9 @@
 namespace Rin.Platform.Abstractions.Rendering;
 
 public interface IUniformBuffer : IDisposable {
-    public void SetData(ReadOnlySpan<byte> data);
-    public void SetData_RT(ReadOnlySpan<byte> data);
+    void SetData<T>(ReadOnlySpan<T> data) where T : struct;
+    void SetData<T>(T data) where T : struct;
+
+    void SetData_RT<T>(ReadOnlySpan<T> data) where T : struct;
+    void SetData_RT<T>(T data) where T : struct;
 }

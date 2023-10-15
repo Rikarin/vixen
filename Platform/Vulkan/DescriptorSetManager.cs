@@ -145,7 +145,6 @@ sealed class DescriptorSetManager {
                 var writeDescriptorMap = this.writeDescriptorMap[frameIndex][set];
                 List<List<DescriptorImageInfo>> imageInfos = new();
 
-                Log.Information("Set: {Variable}", set);
                 foreach (var (binding, input) in setData) {
                     var storedWriteDescriptor = writeDescriptorMap[binding];
                     storedWriteDescriptor.WriteDescriptorSet = storedWriteDescriptor.WriteDescriptorSet with {
@@ -202,7 +201,6 @@ sealed class DescriptorSetManager {
                 foreach (var (binding, input) in writeDescriptorMap) {
                     if (!IsInvalidated(set, binding)) {
                         writeDescriptors.Add(input.WriteDescriptorSet);
-                        Log.Information("Debug: {Variable}", input.WriteDescriptorSet.DescriptorType);
                     }
                 }
 

@@ -46,12 +46,12 @@ sealed class VulkanPipeline : IPipeline, IDisposable {
                 var framebuffer = Options.TargetFramebuffer as VulkanFramebuffer;
 
                 // Push Constants
-                var pushConstantRange = new List<PushConstantRange>();
-                foreach (var entry in shader.PushConstantRanges) {
-                    pushConstantRange.Add(
-                        new() { StageFlags = entry.ShaderStage, Offset = (uint)entry.Offset, Size = (uint)entry.Size }
-                    );
-                }
+                var pushConstantRange = shader.PushConstantRanges.Select(
+                        entry => new PushConstantRange {
+                            StageFlags = entry.ShaderStage, Offset = (uint)entry.Offset, Size = (uint)entry.Size
+                        }
+                    )
+                    .ToList();
 
                 // Descriptor Set Layouts
                 var descriptorSetLayouts = shader.DescriptorSetLayouts;

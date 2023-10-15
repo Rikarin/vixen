@@ -1,11 +1,11 @@
 namespace Rin.Platform.Abstractions.Rendering;
 
 public interface IRenderPass {
-    public RenderPassOptions Options { get; }
-    public bool IsBaked { get; }
-    public IPipeline Pipeline { get; }
-    public IFramebuffer TargetFramebuffer { get; }
-    public int FirstSetIndex { get; }
+    RenderPassOptions Options { get; }
+    bool IsBaked { get; }
+    IPipeline Pipeline { get; }
+    IFramebuffer TargetFramebuffer { get; }
+    int FirstSetIndex { get; }
 
     IImage2D GetOutput(int index);
     IImage GetDepthOutput();

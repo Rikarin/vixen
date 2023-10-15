@@ -24,10 +24,9 @@ shader "Common/Quad" {
             };
 
             struct VSOutput {
-                [[vk::location(0)]]
-                float4 Position : POSITION0;
+                float4 Position : SV_POSITION;
                 
-                [[vk::location(1)]]
+                [[vk::location(0)]]
                 float2 TexCoord : TEXCOORD0;
             };
 
@@ -59,13 +58,20 @@ shader "Common/Quad" {
             
             [[vk::push_constant]]
             ConstantBuffer<Settings> u_Settings;
+
+            float2 positions[3] = {
+                float2(0.0, -0.5),
+                float2(0.5, 0.5),
+                float2(-0.5, 0.5)
+            };
             
             
-            VSOutput vert(VSInput input) {
+            VSOutput vert(VSInput input, uint VertexIndex : SV_VertexID) {
                 VSOutput output = (VSOutput)0;
-                //output.Position = u_Renderer.Transform * float4(input.a_Position, 1.0);
-                output.Position = u_Camera.ViewProjectionMatrix * u_Renderer.Transform * float4(input.a_Position, 1.0);
-//                output.Position = float4(input.a_Position, 1.0);
+//                output.Position = u_Renderer.Transform * float4(input.a_Position, 1.0);
+//                output.Position = u_Camera.ViewProjectionMatrix * u_Renderer.Transform * float4(input.a_Position, 1.0);
+                output.Position = float4(input.a_Position, 1);
+///                output.Position = float4(positions[VertexIndex], 0, 1);
                 output.TexCoord = input.a_TexCoord;
 
                 return output;
@@ -77,7 +83,7 @@ shader "Common/Quad" {
             };
 
             float4 frag(in InputFromFrag input) : COLOR {
-                return float4(1, 1 * u_Settings.Scale, 0, 1);
+                return float4(1, 1, 0, 1);
 //                return float4(1, 1, 0, 1);
             }
             ENDHLSL

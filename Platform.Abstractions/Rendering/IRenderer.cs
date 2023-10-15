@@ -3,7 +3,7 @@ using System.Numerics;
 namespace Rin.Platform.Abstractions.Rendering;
 
 public interface IRenderer {
-    public RenderingApi Api { get; }
+    RenderingApi Api { get; }
     
     void Initialize();
     void Shutdown();

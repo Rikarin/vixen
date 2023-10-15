@@ -2,6 +2,7 @@ using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Vulkan.Allocator;
 using Rin.Rendering;
 using Silk.NET.Vulkan;
+using System.Runtime.InteropServices;
 using Buffer = Silk.NET.Vulkan.Buffer;
 
 namespace Rin.Platform.Vulkan;
@@ -22,15 +23,32 @@ sealed class VulkanUniformBuffer : IUniformBuffer, IVulkanBuffer {
         allocation = VulkanAllocator.AllocateBuffer(bufferCreateInfo, MemoryUsage.CPU_To_GPU, out vkBuffer);
         DescriptorBufferInfo = new() { Buffer = vkBuffer, Range = (uint)size };
     }
-
-    public void SetData(ReadOnlySpan<byte> data) {
-        data.CopyTo(localBuffer);
-        Renderer.Submit(() => SetData_RT(localBuffer));
+    
+    public void SetData<T>(ReadOnlySpan<T> data) where T : struct {
+        var payload = MemoryMarshal.AsBytes(data);
+        payload.CopyTo(localBuffer);
+        Renderer.Submit(() => SetData_RT<byte>(localBuffer));
     }
 
-    public unsafe void SetData_RT(ReadOnlySpan<byte> data) {
-        var destData = new Span<byte>(allocation!.Map().ToPointer(), data.Length);
-        data.CopyTo(destData);
+    public void SetData<T>(T data) where T : struct {
+        var payload = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref data, 1));
+        payload.CopyTo(localBuffer);
+        Renderer.Submit(() => SetData_RT<byte>(localBuffer));
+    }
+    
+    public unsafe void SetData_RT<T>(ReadOnlySpan<T> data) where T : struct {
+        var payload = MemoryMarshal.AsBytes(data);
+        var destData = new Span<byte>(allocation!.Map().ToPointer(), payload.Length);
+        
+        payload.CopyTo(destData);
+        allocation.Unmap();
+    }
+    
+    public unsafe void SetData_RT<T>(T data) where T : struct {
+        var payload = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref data, 1));
+        var destData = new Span<byte>(allocation!.Map().ToPointer(), payload.Length);
+        
+        payload.CopyTo(destData);
         allocation.Unmap();
     }
 

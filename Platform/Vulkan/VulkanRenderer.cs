@@ -6,6 +6,7 @@ using Serilog;
 using Silk.NET.Vulkan;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Rin.Platform.Vulkan;
 
@@ -77,12 +78,13 @@ sealed class VulkanRenderer : IRenderer {
             new QuadVertex(new(-1, -1, 0), Vector2.Zero), new QuadVertex(new(1, -1, 0), new(1, 0)),
             new QuadVertex(new(1, 1, 0), new(1, 1)), new QuadVertex(new(-1, 1, 0), new(0, 1))
         };
+
         quadVertexBuffer = ObjectFactory.CreateVertexBuffer(new ReadOnlySpan<byte>(data, 4 * sizeof(QuadVertex)));
         Debug.Assert(sizeof(QuadVertex) == 3 * 4 + 2 * 4);
+        Debug.Assert(sizeof(QuadVertex) == Marshal.SizeOf<QuadVertex>());
 
         var indices = stackalloc[] { 0, 1, 2, 2, 3, 0 };
         quadIndexBuffer = ObjectFactory.CreateIndexBuffer(new(indices, 6 * sizeof(int)));
-
 
         // TODO: stuff
     }
@@ -152,10 +154,14 @@ sealed class VulkanRenderer : IRenderer {
                     height = swapchain.Size.Height;
 
                     renderPassBeginInfo.Framebuffer = swapchain.CurrentFramebuffer;
+                    
+                    // viewport.Y = swapchain.Size.Height;
+                    // viewport.Width = swapchain.Size.Width;
+                    // viewport.Height = -swapchain.Size.Height;
 
-                    viewport.Y = swapchain.Size.Height;
+                    // viewport.Y = swapchain.Size.Height;
                     viewport.Width = swapchain.Size.Width;
-                    viewport.Height = -swapchain.Size.Height;
+                    viewport.Height = swapchain.Size.Height;
                 } else {
                     renderPassBeginInfo.Framebuffer = framebuffer.VkFramebuffer.Value;
 
@@ -236,22 +242,25 @@ sealed class VulkanRenderer : IRenderer {
                 var vkLayout = (pipeline as VulkanPipeline).VkLayout;
 
                 var offsets = new[] { 0ul };
+                // ulong offset = 1ul;
+
                 var vbMeshBuffer = (quadVertexBuffer as VulkanVertexBuffer).VkBuffer;
+                // vk.CmdBindVertexBuffers(vkCommandBuffer, 0, &vbMeshBuffer, MemoryMarshal.CreateSpan(ref offset, 1));
                 vk.CmdBindVertexBuffers(vkCommandBuffer, 0, &vbMeshBuffer, offsets);
 
                 var ibMeshBuffer = (quadIndexBuffer as VulkanIndexBuffer).VkBuffer;
                 vk.CmdBindIndexBuffer(vkCommandBuffer, ibMeshBuffer, 0, IndexType.Uint32);
 
-                var transformArray = stackalloc float[16];
-                Matrix4x4Extensions.FillShaderArray(ref transform, transformArray);
-                vk.CmdPushConstants(
-                    vkCommandBuffer,
-                    vkLayout,
-                    ShaderStageFlags.VertexBit,
-                    0,
-                    16u * sizeof(float),
-                    transformArray
-                );
+                // var transformSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref transform, 1));
+                // vk.CmdPushConstants(
+                //     vkCommandBuffer,
+                //     vkLayout,
+                //     ShaderStageFlags.VertexBit,
+                //     0,
+                //     // 16u * sizeof(float),
+                //     (uint)transformSpan.Length,
+                //     transformSpan
+                // );
                 
                 // var uniformStorageBuffer = (material as VulkanMaterial).UniformStorageBuffer;
                 // using var uniformBufferMemoryHandle = uniformStorageBuffer.Pin();

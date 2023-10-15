@@ -5,6 +5,7 @@ using Rin.Platform.Internal;
 using Rin.Rendering;
 using System.Drawing;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Rin.Editor;
 
@@ -12,9 +13,11 @@ public class QuadTest {
     IPipeline pipeline;
     IMaterial material;
     IRenderPass renderPass;
+
+    IUniformBufferSet ubsCamera;
     
     public QuadTest(IFramebuffer framebuffer) {
-        var uniformCamera = ObjectFactory.CreateUniformBufferSet(19 * sizeof(float));
+        ubsCamera = ObjectFactory.CreateUniformBufferSet(Marshal.SizeOf<UniformCamera>());
         
         var shaderImporter = new ShaderImporter("Assets/Shaders/Quad.shader");
         var shader = shaderImporter.GetShader();
@@ -41,7 +44,7 @@ public class QuadTest {
         };
 
         renderPass = ObjectFactory.CreateRenderPass(renderPassOptions);
-        renderPass.SetInput("u_Camera", uniformCamera);
+        renderPass.SetInput("u_Camera", ubsCamera);
         renderPass.Bake();
 
         material = ObjectFactory.CreateMaterial(shader.Handle, "foo bar");
@@ -51,14 +54,25 @@ public class QuadTest {
 
     public void Render(IRenderCommandBuffer commandBuffer, Matrix4x4 transform) {
         Renderer.BeginRenderPass(commandBuffer, renderPass);
-        // var trans2 = Matrix.TRS(Vector3.One, Quaternion.Identity, Vector3.One);
+        
+        Renderer.Submit(
+            () => {
+                var camera = new UniformCamera { viewProjectionMatrix = VulkanClip };
+                ubsCamera.Get_RT().SetData_RT(camera);
+            });
         
         Renderer.RenderQuad(commandBuffer, pipeline, material, transform);
         Renderer.EndRenderPass(commandBuffer); 
     }
 
     struct UniformCamera {
-        Matrix4x4 position;
-        Vector3 test123;
+        public Matrix4x4 viewProjectionMatrix;
+        // Vector3 test123;
     }
+    
+    //This matrix handles Vulkan's inverted Y and half Z coordinate system
+    static readonly Matrix4x4 VulkanClip = new(1.0f,  0.0f,  0.0f,  0.0f,
+        0.0f, -1.0f,  0.0f,  0.0f,
+        0.0f,  0.0f,  0.5f,  0.0f,
+        0.0f,  0.0f,  0.5f,  1.0f);
 }
