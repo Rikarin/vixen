@@ -7,7 +7,7 @@ public class GameControllerObjectInfo {
     /// <summary>
     ///     The name of the object, reported by the device
     /// </summary>
-    public string Name { get; internal set; }
+    public string Name { get; init; }
 
     public override string ToString() => $"GameController Object {{{Name}}}";
 }

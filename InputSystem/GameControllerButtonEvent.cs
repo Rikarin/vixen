@@ -7,7 +7,7 @@ public class GameControllerButtonEvent : ButtonEvent {
     /// <summary>
     ///     The index of the button
     /// </summary>
-    public int Index { get; }
+    public int Index { get; internal set; }
 
     /// <summary>
     ///     The game controller that sent this event
