@@ -1,4 +1,4 @@
-using Rin.Core.UI;
+using Rin.UI;
 
 namespace Rin.Editor.Panes.Inspector; 
 

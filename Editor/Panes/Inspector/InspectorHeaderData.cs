@@ -1,7 +1,7 @@
 using Arch.Core;
 using Rin.Core.Components;
 using Rin.Core.General;
-using Rin.Core.UI;
+using Rin.UI;
 using Serilog;
 
 namespace Rin.Editor.Panes.Inspector;

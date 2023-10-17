@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Rendering", "Rendering\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Diagnostics", "Diagnostics\Rin.Diagnostics.csproj", "{6F9F5332-4611-4DFF-944C-C139F67A529F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.UI", "UI\Rin.UI.csproj", "{99A93497-EA67-4AE6-8973-9600E3B2A6C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.InputSystem", "InputSystem\Rin.InputSystem.csproj", "{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +62,13 @@ Global
 		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6F9F5332-4611-4DFF-944C-C139F67A529F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99A93497-EA67-4AE6-8973-9600E3B2A6C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99A93497-EA67-4AE6-8973-9600E3B2A6C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99A93497-EA67-4AE6-8973-9600E3B2A6C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99A93497-EA67-4AE6-8973-9600E3B2A6C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

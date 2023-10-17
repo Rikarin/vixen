@@ -1,8 +1,8 @@
 using Arch.Core;
 using Rin.Core.Components;
 using Rin.Core.General;
-using Rin.Core.UI;
 using Rin.Editor.States;
+using Rin.UI;
 
 namespace Rin.Editor.Panes.Inspector;
 

@@ -8,13 +8,14 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using Key = Rin.InputSystem.Key;
 using Profiler = Rin.Diagnostics.Profiler;
 
 [assembly: InternalsVisibleTo("Rin.Editor")]
 
 namespace Rin.Core.General;
 
-public class Application : IDisposable {
+public class Application : IApplication, IDisposable {
     internal static Application Current = null!;
 
     readonly ILogger log = Log.ForContext<Application>();
@@ -28,6 +29,8 @@ public class Application : IDisposable {
 
     public Application(ApplicationOptions options) {
         Current = this;
+        InputContainer.inputManager = new();
+        InputContainer.inputManager.Initialize(this);
 
         using var initializationProfileScope = ApplicationProfiling.StartInitialization();
         Renderer.Options.FramesInFlight = 3; // TODO: this needs to be loaded based on number of images in swapchain
@@ -70,6 +73,7 @@ public class Application : IDisposable {
 
             log.Verbose("============= APPLICATION ======================");
             silkWindow.silkWindow.DoEvents();
+            InputContainer.inputManager.Update();
 
             renderThread.NextFrame();
             renderThread.Kick();
@@ -95,10 +99,14 @@ public class Application : IDisposable {
                 Renderer.IncreaseCurrentFrameIndex();
                 
                 // TODO: move this to Input class
-                silkWindow.ResetInput();
+                // silkWindow.ResetInput();
 
                 // silkWindow.silkWindow.DoUpdate();
                 // silkWindow.silkWindow.DoRender();
+
+                if (InputContainer.inputManager.IsKeyPressed(Key.Escape)) {
+                    IsRunning = false;
+                }
             }
         }
 

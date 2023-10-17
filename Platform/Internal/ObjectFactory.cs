@@ -1,4 +1,5 @@
 using Rin.Core.Abstractions;
+using Rin.InputSystem;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Silk;
 using Rin.Platform.Vulkan;
@@ -7,7 +8,8 @@ using Rin.Rendering;
 namespace Rin.Platform.Internal;
 
 public static class ObjectFactory {
-    public static IWindow CreateWindow(WindowOptions options) => new SilkWindow(options);
+    public static IWindow CreateWindow(WindowOptions options, InputManager inputManager) =>
+        new SilkWindow(options, inputManager);
 
     public static RendererContext CreateRendererContext() => new VulkanContext();
 
@@ -89,21 +91,21 @@ public static class ObjectFactory {
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IRenderPass CreateRenderPass(RenderPassOptions options) {
         switch (Renderer.CurrentApi) {
             case RenderingApi.Vulkan: return new VulkanRenderPass(options);
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IPipeline CreatePipeline(PipelineOptions options) {
         switch (Renderer.CurrentApi) {
             case RenderingApi.Vulkan: return new VulkanPipeline(options);
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IRenderCommandBuffer CreateRenderCommandBuffer(int? count = null, string? name = null) {
         throw new NotImplementedException();
         switch (Renderer.CurrentApi) {
@@ -111,14 +113,15 @@ public static class ObjectFactory {
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IRenderCommandBuffer CreateRenderCommandBufferFromSwapChain(string? name = null) {
         switch (Renderer.CurrentApi) {
-            case RenderingApi.Vulkan: return new VulkanRenderCommandBuffer(name ?? "unknown", true); // TODO: Pass arguments
+            case RenderingApi.Vulkan:
+                return new VulkanRenderCommandBuffer(name ?? "unknown", true); // TODO: Pass arguments
             default: throw new ArgumentOutOfRangeException();
         }
     }
-    
+
     public static IMaterial CreateMaterial(IShader shader, string name) {
         switch (Renderer.CurrentApi) {
             case RenderingApi.Vulkan: return new VulkanMaterial(shader, name);

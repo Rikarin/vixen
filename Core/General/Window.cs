@@ -13,7 +13,7 @@ public class Window {
 
         configureOptions?.Invoke(options);
 
-        Handle = ObjectFactory.CreateWindow(options);
+        Handle = ObjectFactory.CreateWindow(options, InputContainer.inputManager);
         Handle.Closing += () => Closing?.Invoke();
         Handle.Resize += size => Resize?.Invoke(size);
     }

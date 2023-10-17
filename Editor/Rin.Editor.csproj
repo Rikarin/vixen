@@ -25,5 +25,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Rin.Core.csproj" />
+        <ProjectReference Include="..\UI\Rin.UI.csproj" />
     </ItemGroup>
 </Project>

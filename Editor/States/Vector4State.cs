@@ -1,4 +1,4 @@
-using Rin.Core.UI;
+using Rin.UI;
 using System.Numerics;
 
 namespace Rin.Editor.States;

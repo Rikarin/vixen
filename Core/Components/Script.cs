@@ -1,4 +1,6 @@
 using Arch.Core;
+using Rin.Core.General;
+using Rin.InputSystem;
 
 namespace Rin.Core.Components;
 
@@ -15,6 +17,7 @@ public interface IScript {
 }
 
 public abstract class Script : IScript {
+    public InputManager Input => InputContainer.inputManager;
     public Entity Entity { get; private set; }
     
     public virtual void OnStart() { }

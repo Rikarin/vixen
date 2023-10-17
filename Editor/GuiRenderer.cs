@@ -1,8 +1,8 @@
 using ImGuiNET;
 using Rin.Core.General;
-using Rin.Core.UI;
 using Rin.Editor.Panes;
 using Rin.Editor.Panes.Inspector;
+using Rin.UI;
 using Serilog;
 using System.Drawing;
 using System.Numerics;

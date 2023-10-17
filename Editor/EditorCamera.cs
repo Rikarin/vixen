@@ -1,8 +1,9 @@
 using Arch.Core;
 using Arch.Core.Extensions;
-using Rin.Core.Abstractions;
 using Rin.Core.Components;
 using Rin.Core.General;
+using Rin.InputSystem;
+using Rin.InputSystem.VirtualButtons;
 using Serilog;
 using System.Drawing;
 using System.Numerics;
@@ -18,6 +19,7 @@ public class EditorCamera : Camera, IScript {
     float pitchDelta;
     float yawDelta;
 
+    protected InputManager Input => InputContainer.inputManager;
     public Entity Entity { get; private set; }
     public EditorCameraMode Mode { get; private set; }
     public float VerticalFov { get; private set; }
@@ -30,7 +32,7 @@ public class EditorCamera : Camera, IScript {
     public Vector3 Direction { get; private set; }
 
     public Matrix4x4 ViewProjection => viewMatrix * Projection;
-    public float ZoomSpeed => MathF.Min(MathF.Pow(MathF.Max(Distance * 0.2f, 0), 2), 50f);
+    public float ZoomSpeed => MathF.Min(MathF.Pow(MathF.Max(Distance * 0.02f, 0), 2), 2f);
     float RotationSpeed => 0.3f;
 
     Vector2 PanSpeed {
@@ -62,51 +64,67 @@ public class EditorCamera : Camera, IScript {
     public void OnStart() {
         var pos = SceneManager.ActiveScene.World.Get<LocalToWorld>(Entity);
         Matrix4x4.Invert(pos.Value, out viewMatrix);
+
+        var shift = new VirtualButtonConfig {
+            new("Shift", VirtualButton.Keyboard.LeftShift),
+            new("Shift", VirtualButton.Keyboard.RightShift),
+        };
+
+        Input.VirtualButtonConfigSet ??= new();
+        Input.VirtualButtonConfigSet.Add(shift);
     }
 
     public void OnUpdate() {
         ref var transform = ref Entity.Get<LocalTransform>();
-        var mousePos = Input.MousePosition;
+        var mousePos = Input.AbsoluteMousePosition;
+        
+        // TODO
         var deltaMouse = (mousePos - previousMousePosition) * 0.002f;
         previousMousePosition = mousePos;
 
-        // TODO: scroll
-        if (Input.GetMouseButton(MouseButton.Left)) {
-            var axis = Input.GetMouseAxis();
-            MouseZoom(axis.X * 0.1f * Time.DeltaTime);
+        // Log.Information("Mouse Pos: {Variable}", mousePos);
+        // Log.Information("Debug: {Variable} {a}", Input.MouseDelta, Input.AbsoluteMouseDelta);
+
+        if (Input.GetVirtualButton(0, "Shift") > 0) {
+            Log.Information("foo bar");
         }
 
-        if (Input.GetMouseButton(MouseButton.Right)) {
+        if (Input.MouseWheelDelta is > 0 or < 0) {
+            MouseZoom(Input.MouseWheelDelta);
+        }
+        
+        if (Input.IsMouseButtonDown(MouseButton.Right)) {
+            DisableMouse();
             Mode = EditorCameraMode.FlyCam;
             var yawSign = transform.Up.Y < 0 ? -1f : 1f;
             var speed = GetCameraSpeed();
             var upDirection = new Vector3(0, yawSign, 0);
             var rightDirection = Vector3.Cross(Direction, upDirection);
-
-            if (Input.GetKey(Key.W)) {
+        
+            if (Input.IsKeyDown(Key.W)) {
                 positionDelta += Direction * speed * Time.DeltaTime;
             }
-
-            if (Input.GetKey(Key.S)) {
+        
+            if (Input.IsKeyDown(Key.S)) {
                 positionDelta -= Direction * speed * Time.DeltaTime;
             }
             
-            if (Input.GetKey(Key.A)) {
+            if (Input.IsKeyDown(Key.A)) {
                 positionDelta -= rightDirection * speed * Time.DeltaTime;
             }
             
-            if (Input.GetKey(Key.D)) {
+            if (Input.IsKeyDown(Key.D)) {
                 positionDelta += rightDirection * speed * Time.DeltaTime;
             }
             
-            if (Input.GetKey(Key.Q)) {
+            if (Input.IsKeyDown(Key.Q)) {
                 positionDelta -= upDirection * speed * Time.DeltaTime;
             }
             
-            if (Input.GetKey(Key.E)) {
+            if (Input.IsKeyDown(Key.E)) {
                 positionDelta += upDirection * speed * Time.DeltaTime;
             }
-
+        
             const float maxRate = 0.12f;
             yawDelta += Math.Clamp(yawSign * deltaMouse.X * RotationSpeed, -maxRate, maxRate);
             pitchDelta += Math.Clamp(deltaMouse.Y * RotationSpeed, -maxRate, maxRate);
@@ -119,18 +137,17 @@ public class EditorCamera : Camera, IScript {
             );
             Distance = Vector3.Distance(FocalPoint, transform.Position);
             FocalPoint = transform.Position + transform.Forward * Distance;
-        } else {
+        } else if (Input.IsMouseButtonDown(MouseButton.Middle)) {
             Mode = EditorCameraMode.ArcBall;
+            DisableMouse();
         
-            if (Input.GetKey(Key.ShiftLeft)) {
-                if (Input.GetMouseButton(MouseButton.Middle)) {
-                    MousePan(deltaMouse);
-                }
+            if (Input.IsKeyDown(Key.LeftShift)) {
+                MousePan(deltaMouse);
             } else {
-                if (Input.GetMouseButton(MouseButton.Middle)) {
-                    MouseRotate(deltaMouse);
-                }
+                MouseRotate(deltaMouse);
             } 
+        } else {
+            EnableMouse();
         }
 
         // apply smoothing
@@ -149,9 +166,13 @@ public class EditorCamera : Camera, IScript {
         OnStart();
     }
 
-    // void DisableMouse() {
-    //     // SilkWindow.MainWindow.silkWindow.inp
-    // }
+    void DisableMouse() {
+        Input.LockMousePosition(true);
+    }
+
+    void EnableMouse() {
+        Input.UnlockMousePosition();
+    }
 
     void UpdateCameraView() {
         ref var transform = ref Entity.Get<LocalTransform>();
@@ -204,11 +225,11 @@ public class EditorCamera : Camera, IScript {
 
     float GetCameraSpeed() {
         var speed = 0.2f;
-        if (Input.GetKey(Key.ControlLeft)) {
+        if (Input.IsKeyDown(Key.LeftCtrl)) {
             speed /= 2 - MathF.Log(speed);
         }
         
-        if (Input.GetKey(Key.ShiftLeft)) {
+        if (Input.IsKeyDown(Key.LeftShift)) {
             speed *= 2 - MathF.Log(speed);
         }
 
