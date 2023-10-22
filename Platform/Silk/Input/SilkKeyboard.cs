@@ -1,5 +1,4 @@
 using Rin.InputSystem;
-using Serilog;
 using Silk.NET.Input;
 using Key = Rin.InputSystem.Key;
 using SilkKey = Silk.NET.Input.Key;
@@ -38,14 +37,8 @@ public class SilkKeyboard : KeyboardDeviceBase, ITextInputDevice, IDisposable {
         silkKeyboard.KeyUp -= OnKeyUp;
     }
 
-    void OnKeyUp(IKeyboard keyboard, SilkKey key, int arg3) {
-        HandleKeyUp(MapKey(key));
-    }
-
-    void OnKeyDown(IKeyboard keyboard, SilkKey key, int arg3) {
-        HandleKeyDown(MapKey(key));
-        Log.Information("Debug: {Variable} {key}", key, MapKey(key));
-    }
+    void OnKeyUp(IKeyboard keyboard, SilkKey key, int arg3) => HandleKeyUp(MapKey(key));
+    void OnKeyDown(IKeyboard keyboard, SilkKey key, int arg3) => HandleKeyDown(MapKey(key));
 
     Key MapKey(SilkKey silkKey) =>
         silkKey switch {

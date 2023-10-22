@@ -15,16 +15,17 @@
         <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
 
-        <PackageReference Include="Silk.NET.Shaderc" Version="2.17.1-build3832.0" />
-        <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.17.1-build3832.0" />
-        <PackageReference Include="Silk.NET.SPIRV.Cross.Native" Version="2.17.1-build3832.0" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.1" />
+        <PackageReference Include="Silk.NET.Shaderc" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.SPIRV.Cross.Native" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" />
         <PackageReference Include="YamlDotNet" Version="13.4.0" />
 <!--        <PackageReference Include="MessagePack" Version="2.5.108" />-->
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Core\Rin.Core.csproj" />
+        <ProjectReference Include="..\Importers\Rin.Importers.csproj" />
         <ProjectReference Include="..\UI\Rin.UI.csproj" />
     </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
 ﻿using Arch.Core;
 using Arch.Core.Extensions;
-using Arch.Relationships;
 using Rin.Core.Abstractions;
 using Rin.Core.Components;
 using Rin.Core.General;
 using Rin.Diagnostics;
 using Rin.Editor;
+using Rin.Importers;
 using Rin.Platform.Abstractions.Rendering;
 using Rin.Platform.Internal;
 using Rin.Platform.Silk;
@@ -39,6 +39,14 @@ Log.Logger = new LoggerConfiguration()
         "[{Timestamp:HH:mm:ss} {Level:u3}][{ThreadName}]{SourceContext} {Message:lj}{NewLine}{Exception}"
     )
     .CreateLogger();
+
+// TODO Register additional assemblies
+// AssemblyRegistry.Register(typeof);
+
+// test
+// var a = BuildDependencyManager.AssetCompilerRegistry;
+// a.GetCompiler(t)
+
 
 SceneManager.Initialize();
 
@@ -139,6 +147,12 @@ var editorCameraEntity = SceneManager.ActiveScene.World.Create(
     editorCamera,
     new Name("Editor Camera")
 );
+
+
+// Assimp model importer
+var converter = new AssimpConverter();
+converter.ExtractEntity(Path.Combine(project.RootDirectory, "Assets/pillar.fbx"));
+
 
 
 var gui = new GuiRenderer(app, project);

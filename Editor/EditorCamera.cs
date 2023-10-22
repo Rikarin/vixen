@@ -13,7 +13,6 @@ namespace Rin.Editor;
 public class EditorCamera : Camera, IScript {
     Size viewportSize;
     Matrix4x4 viewMatrix;
-    Vector2 previousMousePosition;
 
     Vector3 positionDelta;
     float pitchDelta;
@@ -76,18 +75,12 @@ public class EditorCamera : Camera, IScript {
 
     public void OnUpdate() {
         ref var transform = ref Entity.Get<LocalTransform>();
-        var mousePos = Input.AbsoluteMousePosition;
         
-        // TODO
-        var deltaMouse = (mousePos - previousMousePosition) * 0.002f;
-        previousMousePosition = mousePos;
-
-        // Log.Information("Mouse Pos: {Variable}", mousePos);
         // Log.Information("Debug: {Variable} {a}", Input.MouseDelta, Input.AbsoluteMouseDelta);
 
-        if (Input.GetVirtualButton(0, "Shift") > 0) {
-            Log.Information("foo bar");
-        }
+        // if (Input.GetVirtualButton(0, "Shift") > 0) {
+        //     Log.Information("foo bar");
+        // }
 
         if (Input.MouseWheelDelta is > 0 or < 0) {
             MouseZoom(Input.MouseWheelDelta);
@@ -126,8 +119,8 @@ public class EditorCamera : Camera, IScript {
             }
         
             const float maxRate = 0.12f;
-            yawDelta += Math.Clamp(yawSign * deltaMouse.X * RotationSpeed, -maxRate, maxRate);
-            pitchDelta += Math.Clamp(deltaMouse.Y * RotationSpeed, -maxRate, maxRate);
+            yawDelta += Math.Clamp(yawSign * Input.MouseDelta.X * RotationSpeed, -maxRate, maxRate);
+            pitchDelta += Math.Clamp(Input.MouseDelta.Y * RotationSpeed, -maxRate, maxRate);
             Direction = Vector3.Transform(
                 Direction,
                 Quaternion.Normalize(
@@ -142,9 +135,9 @@ public class EditorCamera : Camera, IScript {
             DisableMouse();
         
             if (Input.IsKeyDown(Key.LeftShift)) {
-                MousePan(deltaMouse);
+                MousePan(Input.MouseDelta);
             } else {
-                MouseRotate(deltaMouse);
+                MouseRotate(Input.MouseDelta);
             } 
         } else {
             EnableMouse();

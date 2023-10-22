@@ -30,6 +30,7 @@ Create game engine with requirements:
 - Models Loader Silk.NET Assimp
 - YAML Serializer/Deserializer https://github.com/aaubry/YamlDotNet
 - Use Jolt Physics for both 2D and 3D https://github.com/amerkoleci/JoltPhysicsSharp/tree/main
+- Input System based on Stride Engine
 
 
 ## References
@@ -41,22 +42,17 @@ Create game engine with requirements:
 
 ## Topics (TODO)
 
-- Research Unity API
 - Generic interface for wrapping Vulkan & OpenGL
 - Rendering Pipelines
     - Forward/Deferred rendering
     - Anti-aliasing; FXAA - http://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
-- DOTS/ECS
 - Addressable (bundling)
 - 2D/3D Physics (Jolt)
-- Input System
 - Shader compilation system
+  - Reword to use Irony
 - PBR/BSDF shader program
 - VFX
-- UI library
-    - Canvas
-    - Button, Slider, Radio, Image, Panel, Horizontal/Vertical group, and other stuff from unity
-    - Consider using https://github.com/ultralight-ux/ultralight
+- Canvas component which renders ImGui into separate framebuffer
 - Camera
 - Lights
 - Image resize/optimization library
@@ -68,7 +64,6 @@ Create game engine with requirements:
 - Support most common image formats as imports
 - Animation
 - Networking
-- HLSL Shader compilation to SPIR-V (Shaderc)
 - Create wrappers around the ImageSharp library and others as well
 - Prefabs & Prefab Variants (format, serialize/deserialize)
 - Script/AsyncScript (EC way to script object instead of using systems)
@@ -93,6 +88,8 @@ Should this be done also for instantiating GameObjects at runtime?
 - Game build system
 - Pie menu in Editor when pressing space
 - 3D cursor for adding new objects in editor
+- GamePad/GameController input
+- Load multiple mice/keyboards
 
 
 ## Architecture

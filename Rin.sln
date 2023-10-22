@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.UI", "UI\Rin.UI.csproj"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.InputSystem", "InputSystem\Rin.InputSystem.csproj", "{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Importers", "Importers\Rin.Importers.csproj", "{3B959844-24AC-4ECD-B09D-EAB298EB0C62}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,5 +72,9 @@ Global
 		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3E69ABF1-419A-43B1-A242-ADA9AB8E7C98}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B959844-24AC-4ECD-B09D-EAB298EB0C62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B959844-24AC-4ECD-B09D-EAB298EB0C62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B959844-24AC-4ECD-B09D-EAB298EB0C62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B959844-24AC-4ECD-B09D-EAB298EB0C62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

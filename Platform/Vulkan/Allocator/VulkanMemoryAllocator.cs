@@ -898,8 +898,8 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable {
         VkApi.GetBufferMemoryRequirements2(Device, &req, &memReq2);
 
         memReq = memReq2.MemoryRequirements;
-        requiresDedicatedAllocation = dedicatedRequirements.RequiresDedicatedAllocation != 0;
-        prefersDedicatedAllocation = dedicatedRequirements.PrefersDedicatedAllocation != 0;
+        requiresDedicatedAllocation = dedicatedRequirements.RequiresDedicatedAllocation;
+        prefersDedicatedAllocation = dedicatedRequirements.PrefersDedicatedAllocation;
     }
 
     internal void GetImageMemoryRequirements(
@@ -921,8 +921,8 @@ public sealed unsafe class VulkanMemoryAllocator : IDisposable {
         VkApi.GetImageMemoryRequirements2(Device, &req, &memReq2);
 
         memReq = memReq2.MemoryRequirements;
-        requiresDedicatedAllocation = dedicatedRequirements.RequiresDedicatedAllocation != 0;
-        prefersDedicatedAllocation = dedicatedRequirements.PrefersDedicatedAllocation != 0;
+        requiresDedicatedAllocation = dedicatedRequirements.RequiresDedicatedAllocation;
+        prefersDedicatedAllocation = dedicatedRequirements.PrefersDedicatedAllocation;
     }
 
     internal Allocation AllocateMemory(

@@ -8,14 +8,14 @@
 
     <ItemGroup>
         <PackageReference Include="Serilog" Version="3.0.1"/>
-        <PackageReference Include="Silk.NET" Version="2.17.1" />
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.17.1" PrivateAssets="All" />
+        <PackageReference Include="Silk.NET" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" PrivateAssets="All" />
 
 <!--        <PackageReference Include="Twizzle.ImPlot.NET" Version="1.89.4" />-->
-        <PackageReference Include="Silk.NET.Vulkan" Version="2.17.1" />
-        <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.17.1" />
-        <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.17.1" />
-        <PackageReference Include="Silk.NET.Vulkan.Extensions.NV" Version="2.17.1" />
+        <PackageReference Include="Silk.NET.Vulkan" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.EXT" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.KHR" Version="2.18.0" />
+        <PackageReference Include="Silk.NET.Vulkan.Extensions.NV" Version="2.18.0" />
     </ItemGroup>
 
     <ItemGroup>
