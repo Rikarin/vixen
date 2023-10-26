@@ -1,3 +1,4 @@
+using Antlr4.Runtime.Tree;
 using Rin.Core.Shaders.Ast;
 
 namespace Rin.Core.Shaders; 
@@ -25,25 +26,14 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
         return new Identifier(string.Join('.', str));
     }
 
-    // public override Node VisitType_declaration(RinParser.Type_declarationContext context) {
-    //     if (context.shader_definition() is { } shader) {
-    //         // tODO: visit
-    //         return new Shader();
-    //     }
-    //     
-    //     return base.VisitType_declaration(context);
-    // }
+    public override Node VisitType_declaration(RinParser.Type_declarationContext context) {
+        return Visit(context.GetChild(0));
+    }
 
     public override Node VisitShader_definition(RinParser.Shader_definitionContext context) {
         var identifier = Visit(context.identifier()) as Identifier;
-        // if (identifier == null) {
-        //     throw new("Shader Name");
-        // }
-        
         // TODO: types, base classes
-        
         var declarations = Visit(context.class_body()) as DeclarationList;
-        // if (declarations == null) {}
 
         return new Shader(identifier, declarations);
     }
@@ -82,46 +72,42 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
     }
 
     public override Node VisitCommon_member_declaration(RinParser.Common_member_declarationContext context) {
-        // if (context.method_declaration() is { } methodDeclaration) {
-        //     return Visit(methodDeclaration);
-        // }
-        //
-        // if (context.constructor_declaration() is { } constructorDeclaration) {
-        //     return Visit(constructorDeclaration);
-        // }
-        //
-        // if (context.constant_declaration() is { } constantDeclaration) {
-        //     
-        // }
-
         return Visit(context.GetChild(0));
-
-        // return null;
     }
 
     public override Node VisitConstructor_declaration(RinParser.Constructor_declarationContext context) {
-        var body = Visit(context.block());
-        return new Identifier("TODO: Constructor");
+        var parameterList = VisitParameterList(context.formal_parameter_list());
+        var body = Visit(context.block()) as Statement;
+        // TODO: type parameters, return type
+        // TODO: finish
+
+        return new ConstructorDeclaration(parameterList, body);
     }
 
     public override Node VisitMethod_declaration(RinParser.Method_declarationContext context) {
         var name = Visit(context.method_member_name()) as Identifier;
-        ParameterList? parameterList = null;
-        Statement body;
+        var parameterList = VisitParameterList(context.formal_parameter_list());
+        var body = VisitMethodBody(context.block(), context.expression());
         // TODO: type parameters, return type
         // TODO: finish
 
-        if (context.formal_parameter_list() is { } formalParameterList) {
-            parameterList = Visit(formalParameterList) as ParameterList;
-        }
-        
-        if (context.block() is { } block) {
-            body = Visit(block) as Statement;
-        } else {
-            body = new ExpressionStatement(Visit(context.expression()) as Expression);
+        return new MethodDeclaration(name, parameterList ?? new ParameterList(), new ValType(), body);
+    }
+
+    ParameterList? VisitParameterList(IParseTree? formalParameterList) {
+        if (formalParameterList != null) {
+            return Visit(formalParameterList) as ParameterList;
         }
 
-        return new MethodDeclaration(name, parameterList ?? new ParameterList(), new ValType(), body);
+        return null;
+    }
+
+    Statement VisitMethodBody(IParseTree? block, IParseTree expression) {
+        if (block != null) {
+            return Visit(block) as Statement;
+        }
+
+        return new ExpressionStatement(Visit(expression) as Expression);
     }
     
 
@@ -198,11 +184,6 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
         return new Literal("TODO: Not implemented");
     }
 
-    // public override Node VisitClass_member_declaration(RinParser.Class_member_declarationContext context) {
-    //     return base.VisitClass_member_declaration(context);
-    // }
-
-
     public override Node VisitBlock(RinParser.BlockContext context) {
         if (context.statement_list() is { } statementList) {
             return Visit(statementList);
@@ -210,4 +191,6 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
 
         return new EmptyStatement();
     }
+    
+    // visitexpre
 }

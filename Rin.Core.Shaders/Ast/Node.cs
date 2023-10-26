@@ -49,7 +49,12 @@ public record ReturnStatement(Expression? Value = null) : Statement;
 
 
 
+public record UnaryExpression(UnaryOperator Operator, Expression Expression) : Expression;
 public record BinaryExpression(Expression Left, Expression Right, BinaryOperator Operator) : Expression;
+public record RangeExpression(Expression Start, Expression End) : Expression;
+public record CastExpression(Expression Expression, TypeBase Target) : Expression;
+
+
 public record PackageStatement(Identifier Name) : Statement;
 public record ImportStatement(Identifier Name) : Statement;
 public record Module(PackageStatement Package, DeclarationList Declarations) : Node;
@@ -69,3 +74,5 @@ public record MethodDeclaration(
     TypeBase ReturnType,
     Statement Body
 ) : Node, IDeclaration;
+
+public record ConstructorDeclaration(ParameterList Parameters, Statement Body) : Node;

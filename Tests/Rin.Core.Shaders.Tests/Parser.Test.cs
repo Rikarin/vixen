@@ -23,6 +23,8 @@ public class Parser_Test {
 
         var shader = module.Declarations.OfType<Shader>().First();
         Assert.Equal("TestShader", shader.Name.Text);
+        
+        Assert.Equal(2, shader.Declarations.OfType<ConstructorDeclaration>().Count());
 
         var testMethod = shader.Declarations.OfType<MethodDeclaration>().First(x => x.Name == "TestMethod");
         Assert.Equal("name", testMethod.Parameters[0].Name);

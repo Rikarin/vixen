@@ -98,11 +98,11 @@ non_assignment_expression
 
 assignment
 	: unary_expression assignment_operator expression
-	| unary_expression '??=' unary_expression // throwable_expression
+//	| unary_expression '??=' unary_expression // throwable_expression
 	;
 
 assignment_operator
-	: '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<='// TODO | right_shift_assignment
+	: '??=' | '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<='// TODO | right_shift_assignment
 	;
 
 conditional_expression
@@ -146,15 +146,15 @@ relational_expression
 
 shift_expression
     // TODO: finish right shift
-	: additive_expression (('<<' /*| right_shift*/)  additive_expression)*
+	: additive_expression (('<<' /*| right_shift*/) additive_expression)*
 	;
 
 additive_expression
-	: multiplicative_expression (('+' | '-')  multiplicative_expression)*
+	: multiplicative_expression ((PLUS | MINUS) multiplicative_expression)*
 	;
 
 multiplicative_expression
-	: switch_expression (('*' | '/' | '%')  switch_expression)*
+	: switch_expression ((STAR | DIV | PERCENT) switch_expression)*
 	;
 
 switch_expression
@@ -178,16 +178,19 @@ range_expression
 unary_expression
 	: cast_expression
 	| primary_expression
-	| '+' unary_expression
-	| '-' unary_expression
+	| PLUS unary_expression
+	| MINUS unary_expression
 	| BANG unary_expression
-	| '~' unary_expression
-	| '++' unary_expression
-	| '--' unary_expression
+	| TILDE unary_expression
+	| OP_INC unary_expression
+	| OP_DEC unary_expression
 //	| AWAIT unary_expression
-	| '&' unary_expression
-	| '*' unary_expression
-	| '^' unary_expression
+// TODO: pointers not available
+//	| AMP unary_expression
+//	| STAR unary_expression
+
+// TODO: not sure about this one
+//	| CARET unary_expression
 	;
 
 cast_expression

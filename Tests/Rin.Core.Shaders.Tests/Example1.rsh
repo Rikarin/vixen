@@ -21,6 +21,8 @@ shader TestShader : ExampleBase, CustomShader {
         Test()
         
         for (i in 1..10) {
+            a++
+            ++a
             FooBar(i)
         }
         
