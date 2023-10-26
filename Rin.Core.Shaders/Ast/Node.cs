@@ -7,7 +7,10 @@ public abstract record Attribute : Node;
 
 
 // TODO: attributes?
-public record Identifier(string Text) : Node;
+public record Identifier(string Text) : Node {
+    public static implicit operator string(Identifier identifier) => identifier.Text;
+    public static implicit operator Identifier(string name) => new(name);
+}
 
 public record Shader(Identifier Name, DeclarationList Declarations) : Node;
 
@@ -17,6 +20,8 @@ public record Variable(TypeBase Type, Identifier Name, Expression? InitialValue 
     public List<Attribute> Attributes { get; } = new();
     public Qualifier Qualifiers { get; } = Qualifier.None;
 }
+
+public record Parameter(TypeBase Type, Identifier Name, Expression? InitialValue = null) : Variable(Type, Name, InitialValue);
 
 
 public abstract record TypeBase : Node, IAttributes, IQualifiers {
@@ -58,4 +63,9 @@ public record DeclarationStatement(Node Value) : Statement;
 
 
 
-public record MethodDeclaration(Identifier Name, TypeBase ReturnType, Statement Body) : Node, IDeclaration;
+public record MethodDeclaration(
+    Identifier Name,
+    ParameterList Parameters,
+    TypeBase ReturnType,
+    Statement Body
+) : Node, IDeclaration;

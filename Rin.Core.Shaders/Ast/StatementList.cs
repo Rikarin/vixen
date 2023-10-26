@@ -5,7 +5,6 @@ namespace Rin.Core.Shaders.Ast;
 public record StatementList : Statement, IList<Statement> {
     public List<Statement> Statements { get; } = new();
     
-    // Proxy to Statements
     public IEnumerator<Statement> GetEnumerator() => Statements.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public void Add(Statement item) => Statements.Add(item);

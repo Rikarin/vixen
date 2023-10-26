@@ -56,7 +56,7 @@ shader TestShader : ExampleBase, CustomShader {
         //Test();
     }
     
-    func Test(name: string, count: int): float4 {
+    func TestMethod(name: string, count: int = 42): float4 {
        // var test = "string";
       //  val res = name + test;
         

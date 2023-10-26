@@ -105,8 +105,15 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
     }
 
     public override Node VisitMethod_declaration(RinParser.Method_declarationContext context) {
-        // var name = Visit(context.method_member_name());
+        var name = Visit(context.method_member_name()) as Identifier;
+        ParameterList? parameterList = null;
         Statement body;
+        // TODO: type parameters, return type
+        // TODO: finish
+
+        if (context.formal_parameter_list() is { } formalParameterList) {
+            parameterList = Visit(formalParameterList) as ParameterList;
+        }
         
         if (context.block() is { } block) {
             body = Visit(block) as Statement;
@@ -114,7 +121,51 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
             body = new ExpressionStatement(Visit(context.expression()) as Expression);
         }
 
-        return new MethodDeclaration(new Identifier("test TODO"), new ValType(), body);
+        return new MethodDeclaration(name, parameterList ?? new ParameterList(), new ValType(), body);
+    }
+    
+
+    // void global::System.Collections.Generic.ICollection<int>.GetEnumerator() { }
+    public override Node VisitMethod_member_name(RinParser.Method_member_nameContext context) {
+        // TODO: finish this
+        return new Identifier(context.identifier(0).GetText());
+    }
+
+
+    public override Node VisitFormal_parameter_list(RinParser.Formal_parameter_listContext context) {
+        // TODO
+        return Visit(context.fixed_parameters());
+    }
+
+    public override Node VisitFixed_parameters(RinParser.Fixed_parametersContext context) {
+        var parameterList = new ParameterList();
+        
+        foreach (var param in context.fixed_parameter()) {
+            parameterList.Add(Visit(param) as Parameter);
+        }
+
+        return parameterList;
+    }
+
+    public override Node VisitFixed_parameter(RinParser.Fixed_parameterContext context) {
+        var param = Visit(context.arg_declaration()) as Parameter;
+        if (context.attributes() is { } attributes) {
+            // TODO: attributes
+        }
+
+        return param;
+    }
+
+    public override Node VisitArg_declaration(RinParser.Arg_declarationContext context) {
+        var name = Visit(context.identifier()) as Identifier;
+        // TODO type
+        Expression? initialValue = null;
+        
+        if (context.expression() is { } expression) {
+            initialValue = Visit(expression) as Expression;
+        }
+
+        return new Parameter(null!, name, initialValue);
     }
 
     public override Node VisitConstant_declaration(RinParser.Constant_declarationContext context) {

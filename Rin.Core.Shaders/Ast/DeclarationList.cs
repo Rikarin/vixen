@@ -5,7 +5,6 @@ namespace Rin.Core.Shaders.Ast;
 public record DeclarationList : Node, IList<Node> {
     public List<Node> Declarations { get; } = new();
     
-    // Proxy to Declarations
     public IEnumerator<Node> GetEnumerator() => Declarations.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     public void Add(Node item) => Declarations.Add(item);
