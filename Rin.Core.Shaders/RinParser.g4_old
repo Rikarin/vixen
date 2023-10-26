@@ -1,0 +1,341 @@
+parser grammar RinParser;
+
+options { tokenVocab=RinLexer; superClass=RinParserBase; }
+
+
+// Entrypoint
+compile_unit
+    : NL* top_level_object* EOF;
+
+
+
+
+
+top_level_object
+    : declaration NL*
+    ;
+
+
+declaration
+    : class_declaration
+    | function_declaration
+    | property_declaration
+    ;
+    
+variable_declaration
+    : simple_identifier
+    ;
+    
+property_declaration
+    : (VAL | VAR) variable_declaration
+      (NL* ASSIGNMENT NL* expression)?
+    ;
+
+// TODO
+primary_expression
+    : simple_identifier
+    | literal
+    ;
+    
+literal
+	: boolean_literal
+	| string_literal
+	| INTEGER_LITERAL
+	| HEX_INTEGER_LITERAL
+	| BIN_INTEGER_LITERAL
+	| REAL_LITERAL
+	| CHARACTER_LITERAL
+	| NULL_
+	;
+
+boolean_literal
+	: TRUE
+	| FALSE
+	;
+
+string_literal
+//	: interpolated_regular_string
+//	| interpolated_verbatium_string
+	: REGULAR_STRING
+//	| VERBATIUM_STRING
+	;
+
+
+// Class declaration
+class_declaration
+    : (CLASS | INTERFACE | SHADER) NL* simple_identifier
+      (NL* class_body)
+    // constructor
+    ;
+
+class_body
+    : OPEN_BRACE NL* class_member_declarations NL* CLOSE_BRACE
+    ;
+
+
+
+
+class_member_declarations
+    : (class_member_declaration NL*)*
+    ;
+    
+class_member_declaration
+    : declaration
+    ;
+
+
+
+
+
+
+
+
+type_parameters
+    : LT NL* type_parameter (NL* COMMA NL* type_parameter)* NL* GT
+    ;
+    
+type_parameter
+    : NL* type
+    ;
+
+
+
+parameter
+    : simple_identifier COLON NL* type
+    ;
+
+
+
+
+// Function declaration
+function_declaration
+    : FUN NL* simple_identifier (NL* type_parameters)?
+      NL* function_value_parameters
+      (NL* COLON NL* type)?
+      (NL* function_body)
+    ;
+
+function_value_parameters
+    : OPEN_PARENS NL* (function_value_parameter (COMMA NL* function_value_parameter)*)? NL* CLOSE_PARENS
+    ;
+    
+function_value_parameter
+    : parameter (NL* ASSIGNMENT NL* expression)?
+    ;
+
+function_body
+    : block
+    ;
+
+//type_declaration
+//    : attributes?
+//    ;
+
+// TODO
+type
+    : type_reference
+    ;
+    
+type_reference
+    : user_type
+    | BYTE
+    | SHORT
+    | USHORT
+    | INT
+    | UINT
+    | LONG
+    | ULONG
+    | FLOAT
+    | DOUBLE
+    | STRING
+    ;
+
+user_type
+    : simple_user_type (NL* DOT NL* simple_user_type)*
+    ;
+    
+simple_user_type
+    : simple_identifier type_arguments?
+    ;
+
+// Statements
+
+statements
+    : (statement (NL+ statement)*)?
+    ;
+    
+statement
+    : declaration // assignment loopstatemenet expressions
+    ;
+
+block
+    : OPEN_BRACE NL* statements NL* CLOSE_BRACE
+    ;
+
+
+
+type_arguments
+    : LT NL* type_projection (NL* COMMA NL* type_projection)* NL* GT
+    ;
+    
+    
+type_projection
+    : type
+    ;
+
+// TODO: Not implemented, yet
+// Attributes
+//attributes
+//	: (attribute_section NL)+
+//	;
+//
+//attribute_section
+//	: '[' (attribute_target ':')? attribute_list COMMA? ']'
+//	;
+//
+//attribute_target
+//	: keyword
+//	| identifier
+//	;
+//
+//attribute_list
+//	: attribute (','  attribute)*
+//	;
+//	
+//attribute
+//    : identifier
+////	: namespace_or_type_name (OPEN_PARENS (attribute_argument (','  attribute_argument)*)? CLOSE_PARENS)?
+//	;
+
+
+// Expressions
+expression
+    : or_expression
+    ;
+    
+or_expression
+    : and_expression (NL* OP_OR NL* and_expression)*
+    ;
+    
+and_expression
+    : equality (NL* OP_AND NL* equality)*
+    ;
+    
+equality
+    : comparison (equality_operator NL* comparison)*
+    ;
+    
+comparison
+    : generic_call_like_comparison (comparison_operator NL* generic_call_like_comparison)*
+    ;
+
+generic_call_like_comparison
+    : infix_operation // callSuffix*
+    ;
+
+infix_operation
+    : null_coalescing_expression // (inOperator NL* elvisExpression | isOperator NL* type)*
+    ;
+
+null_coalescing_expression
+    : infix_function_call (NL* OP_COALESCING NL* infix_function_call)*
+    ;
+
+infix_function_call
+    : range_expression (simple_identifier NL* range_expression)*
+    ;
+
+range_expression
+    : additive_expression (OP_RANGE NL* additive_expression)*
+    ;
+
+additive_expression
+    : multiplicative_expression (additive_operator NL* multiplicative_expression)*
+    ;
+
+multiplicative_expression
+    : as_expression (multiplicative_operator NL* as_expression)*
+    ;
+
+as_expression
+    : prefix_unary_expression (NL* as_operator NL* type)*
+    ;
+
+prefix_unary_expression
+    : unary_prefix* postfix_unary_expression
+    ;
+
+unary_prefix
+//    : annotation
+    : label
+//    | prefixUnaryOperator NL*
+    ;
+
+postfix_unary_expression
+    : primary_expression // postfixUnarySuffix*
+    ;
+
+
+
+
+
+
+
+
+// Keywords
+//keyword
+//    : FALSE
+//    | TRUE
+//    ;
+
+
+comparison_operator
+    : GT
+    | LT
+    | OP_LE
+    | OP_GE
+    ;
+    
+equality_operator
+    : OP_EQ
+    | OP_NE
+    ;
+    
+in_operator
+   : OP_IN
+   | OP_NOT_IN
+   ;
+
+is_operator
+   : OP_IS
+   | OP_NOT_IS
+   ;
+
+additive_operator
+   : PLUS
+   | MINUS
+   ;
+
+multiplicative_operator
+   : STAR
+   | DIV
+   | PERCENT
+   ;
+
+as_operator
+   : AS
+   | AS_SAFE
+   ; 
+    
+    
+    
+    
+    
+    
+label
+    : simple_identifier
+    ;
+    
+simple_identifier
+    : IDENTIFIER
+    ;

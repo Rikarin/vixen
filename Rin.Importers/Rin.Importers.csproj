@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Rin.Core.Common\Rin.Core.Common.csproj" />
+      <ProjectReference Include="..\Rin.Core\Rin.Core.csproj" />
+      <ProjectReference Include="..\Rin.Diagnostics\Rin.Diagnostics.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Silk.NET.Assimp" Version="2.18.0" />
+    </ItemGroup>
+</Project>
