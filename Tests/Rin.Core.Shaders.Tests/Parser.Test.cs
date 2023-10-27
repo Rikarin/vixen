@@ -13,7 +13,7 @@ public class Parser_Test {
         var tokenStream = new CommonTokenStream(lexer);
         var parser = new RinParser(tokenStream);
 
-        var visitor = new AstVisitor();
+        var visitor = new BuildAstVisitor();
         
         // Entrypoint?
         var tree = parser.compilation_unit();

@@ -2,7 +2,7 @@ using Rin.Core.Shaders.Ast;
 
 namespace Rin.Core.Shaders; 
 
-public partial class AstVisitor {
+public partial class BuildAstVisitor {
     public override Node VisitStatement_list(RinParser.Statement_listContext context) {
         var statements = new StatementList();
         foreach (var statement in context.statement()) {

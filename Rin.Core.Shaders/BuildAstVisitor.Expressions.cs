@@ -3,7 +3,7 @@ using Rin.Core.Shaders.Ast;
 
 namespace Rin.Core.Shaders; 
 
-public partial class AstVisitor {
+public partial class BuildAstVisitor {
     public override Node VisitExpression(RinParser.ExpressionContext context) {
         return Visit(context.GetChild(0));
     }
@@ -12,49 +12,58 @@ public partial class AstVisitor {
         return Visit(context.GetChild(0));
     }
     
-//
-//     assignment
-//     : unary_expression assignment_operator expression
-// //	| unary_expression '??=' unary_expression // throwable_expression
-//         ;
-//
-//     assignment_operator
-//     : '??=' | '=' | '+=' | '-=' | '*=' | '/=' | '%=' | '&=' | '|=' | '^=' | '<<='// TODO | right_shift_assignment
-//     ;
-
     public override Node VisitAssignment(RinParser.AssignmentContext context) {
         var left = Visit(context.unary_expression()) as Expression;
-        // TODO: assignment operator
-
-
-        var opTerminalNode = context.assignment_operator().GetChild(0) as ITerminalNode;
-        // switch (opTerminalNode.Symbol.Type) {
-        //     case RinParser.OP_COALESCING_ASSIGNMENT:
-        //     
-        // }
         
-        // var opToken = context.assignment_operator();
-        // if (opToken.OP_COALESCING_ASSIGNMENT() != null) {
-        //     // TODO
-        // }
-        
-        // TODO: finish this
+        var opToken = context.assignment_operator().GetChild(0);
+        if (opToken is not ITerminalNode terminalNode) {
+            throw new("fatal");
+        }
+            
+        var op = terminalNode.Symbol.Type switch {
+            RinParser.OP_COALESCING_ASSIGNMENT => AssignmentOperator.CoalescingAssignment,
+            RinParser.ASSIGNMENT => AssignmentOperator.Default,
+            RinParser.OP_ADD_ASSIGNMENT => AssignmentOperator.Addition,
+            RinParser.OP_SUB_ASSIGNMENT => AssignmentOperator.Subtraction,
+            RinParser.OP_MULT_ASSIGNMENT => AssignmentOperator.Multiplication,
+            RinParser.OP_DIV_ASSIGNMENT => AssignmentOperator.Division,
+            RinParser.OP_MOD_ASSIGNMENT => AssignmentOperator.Modulo,
+            RinParser.OP_AND_ASSIGNMENT => AssignmentOperator.BitwiseAnd,
+            RinParser.OP_OR_ASSIGNMENT => AssignmentOperator.BitwiseOr,
+            RinParser.OP_XOR_ASSIGNMENT => AssignmentOperator.BitwiseXor,
+            RinParser.OP_LEFT_SHIFT_ASSIGNMENT => AssignmentOperator.BitwiseShiftLeft,
+            // TODO: right shift assignment
+            
+            _ => throw new("fatal")
+        };
         
         var right = Visit(context.expression()) as Expression;
-        
-        return base.VisitAssignment(context);
+        return new AssignmentExpression(left, right, op);
     }
 
-    // TODO
-//     conditional_expression
-//     : null_coalescing_expression (INTERR expression COLON expression)?
+    public override Node VisitConditional_expression(RinParser.Conditional_expressionContext context) {
+        var left = Visit(context.null_coalescing_expression()) as Expression;
 
+        if (context.INTERR() != null) {
+            var then = Visit(context.GetChild(2)) as Expression;
+            var @else = Visit(context.GetChild(4)) as Expression;
 
-//     null_coalescing_expression
-//     : conditional_or_expression (OP_COALESCING (null_coalescing_expression | expression))?
+            return new ConditionalExpression(left, then, @else);
+        }
 
+        return left;
+    }
 
-    // TODO
+    public override Node VisitNull_coalescing_expression(RinParser.Null_coalescing_expressionContext context) {
+        var left = Visit(context.conditional_or_expression()) as Expression;
+
+        if (context.OP_COALESCING() != null) {
+            var right = Visit(context.GetChild(2)) as Expression;
+            return new NullCoalescingExpression(left, right);
+        }
+
+        return left;
+    }
 
     public override Node VisitConditional_or_expression(RinParser.Conditional_or_expressionContext context) {
         return VisitBinaryExpression(context);
@@ -113,6 +122,7 @@ public partial class AstVisitor {
                 RinParser.PLUS => BinaryOperator.Plus,
                 RinParser.MINUS => BinaryOperator.Minus,
                 RinParser.OP_LEFT_SHIFT => BinaryOperator.LeftShift,
+                // TODO: right shift
                 RinParser.OP_EQ => BinaryOperator.Equality,
                 RinParser.OP_NE => BinaryOperator.Inequality,
                 RinParser.AMP => BinaryOperator.BitwiseAnd,

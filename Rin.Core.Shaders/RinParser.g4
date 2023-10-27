@@ -312,14 +312,12 @@ local_constant_declaration
     ;
    
    
-// TODO: if body, switch, ...
+// TODO: switch, ...
    
    
 statement_list
     : statement+
     ;
-   
-// TODO: for...
    
 // TODO: resource_acquisition - used inside using() statement
    

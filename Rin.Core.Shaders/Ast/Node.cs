@@ -33,6 +33,33 @@ public abstract record TypeBase : Node, IAttributes, IQualifiers {
     }
 }
 
+public record ScalarType : TypeBase {
+    public Type Type { get; set; }
+    
+    public ScalarType(Identifier name) : base(name) { }
+
+    public static readonly ScalarType Bool = new ScalarType<bool>();
+    public static readonly ScalarType Byte = new ScalarType<byte>();
+    public static readonly ScalarType Char = new ScalarType<char>();
+    
+    public static readonly ScalarType Double = new ScalarType<double>();
+    public static readonly ScalarType Float = new ScalarType<float>();
+    public static readonly ScalarType UShort = new ScalarType<ushort>();
+    public static readonly ScalarType Short = new ScalarType<short>();
+    public static readonly ScalarType UInt = new ScalarType<uint>();
+    public static readonly ScalarType Int = new ScalarType<int>();
+    public static readonly ScalarType ULong = new ScalarType<ulong>();
+    public static readonly ScalarType Long = new ScalarType<long>();
+    
+    // TODO
+}
+
+public record ScalarType<T> : ScalarType {
+    public ScalarType() : base(typeof(T).Name) {
+        Type = typeof(T);
+    }
+}
+
 public record VarType() : TypeBase(new Identifier("var"));
 public record ValType() : TypeBase(new Identifier("val"));
 
@@ -49,11 +76,13 @@ public record ReturnStatement(Expression? Value = null) : Statement;
 
 
 
+public record AssignmentExpression(Expression Left, Expression Right, AssignmentOperator Operator) : Expression;
 public record UnaryExpression(UnaryOperator Operator, Expression Expression) : Expression;
 public record BinaryExpression(Expression Left, Expression Right, BinaryOperator Operator) : Expression;
 public record RangeExpression(Expression Start, Expression End) : Expression;
 public record CastExpression(Expression Expression, TypeBase Target) : Expression;
-
+public record NullCoalescingExpression(Expression Condition, Expression Else) : Expression;
+public record ConditionalExpression(Expression Condition, Expression Then, Expression Else) : Expression;
 
 public record PackageStatement(Identifier Name) : Statement;
 public record ImportStatement(Identifier Name) : Statement;

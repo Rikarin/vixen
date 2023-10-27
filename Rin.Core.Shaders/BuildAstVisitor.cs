@@ -3,7 +3,7 @@ using Rin.Core.Shaders.Ast;
 
 namespace Rin.Core.Shaders; 
 
-public partial class AstVisitor : RinParserBaseVisitor<Node> {
+public partial class BuildAstVisitor : RinParserBaseVisitor<Node> {
     public override Node VisitCompilation_unit(RinParser.Compilation_unitContext context) {
         var package = Visit(context.package_declaration()) as PackageStatement;
         // TODO: imports
@@ -179,8 +179,6 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
             return new Literal(stringLiteral.GetText());
         }
         
-        // return base.VisitLiteral(context);
-        // TODO
         return new Literal("TODO: Not implemented");
     }
 
@@ -191,6 +189,4 @@ public partial class AstVisitor : RinParserBaseVisitor<Node> {
 
         return new EmptyStatement();
     }
-    
-    // visitexpre
 }
