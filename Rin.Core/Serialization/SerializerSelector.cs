@@ -110,7 +110,7 @@ public class SerializerSelector {
             }
         }
 
-        if (dataSerializer != null && !dataSerializer.Initialized) {
+        if (dataSerializer is { Initialized: false }) {
             EnsureInitialized(dataSerializer);
         }
 

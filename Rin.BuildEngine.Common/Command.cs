@@ -1,3 +1,4 @@
+using Rin.Core.Serialization;
 using Rin.Core.Serialization.Binary;
 using Rin.Core.Storage;
 using Rin.Core.TODO;

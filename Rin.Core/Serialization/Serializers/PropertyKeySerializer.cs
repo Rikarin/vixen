@@ -1,3 +1,6 @@
+using Rin.Core.Reflection;
+using System.Reflection;
+
 namespace Rin.Core.Serialization.Serializers;
 
 public class PropertyKeySerializer<T> : DataSerializer<T> where T : PropertyKey {

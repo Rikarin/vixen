@@ -23,7 +23,7 @@ public abstract class PropertyKey : IComparable {
     ///     Gets the metadatas.
     /// </summary>
     [DataMemberIgnore]
-    public PropertyKeyMetadata[] Metadatas { get; }
+    public PropertyKeyMetadata[] Metadata { get; }
 
     /// <summary>
     ///     Gets the type of the owner.
@@ -81,7 +81,7 @@ public abstract class PropertyKey : IComparable {
     /// <summary>Gets the property update callback.</summary>
     /// <value>The property update callback.</value>
     [DataMemberIgnore]
-    internal PropertyContainer.PropertyUpdatedDelegate PropertyUpdateCallback { get; private set; }
+    internal PropertyContainer.PropertyUpdatedDelegate? PropertyUpdateCallback { get; private set; }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="PropertyKey" /> class.
@@ -89,12 +89,12 @@ public abstract class PropertyKey : IComparable {
     /// <param name="name">The name.</param>
     /// <param name="propertyType">Type of the property.</param>
     /// <param name="ownerType">Type of the owner.</param>
-    /// <param name="metadatas">The metadatas.</param>
+    /// <param name="metadata">The metadatas.</param>
     protected PropertyKey(
         string name,
         Type propertyType,
         Type ownerType,
-        params PropertyKeyMetadata[] metadatas
+        params PropertyKeyMetadata[] metadata
     ) {
         if (name == null) {
             throw new ArgumentNullException(nameof(name));
@@ -103,7 +103,7 @@ public abstract class PropertyKey : IComparable {
         Name = name;
         PropertyType = propertyType;
         OwnerType = ownerType;
-        Metadatas = metadatas;
+        Metadata = metadata;
         SetupMetadatas();
     }
 
@@ -119,7 +119,7 @@ public abstract class PropertyKey : IComparable {
     public override string ToString() => Name;
 
     protected virtual void SetupMetadatas() {
-        foreach (var metadata in Metadatas) {
+        foreach (var metadata in Metadata) {
             SetupMetadata(metadata);
         }
     }
