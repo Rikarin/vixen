@@ -20,8 +20,10 @@ NL:                          NewLine;
 // ===== Keywords
 // definition types
 FUNC:           'func';
-INTERFACE:      'interface'; // TODO: protocol
+PROTOCOL:       'protocol';
 CLASS:          'class';
+STRUCT:         'struct';
+ENUM:           'enum';
 SHADER:         'shader';
 
 // Modifiers & Variables
@@ -56,9 +58,24 @@ INIT:           'init';
 AS:             'as';
 FALSE:          'false';
 TRUE:           'true';
+OUT:            'out';
+REF:            'ref';
+WHERE:          'where';
+
+SELF:           'self';
+BASE:           'base';
+DEFAULT:        'default';
+SIZEOF:         'sizeof';
+NAMEOF:         'nameof';
+USING:          'using';
+OVERRIDE:       'override';
+ABSTRACT:       'abstract';
+PARTIAL:        'partial';
+
 
 // Value Types
 NULL_:          'null';
+OBJECT:         'object';
 BOOL:           'bool';
 CHAR:           'char';
 STRING:         'string';

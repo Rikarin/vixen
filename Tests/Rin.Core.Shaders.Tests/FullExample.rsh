@@ -1,11 +1,15 @@
-package Core.Test;
+package Core.Test
 
-import System;
-import System.Core;
+import System
+import System.Core
 
 
 protocol Vehicle {
-
+    var Name: string
+    val Count: int
+    
+    init(name: string)
+    func Test()
 
 }
 

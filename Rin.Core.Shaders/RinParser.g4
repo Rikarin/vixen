@@ -61,8 +61,8 @@ floating_point_type
     ;
     
 class_type
-    // TODO: object / dynamic?
     : namespace_or_type_name
+    | OBJECT
     | STRING
     ;
     
@@ -79,14 +79,14 @@ argument_list
     ;
     
 argument
-    : (identifier COLON)? // TODO: ref out in
-      expression
+    : (identifier COLON)? refout=(REF | OUT | INT)?
+      (expression | (VAR | VAL | type_) expression)
     ;
     
 expression
 	: assignment
 	| non_assignment_expression
-// TODO	| REF non_assignment_expression
+    | REF non_assignment_expression
 	;
 
 non_assignment_expression
@@ -98,7 +98,6 @@ non_assignment_expression
 
 assignment
 	: unary_expression assignment_operator expression
-//	| unary_expression '??=' unary_expression // throwable_expression
 	;
 
 assignment_operator
@@ -106,12 +105,10 @@ assignment_operator
 	;
 
 conditional_expression
-//	: null_coalescing_expression ('?' throwable_expression ':' throwable_expression)?
 	: null_coalescing_expression (INTERR expression COLON expression)?
 	;
 
 null_coalescing_expression
-//	: conditional_or_expression ('??' (null_coalescing_expression | throw_expression))?
 	: conditional_or_expression (OP_COALESCING (null_coalescing_expression | expression))?
 	;
 
@@ -184,11 +181,6 @@ unary_expression
 	| TILDE unary_expression
 	| OP_INC unary_expression
 	| OP_DEC unary_expression
-//	| AWAIT unary_expression
-// TODO: pointers not available
-//	| AMP unary_expression
-//	| STAR unary_expression
-
 // TODO: not sure about this one
 //	| CARET unary_expression
 	;
@@ -198,21 +190,25 @@ cast_expression
     ;
 
 primary_expression
-    // TODO: finish
 	: pe=primary_expression_start '!'? bracket_expression* '!'?
-//	  ((member_access | method_invocation | '++' | '--' | '->' identifier) '!'? bracket_expression* '!'?)*
 	  ((member_access | method_invocation | '++' | '--') '!'? bracket_expression* '!'?)* NL* // TODO: verify this NL*
-//      (member_access | method_invocation | OP_INC | OP_DEC)* NL*
 	;
 
 primary_expression_start
-//    TODO: finish
-	: literal                                   #literalExpression
-	| identifier type_argument_list?            #simpleNameExpression
-	| OPEN_PARENS expression CLOSE_PARENS       #parenthesisExpressions
-    | predefined_type                           #memberAccessExpression
-    | qualified_alias_member                    #memberAccessExpression
-    | LITERAL_ACCESS                            #literalAccessExpression
+	: literal                                                           #literalExpression
+	| identifier type_argument_list?                                    #simpleNameExpression
+	| OPEN_PARENS expression CLOSE_PARENS                               #parenthesisExpressions
+    | predefined_type                                                   #memberAccessExpression
+    | qualified_alias_member                                            #memberAccessExpression
+    | LITERAL_ACCESS                                                    #literalAccessExpression
+    | SELF                                                              #selfReferenceExpression
+    | BASE ('.' identifier type_argument_list?)                         #baseAccessExpression // TODO
+    // TODO: "new"
+    | OPEN_PARENS argument (COMMA argument)+ CLOSE_PARENS               #tupleExpression
+    // TODO
+    | DEFAULT (OPEN_PARENS type_ CLOSE_PARENS)?                         #defaultValueExpression
+    | SIZEOF OPEN_PARENS type_ CLOSE_PARENS                             #sizeofExpression
+    | NAMEOF OPEN_PARENS (identifier '.')* identifier CLOSE_PARENS      #nameofExpression
 	;
    
 member_access
@@ -259,7 +255,7 @@ local_function_header
     // TODO: function modifiers (static...)
     // TODO: consider allowing usage of void as return type
     : FUNC identifier type_parameter_list?
-      OPEN_PARENS formal_parameter_list? CLOSE_PARENS (COLON type_)? // TODO: constrains
+      OPEN_PARENS formal_parameter_list? CLOSE_PARENS (COLON type_)? type_parameter_constraints_clauses?
     ;
     
 local_function_body
@@ -285,12 +281,12 @@ simple_embedded_statement
     // TODO: identifier or tuple?
     | FOR OPEN_PARENS identifier IN expression CLOSE_PARENS block   #forStatement
     
+    // jump statements
     | BREAK NL+                                                     #breakStatement
     | CONTINUE NL+                                                  #continueStatement
     | RETURN expression? NL+                                        #returnStatement
     
-    // using?
-    // yield?
+    | USING OPEN_PARENS resource_acquisition CLOSE_PARENS block     #usingStatement
     ;
    
 block
@@ -319,7 +315,10 @@ statement_list
     : statement+
     ;
    
-// TODO: resource_acquisition - used inside using() statement
+resource_acquisition
+    : local_variable_declaration
+    | expression
+    ;
    
    
 // ===== Imports and Package
@@ -340,8 +339,9 @@ import_directive
     ;
    
 type_declaration
-    // TODO: finish declaration of all stuff (attributes, modifiers, interface, struct, class, enum, ...)
-    : shader_definition
+    // TODO: delegate
+    : attributes? all_member_modifiers?
+      (shader_definition | class_definition | protocol_definition | enum_definition | struct_definition)
     ;
    
 qualified_alias_member
@@ -365,10 +365,29 @@ class_base
     : COLON class_type (COMMA namespace_or_type_name)*
     ;
     
-// TODO: interface type list
-// TODO: constrains
-    
-    
+type_parameter_constraints_clauses
+	: type_parameter_constraints_clause+
+	;
+
+type_parameter_constraints_clause
+	: WHERE identifier ':' type_parameter_constraints
+	;
+
+type_parameter_constraints
+// TODO?	: constructor_constraint
+	: primary_constraint (',' secondary_constraints)? // TODO: implement this? (',' constructor_constraint)?
+	;
+
+primary_constraint
+	: class_type
+	| CLASS '?'?
+	| STRUCT
+	;
+
+secondary_constraints
+	: namespace_or_type_name (',' namespace_or_type_name)*
+	;
+
 class_body
     : OPEN_BRACE NL* class_member_declarations? NL* CLOSE_BRACE
     ;
@@ -390,6 +409,9 @@ all_member_modifier
     // TODO
     : PRIVATE
     | STATIC
+    | OVERRIDE
+    | PARTIAL
+    | ABSTRACT
     ;
     
 // Intersection of struct and class member declaration
@@ -398,6 +420,11 @@ common_member_declaration
     // TODO: finish this (include typed_member_declaration)
     : constant_declaration
     | constructor_declaration
+    
+    | class_definition
+    | struct_definition
+    | protocol_definition
+    | enum_definition
     
     | method_declaration
     | field_declaration
@@ -441,7 +468,18 @@ fixed_parameter
 
     
 // ===== Structs 
-// TODO
+struct_interfaces
+	: ':' protocol_type_list
+	;
+
+struct_body
+	: OPEN_BRACE struct_member_declaration* CLOSE_BRACE
+	;
+
+struct_member_declaration
+	: attributes? all_member_modifiers?
+	  common_member_declaration // TODO
+	;
 
     
 // ===== Arrays
@@ -459,9 +497,27 @@ array_initializer
     ;
     
     
-// ===== Interfaces
-// TODO
-    
+// ===== Protocols
+variant_type_parameter_list
+	: '<' variant_type_parameter (',' variant_type_parameter)* '>'
+	;
+
+variant_type_parameter
+	: attributes? variance_annotation? identifier
+	;
+
+variance_annotation
+	: IN | OUT
+	;
+
+protocol_type_list
+    : namespace_or_type_name (','  namespace_or_type_name)*
+    ;
+
+protocol_base
+    : COLON protocol_type_list
+    ;
+
 
 // ===== Enums
 // TODO
@@ -511,11 +567,31 @@ string_literal
     
 // ===== Extra rules for modularization
 shader_definition
-    : SHADER identifier type_parameter_list? class_base? // TODO constrains
+    : SHADER identifier type_parameter_list? class_base? // TODO constrains??
       class_body
     ;
     
-// TODO: struct definition, interface, enum, delegate, event, class
+class_definition
+    : CLASS identifier type_parameter_list? class_base? type_parameter_constraints_clauses?
+      class_body
+    ;
+    
+struct_definition
+    : STRUCT identifier type_parameter_list? struct_interfaces? type_parameter_constraints_clauses?
+      struct_body
+    ;
+    
+protocol_definition
+    : PROTOCOL identifier variant_type_parameter_list? protocol_base? type_parameter_constraints_clauses?
+      class_body
+    ;
+    
+    // TODO
+enum_definition
+    : ENUM identifier
+    ;
+    
+// TODO: delegate, event
 
 field_declaration
     : (VAR | VAL) variable_declarator NL+
