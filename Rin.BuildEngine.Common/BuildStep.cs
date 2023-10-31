@@ -195,12 +195,12 @@ public abstract class BuildStep {
         if (StepProcessed != null) {
             try {
                 var outputObjectsGroups = executeContext.GetOutputObjectsGroups();
-                MicrothreadLocalDatabases.MountDatabase(outputObjectsGroups);
-                StepProcessed(this, new BuildStepEventArgs(this, executeContext.Logger));
+                MicroThreadLocalDatabases.MountDatabase(outputObjectsGroups);
+                StepProcessed(this, new(this, executeContext.Logger));
             } catch (Exception ex) {
                 executeContext.Logger.Error(ex, "Exception in command {Command}", this);
             } finally {
-                MicrothreadLocalDatabases.UnmountDatabase();
+                MicroThreadLocalDatabases.UnmountDatabase();
             }
         }
     }

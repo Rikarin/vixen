@@ -17,6 +17,7 @@ Create game engine with requirements:
 ## Features
 
 - Entity Component System (Arch)
+- Serialization & InputSystem is based on the Stride Engine
 
 
 ## Used libraries

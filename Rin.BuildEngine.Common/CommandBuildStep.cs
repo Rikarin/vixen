@@ -1,3 +1,4 @@
+using Rin.Core.IO;
 using Rin.Core.Storage;
 using Rin.Core.TODO;
 
@@ -104,7 +105,7 @@ public class CommandBuildStep : BuildStep {
                 if (stepInProgress != null) {
                     Monitor.Exit(executeContext);
                     monitorExited = true;
-                    executeContext.Logger.Debug($"Command {Command} delayed because it is currently running...");
+                    executeContext.Logger.Debug("Command {Command} delayed because it is currently running...", Command);
                     status = (await stepInProgress.ExecutedAsync()).Status;
                     matchingResult = stepInProgress.Result;
                 } else {
@@ -112,7 +113,7 @@ public class CommandBuildStep : BuildStep {
                     Monitor.Exit(executeContext);
                     monitorExited = true;
 
-                    executeContext.Logger.Debug($"Command {Command} scheduled...");
+                    executeContext.Logger.Debug("Command {Command} scheduled...", Command);
 
                     // Register the cancel callback
                     var cancellationTokenSource = executeContext.CancellationTokenSource;
@@ -206,7 +207,7 @@ public class CommandBuildStep : BuildStep {
                     // Merge results from prerequisites
                     // TODO: This will prevent us from overwriting this asset with different content as it will result in a write conflict
                     // At some point we _might_ want to get rid of WaitBuildStep/ListBuildStep system and write a fully stateless input/output-based system; probably need further discussions
-                    var fileProvider = MicrothreadLocalDatabases.DatabaseFileProvider;
+                    var fileProvider = MicroThreadLocalDatabases.DatabaseFileProvider;
                     if (fileProvider != null) {
                         var assetIndexMap = fileProvider.ContentIndexMap;
                         foreach (var prerequisiteStep in PrerequisiteSteps) {
@@ -256,11 +257,11 @@ public class CommandBuildStep : BuildStep {
         out CommandResultEntry matchingResult
     ) {
         var outputObjectsGroups = executeContext.GetOutputObjectsGroups();
-        MicrothreadLocalDatabases.MountDatabase(outputObjectsGroups);
+        MicroThreadLocalDatabases.MountDatabase(outputObjectsGroups);
         try {
             matchingResult = FindMatchingResult(executeContext, previousResultCollection);
         } finally {
-            MicrothreadLocalDatabases.UnmountDatabase();
+            MicroThreadLocalDatabases.UnmountDatabase();
         }
 
         if (matchingResult == null || Command.ShouldForceExecution()) {

@@ -1,7 +1,6 @@
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using System.Diagnostics;
 
 namespace Rin.Diagnostics;
 

@@ -1,3 +1,5 @@
+using Rin.Core.Serialization;
+using Rin.Core.Serialization.Serializers;
 using Rin.Core.Storage;
 using System.Text;
 
@@ -35,8 +37,7 @@ public sealed class FileVersionStorage : DictionaryStore<FileVersionKey, ObjectI
                     new Dictionary<string, KeyValuePair<FileVersionKey, ObjectId>>(StringComparer.OrdinalIgnoreCase);
                 foreach (var keyValue in localTracker.GetValues()) {
                     var filePath = keyValue.Key.Path;
-                    KeyValuePair<FileVersionKey, ObjectId> previousKeyValue;
-                    if (!latestVersion.TryGetValue(filePath, out previousKeyValue)
+                    if (!latestVersion.TryGetValue(filePath, out var previousKeyValue)
                         || keyValue.Key.LastModifiedDate > previousKeyValue.Key.LastModifiedDate) {
                         latestVersion[filePath] = keyValue;
                     }
@@ -68,21 +69,21 @@ public sealed class FileVersionStorage : DictionaryStore<FileVersionKey, ObjectI
             var key = new FileVersionKey { Path = values[0] };
             if (!long.TryParse(values[1], out var dateTime)) {
                 throw new InvalidOperationException(
-                    "Unable to decode datetime [{0}] when reading file version index".ToFormat(values[1])
+                    $"Unable to decode datetime [{values[1]}] when reading file version index"
                 );
             }
 
             key.LastModifiedDate = new(dateTime);
             if (!long.TryParse(values[2], out key.FileSize)) {
                 throw new InvalidOperationException(
-                    "Unable to decode filesize [{0}] when reading file version index".ToFormat(values[2])
+                    $"Unable to decode filesize [{values[2]}] when reading file version index"
                 );
             }
 
             var objectIdStr = values[3];
             if (!ObjectId.TryParse(objectIdStr, out ObjectId objectId)) {
                 throw new InvalidOperationException(
-                    "Unable to decode objectid [{0}] when reading file version index".ToFormat(objectIdStr)
+                    $"Unable to decode ObjectId [{objectIdStr}] when reading file version index"
                 );
             }
 

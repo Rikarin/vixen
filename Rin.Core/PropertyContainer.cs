@@ -1,5 +1,6 @@
 using Rin.Core;
 using Rin.Core.Serialization;
+using Rin.Core.Serialization.Serializers;
 using System.Collections;
 using System.Reflection;
 

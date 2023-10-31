@@ -5,6 +5,8 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Rin.Core.IO\Rin.Core.IO.csproj" />
+      <ProjectReference Include="..\Rin.Core.Serialization\Rin.Core.Serialization.csproj" />
       <ProjectReference Include="..\Rin.Core\Rin.Core.csproj" />
     </ItemGroup>
 </Project>
