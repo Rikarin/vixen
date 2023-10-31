@@ -19,9 +19,8 @@ public class Scheduler {
     internal LinkedList<MicroThread> AllMicroThreads = new();
 
     internal List<MicroThreadCallbackNode> CallbackNodePool = new();
-
-    // internal static readonly Logger Log = GlobalLogger.GetLogger("Scheduler");
-    readonly ILogger Log = Serilog.Log.ForContext<Scheduler>();
+    
+    internal static readonly ILogger Log = Serilog.Log.ForContext<Scheduler>();
 
     readonly ThreadLocal<MicroThread> runningMicroThread = new();
 

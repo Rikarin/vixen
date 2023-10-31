@@ -14,14 +14,16 @@ public unsafe partial struct ObjectId {
                 stream.Write(hasId);
                 if (hasId) {
                     fixed (uint* hash = &obj.hash1) {
-                        stream.Serialize((IntPtr)hash, HashSize);
+                        // TODO: Fix
+                        // stream.Serialize((IntPtr)hash, HashSize);
                     }
                 }
             } else if (mode == ArchiveMode.Deserialize) {
                 var hasId = stream.ReadBoolean();
                 if (hasId) {
                     var id = new byte[HashSize];
-                    stream.Serialize(id, 0, HashSize);
+                    // TODO: Fix
+                    // stream.Serialize(id, 0, HashSize);
                     obj = new(id);
                 } else {
                     obj = Empty;
