@@ -8,7 +8,7 @@
 
     <ItemGroup>
         <PackageReference Include="Arch" Version="1.2.7" />
-        <PackageReference Include="Arch.Persistence" Version="1.0.2" />
+        <PackageReference Include="Arch.Persistence" Version="1.0.3" />
         <PackageReference Include="Arch.Relationships" Version="1.0.1" />
         <PackageReference Include="Arch.System" Version="1.0.2" />
         <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.2" />
