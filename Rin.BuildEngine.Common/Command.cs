@@ -18,7 +18,7 @@ public abstract class Command {
     ///     Cancellation Token. Must be checked frequently by the <see cref="DoCommandOverride" /> implementation in order to
     ///     interrupt the command while running
     /// </summary>
-    public CancellationToken CancellationToken { get; }
+    public CancellationToken CancellationToken { get; set; }
 
     public Func<IEnumerable<ObjectUrl>>? InputFilesGetter { get; }
 

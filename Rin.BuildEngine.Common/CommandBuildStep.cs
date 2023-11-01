@@ -1,4 +1,6 @@
 using Rin.Core.IO;
+using Rin.Core.Serialization.IO;
+using Rin.Core.Serialization.Storage;
 using Rin.Core.Storage;
 using Rin.Core.TODO;
 
@@ -141,9 +143,10 @@ public class CommandBuildStep : BuildStep {
         if (matchingResult != null) {
             using (commandResultEntries) {
                 // Re-output command log messages
-                foreach (var message in matchingResult.LogMessages) {
-                    executeContext.Logger.Log(message);
-                }
+                // TODO: fix
+                // foreach (var message in matchingResult.LogMessages) {
+                //     executeContext.Logger.Log(message);
+                // }
 
                 status = ResultStatus.NotTriggeredWasSuccessful;
                 RegisterCommandResult(commandResultEntries, matchingResult, status);
@@ -183,7 +186,7 @@ public class CommandBuildStep : BuildStep {
         ResultStatus status;
 
         using (commandResultEntries) {
-            logger.Debug($"Starting command {Command}...");
+            logger.Debug("Starting command {Command}...", Command);
 
             // Creating the CommandResult object
             var commandContext = new LocalCommandContext(executeContext, this, builderContext);

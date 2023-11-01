@@ -1,3 +1,4 @@
+using Rin.Core.Serialization.Storage;
 using Rin.Core.Storage;
 using Serilog;
 
@@ -8,10 +9,10 @@ namespace Rin.BuildEngine.Common;
 /// </summary>
 public class FileVersionTracker : IDisposable {
     const string DefaultFileVersionTrackerFile = "Rin/FileVersionTracker.cache";
-    
+
     readonly FileVersionStorage storage;
     readonly Dictionary<FileVersionKey, object> locks;
-    
+
     static readonly ILogger Log = Serilog.Log.ForContext<FileVersionTracker>();
     static readonly object LockDefaultTracker = new();
     static FileVersionTracker? defaultFileVersionTracker;
@@ -21,7 +22,7 @@ public class FileVersionTracker : IDisposable {
     /// </summary>
     /// <param name="stream">The stream.</param>
     public FileVersionTracker(Stream stream) {
-        storage = new FileVersionStorage(stream);
+        storage = new(stream);
         locks = new();
     }
 

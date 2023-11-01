@@ -1,4 +1,5 @@
 using Rin.Core.Serialization;
+using Rin.Core.Serialization.IO;
 using Rin.Core.Serialization.Serializers;
 using Rin.Core.Storage;
 using System.Text;

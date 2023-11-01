@@ -4,5 +4,6 @@ public enum PlatformType {
     Shared,
     MacOS,
     Linux,
-    Windows
+    Windows,
+    Android
 }

@@ -115,7 +115,8 @@ public class ListBuildStep : BuildStep {
         }
 
         // Forward logs
-        buildStep.Logger.CopyTo(Logger);
+        // TODO: fix
+        // buildStep.Logger.CopyTo(Logger);
 
         if (buildStep.Result != null) {
             // Resolve tags from TagSymbol
