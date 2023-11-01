@@ -1,4 +1,4 @@
-using CommunityToolkit.HighPerformance;
+using Rin.Core.Extensions;
 using Rin.Core.IO;
 using Rin.Core.Serialization.Binary;
 using Rin.Core.Serialization.LZ4;

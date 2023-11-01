@@ -12,20 +12,45 @@ namespace Rin.BuildEngine.Common;
 
 public class Builder : IDisposable {
     public const int ExpectedVersion = 4;
+
+    public const string MonitorPipeName = "Rin/BuildEngine/Monitor";
     public static readonly string DoNotCompressTag = "DoNotCompress";
     public static readonly string DoNotPackTag = "DoNotPack";
 
-    /// <summary>
-    ///     The full path of the index file from the build directory.
-    /// </summary>
-    string IndexFileFullPath =>
-        indexName != null
-            ? VirtualFileSystem.ApplicationDatabasePath + VirtualFileSystem.DirectorySeparatorChar + indexName
-            : null;
-
-    public const string MonitorPipeName = "Stride/BuildEngine/Monitor";
-
     public readonly ISet<ObjectId> DisableCompressionIds = new HashSet<ObjectId>();
+
+
+    /// <summary>
+    ///     The path on the disk where to perform the build
+    /// </summary>
+    readonly string buildPath;
+
+    /// <summary>
+    ///     The name on the disk of the index file name.
+    /// </summary>
+    readonly string indexName;
+
+    readonly CommandIOMonitor ioMonitor;
+    readonly DateTime startTime;
+    readonly StepCounter stepCounter = new();
+
+    /// <summary>
+    ///     Cancellation token source used for cancellation.
+    /// </summary>
+    CancellationTokenSource cancellationTokenSource;
+
+    /// <summary>
+    ///     A map containing results of each commands, indexed by command hashes. When the builder is running, this map if
+    ///     filled with the result of the commands of the current execution.
+    /// </summary>
+    ObjectDatabase resultMap;
+
+    /// <summary>
+    ///     The build mode of the current run execution
+    /// </summary>
+    Mode runMode;
+
+    Scheduler scheduler;
 
     /// <summary>
     ///     Gets the <see cref="ObjectDatabase" /> in which built objects are written.
@@ -74,59 +99,12 @@ public class Builder : IDisposable {
     public CommandBuildStep.TryExecuteRemoteDelegate TryExecuteRemote { get; set; }
 
     /// <summary>
-    ///     Indicate which mode to use with this builder
+    ///     The full path of the index file from the build directory.
     /// </summary>
-    public enum Mode {
-        /// <summary>
-        ///     Build the script
-        /// </summary>
-        Build,
-
-        /// <summary>
-        ///     Clean the command cache used to determine wheither a command has already been triggered.
-        /// </summary>
-        Clean,
-
-        /// <summary>
-        ///     Clean the command cache and delete every output objects
-        /// </summary>
-        CleanAndDelete
-    }
-
-
-    /// <summary>
-    ///     The path on the disk where to perform the build
-    /// </summary>
-    readonly string buildPath;
-
-    /// <summary>
-    ///     The name on the disk of the index file name.
-    /// </summary>
-    readonly string indexName;
-
-    readonly CommandIOMonitor ioMonitor;
-
-    readonly DateTime startTime;
-
-    readonly StepCounter stepCounter = new StepCounter();
-
-    /// <summary>
-    ///     Cancellation token source used for cancellation.
-    /// </summary>
-    CancellationTokenSource cancellationTokenSource;
-
-    /// <summary>
-    ///     A map containing results of each commands, indexed by command hashes. When the builder is running, this map if
-    ///     filled with the result of the commands of the current execution.
-    /// </summary>
-    ObjectDatabase resultMap;
-
-    /// <summary>
-    ///     The build mode of the current run execution
-    /// </summary>
-    Mode runMode;
-
-    Scheduler scheduler;
+    string IndexFileFullPath =>
+        indexName != null
+            ? VirtualFileSystem.ApplicationDatabasePath + VirtualFileSystem.DirectorySeparatorChar + indexName
+            : null;
 
 
     public Builder(ILogger logger, string buildPath, string indexName) {
@@ -136,7 +114,7 @@ public class Builder : IDisposable {
         Logger = logger;
         this.buildPath = buildPath ?? throw new ArgumentNullException(nameof(buildPath));
         Root = new();
-        ioMonitor = new CommandIOMonitor(Logger);
+        ioMonitor = new(Logger);
         ThreadCount = Environment.ProcessorCount;
         BuilderId = Guid.NewGuid();
         InitialVariables = new Dictionary<string, string>();
@@ -188,7 +166,6 @@ public class Builder : IDisposable {
         OpenObjectDatabase(buildPath, indexName);
 
         PreRun();
-
         runMode = mode;
 
         if (IsRunning) {
@@ -205,9 +182,7 @@ public class Builder : IDisposable {
         var inputHashes = FileVersionTracker.GetDefault();
         {
             var builderContext = new BuilderContext(inputHashes, TryExecuteRemote);
-
             resultMap = ObjectDatabase;
-
             scheduler = new();
 
             // Schedule the build
@@ -240,15 +215,15 @@ public class Builder : IDisposable {
             } else if (stepCounter.Get(ResultStatus.Failed) > 0
                        || stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed) > 0) {
                 Logger.Error(
-                    $"Build finished in {stepCounter.Total} steps. Command results: {stepCounter.Get(ResultStatus.Successful)} succeeded, {stepCounter.Get(ResultStatus.NotTriggeredWasSuccessful)} up-to-date, {stepCounter.Get(ResultStatus.Failed)} failed, {stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed)} not triggered due to previous failure."
+                    $"Build finished in {stepCounter.Total} steps. Command results: {stepCounter.Get(ResultStatus.Successful)} succeeded, {stepCounter.Get(ResultStatus.NotTriggeredWasSuccessful)} up-to-date, {stepCounter.Get(ResultStatus.Failed)} failed, {stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed)} not triggered due to previous failure"
                 );
                 Logger.Error("Build failed.");
                 result = BuildResultCode.BuildError;
             } else {
-                Logger.Info(
-                    $"Build finished in {stepCounter.Total} steps. Command results: {stepCounter.Get(ResultStatus.Successful)} succeeded, {stepCounter.Get(ResultStatus.NotTriggeredWasSuccessful)} up-to-date, {stepCounter.Get(ResultStatus.Failed)} failed, {stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed)} not triggered due to previous failure."
+                Logger.Information(
+                    $"Build finished in {stepCounter.Total} steps. Command results: {stepCounter.Get(ResultStatus.Successful)} succeeded, {stepCounter.Get(ResultStatus.NotTriggeredWasSuccessful)} up-to-date, {stepCounter.Get(ResultStatus.Failed)} failed, {stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed)} not triggered due to previous failure"
                 );
-                Logger.Info("Build is successful.");
+                Logger.Information("Build is successful");
                 result = BuildResultCode.Successful;
             }
         } else {
@@ -267,14 +242,14 @@ public class Builder : IDisposable {
             }
 
             if (cancellationTokenSource.IsCancellationRequested) {
-                Logger.Error(modeName + " has been cancelled.");
+                Logger.Error(modeName + " has been cancelled");
                 result = BuildResultCode.Cancelled;
             } else if (stepCounter.Get(ResultStatus.Failed) > 0
                        || stepCounter.Get(ResultStatus.NotTriggeredPrerequisiteFailed) > 0) {
-                Logger.Error(modeName + " has failed.");
+                Logger.Error(modeName + " has failed");
                 result = BuildResultCode.BuildError;
             } else {
-                Logger.Error(modeName + " has been successfully completed.");
+                Logger.Error(modeName + " has been successfully completed");
                 result = BuildResultCode.Successful;
             }
         }
@@ -407,7 +382,7 @@ public class Builder : IDisposable {
     /// </summary>
     /// <param name="rootStep">The root BuildStep</param>
     void GenerateDependencies(BuildStep rootStep) {
-        // TODO: Support proper incremental dependecies
+        // TODO: Support proper incremental dependencies
         if (rootStep.ProcessedDependencies) {
             return;
         }
@@ -638,6 +613,26 @@ public class Builder : IDisposable {
                 buildStep.Clean(executeContext, builderContext, runMode == Mode.CleanAndDelete);
             }
         }
+    }
+
+    /// <summary>
+    ///     Indicate which mode to use with this builder
+    /// </summary>
+    public enum Mode {
+        /// <summary>
+        ///     Build the script
+        /// </summary>
+        Build,
+
+        /// <summary>
+        ///     Clean the command cache used to determine wheither a command has already been triggered.
+        /// </summary>
+        Clean,
+
+        /// <summary>
+        ///     Clean the command cache and delete every output objects
+        /// </summary>
+        CleanAndDelete
     }
 
     class ExecuteContext : IExecuteContext {
