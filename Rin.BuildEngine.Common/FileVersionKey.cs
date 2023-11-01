@@ -1,9 +1,12 @@
+using Rin.Core;
+
 namespace Rin.BuildEngine.Common;
 
-public readonly record struct FileVersionKey {
-    public readonly string Path;
-    public readonly DateTime LastModifiedDate;
-    public readonly long FileSize;
+[DataContract]
+public record struct FileVersionKey {
+    public string Path;
+    public DateTime LastModifiedDate;
+    public long FileSize;
 
     public FileVersionKey(string path) {
         Path = path;
