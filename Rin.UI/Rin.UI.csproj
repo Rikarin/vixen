@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" PrivateAssets="All" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.20.0" PrivateAssets="All" />
     </ItemGroup>
 
     <ItemGroup>
