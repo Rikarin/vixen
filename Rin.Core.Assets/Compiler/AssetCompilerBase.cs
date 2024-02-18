@@ -1,4 +1,6 @@
 using Rin.Core.Assets.Analysis;
+using Rin.Core.Design.IO;
+using Rin.Core.Serialization.Serialization.Contents;
 
 namespace Rin.Core.Assets.Compiler;
 

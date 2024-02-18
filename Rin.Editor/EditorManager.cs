@@ -10,6 +10,7 @@ class EditorManager {
 
     public void Watch() {
         var assetPath = Path.Combine(project.RootDirectory, "Assets");
+        Directory.CreateDirectory(assetPath);
         watcher = new(assetPath);
 
         watcher.IncludeSubdirectories = true;

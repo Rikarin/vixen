@@ -1,6 +1,6 @@
 using Rin.Core.MicroThreading;
 using Rin.Core.Serialization.IO;
-using Rin.Core.TODO;
+using Rin.Core.Serialization.Serialization.Contents;
 
 namespace Rin.BuildEngine.Common;
 

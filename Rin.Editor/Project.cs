@@ -33,6 +33,7 @@ public class Project {
     }
 
     public void Save() {
+        Directory.CreateDirectory(RootDirectory);
         var projectFile = Path.Combine(RootDirectory, $"{Name}.rin");
         using var stream = new StreamWriter(projectFile, false, Encoding.UTF8);
 
@@ -45,6 +46,7 @@ public class Project {
         project.Layers.AddRange(new[] { "Default", "Ground", "Water", "UI", "Player" });
 
         project.Tags.AddRange(new[] { "Untagged", "MainCamera", "Player", "GameController", "EditorOnly" });
+        project.Save();
 
         return project;
     }

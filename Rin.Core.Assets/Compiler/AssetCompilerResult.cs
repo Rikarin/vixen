@@ -1,3 +1,6 @@
+using Rin.BuildEngine.Common;
+using Rin.Core.Diagnostics;
+
 namespace Rin.Core.Assets.Compiler;
 
 /// <summary>

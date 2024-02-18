@@ -1,3 +1,5 @@
+using Rin.Core.Annotations;
+
 namespace Rin.Core.Assets.Compiler;
 
 /// <summary>

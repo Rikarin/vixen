@@ -31,7 +31,6 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithExceptionDetails()
     .Enrich.WithThreadName()
-    .Enrich.FromLogContext()
     .Enrich.With(new SourceContextEnricher())
     .WriteTo.EditorSink()
     .WriteTo.Console(
@@ -151,7 +150,7 @@ var editorCameraEntity = SceneManager.ActiveScene.World.Create(
 
 // Assimp model importer
 var converter = new AssimpConverter();
-converter.ExtractEntity(Path.Combine(project.RootDirectory, "Assets/pillar.fbx"));
+// converter.ExtractEntity(Path.Combine(project.RootDirectory, "Assets/pillar.fbx"));
 
 
 

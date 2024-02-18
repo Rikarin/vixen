@@ -52,7 +52,7 @@ public class ShaderCompiler {
 
         var shader = new Shader(vulkanShader, compiler.Name, shaderPath);
 
-        // Renderer acknowledge parsed global marcros
+        // Renderer acknowledge parsed global macros
         // on shader reloaded
 
         ShaderCache.Serialize(compiler);

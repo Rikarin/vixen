@@ -4,7 +4,6 @@ using Rin.Core.MicroThreading;
 using Rin.Core.Serialization.Serialization.Contents;
 using Rin.Core.Serialization.Storage;
 using Rin.Core.Storage;
-using Rin.Core.TODO;
 using Serilog;
 using System.Globalization;
 
@@ -407,8 +406,7 @@ public class Builder : IDisposable {
             try {
                 var versionText = File.ReadAllText(versionFile);
                 currentVersion = int.Parse(versionText);
-            } catch (Exception e) {
-                e.Ignore();
+            } catch (Exception) {
                 currentVersion = 0;
             }
         }
@@ -425,7 +423,7 @@ public class Builder : IDisposable {
             var looseObjects = objectDatabase.EnumerateLooseObjects().ToArray();
 
             if (looseObjects.Length > 0) {
-                Logger.Info(
+                Logger.Information(
                     $"Database version number has been updated from {currentVersion} to {ExpectedVersion}, erasing all objects..."
                 );
 
@@ -480,8 +478,11 @@ public class Builder : IDisposable {
 
             // TODO: Big review of the log infrastructure of CompilerApp & BuildEngine!
             // Create a logger that redirects to various places (BuildStep.Logger, timestampped log, global log, etc...)
-            var buildStepLogger = new BuildStepLogger(buildStep, Logger, startTime);
-            var logger = (Logger)buildStepLogger;
+            
+            // TODO: fix
+            // var buildStepLogger = new BuildStepLogger(buildStep, Logger, startTime);
+            // var logger = (ILogger)buildStepLogger;
+            var logger = Log.Logger;
             // Apply user-registered callbacks to the logger
             buildStep.TransformExecuteContextLogger?.Invoke(ref logger);
 
@@ -518,7 +519,7 @@ public class Builder : IDisposable {
                         if (buildStep.ArePrerequisitesSuccessful) {
                             try {
                                 var outputObjectsGroups = executeContext.GetOutputObjectsGroups();
-                                MicrothreadLocalDatabases.MountDatabase(outputObjectsGroups);
+                                MicroThreadLocalDatabases.MountDatabase(outputObjectsGroups);
 
                                 // Execute
                                 status = await buildStep.Execute(executeContext, builderContext);
@@ -535,7 +536,7 @@ public class Builder : IDisposable {
                                 executeContext.Logger.Error("Exception in command " + buildStep + ": " + e);
                                 status = ResultStatus.Failed;
                             } finally {
-                                MicrothreadLocalDatabases.UnmountDatabase();
+                                MicroThreadLocalDatabases.UnmountDatabase();
 
                                 // Ensure the command set at least the result status
                                 if (status == ResultStatus.NotProcessed) {
@@ -561,49 +562,52 @@ public class Builder : IDisposable {
                         //{
                         //    completedStep.Status = ResultStatus.Cancelled;
                         //}
-                        var logType = LogMessageType.Info;
-                        string logText = null;
-
-                        switch (status) {
-                            case ResultStatus.Successful:
-                                logType = LogMessageType.Verbose;
-                                logText = "BuildStep {0} was successful.".ToFormat(buildStep.ToString());
-                                break;
-
-                            case ResultStatus.Failed:
-                                logType = LogMessageType.Error;
-                                logText = "BuildStep {0} failed.".ToFormat(buildStep.ToString());
-                                break;
-
-                            case ResultStatus.NotTriggeredPrerequisiteFailed:
-                                logType = LogMessageType.Error;
-                                logText = "BuildStep {0} failed of previous failed prerequisites.".ToFormat(
-                                    buildStep.ToString()
-                                );
-                                break;
-
-                            case ResultStatus.Cancelled:
-                                logType = LogMessageType.Warning;
-                                logText = "BuildStep {0} cancelled.".ToFormat(buildStep.ToString());
-                                break;
-
-                            case ResultStatus.NotTriggeredWasSuccessful:
-                                logType = LogMessageType.Verbose;
-                                logText = "BuildStep {0} is up-to-date and has been skipped".ToFormat(
-                                    buildStep.ToString()
-                                );
-                                break;
-
-                            case ResultStatus.NotProcessed:
-                                throw new InvalidDataException(
-                                    "BuildStep has neither succeeded, failed, nor been cancelled"
-                                );
-                        }
-
-                        if (logText != null) {
-                            var logMessage = new LogMessage(null, logType, logText);
-                            executeContext.Logger.Log(logMessage);
-                        }
+                        
+                        
+                        // TODO: fix
+                        // var logType = LogMessageType.Info;
+                        // string logText = null;
+                        //
+                        // switch (status) {
+                        //     case ResultStatus.Successful:
+                        //         logType = LogMessageType.Verbose;
+                        //         logText = "BuildStep {0} was successful.".ToFormat(buildStep.ToString());
+                        //         break;
+                        //
+                        //     case ResultStatus.Failed:
+                        //         logType = LogMessageType.Error;
+                        //         logText = "BuildStep {0} failed.".ToFormat(buildStep.ToString());
+                        //         break;
+                        //
+                        //     case ResultStatus.NotTriggeredPrerequisiteFailed:
+                        //         logType = LogMessageType.Error;
+                        //         logText = "BuildStep {0} failed of previous failed prerequisites.".ToFormat(
+                        //             buildStep.ToString()
+                        //         );
+                        //         break;
+                        //
+                        //     case ResultStatus.Cancelled:
+                        //         logType = LogMessageType.Warning;
+                        //         logText = "BuildStep {0} cancelled.".ToFormat(buildStep.ToString());
+                        //         break;
+                        //
+                        //     case ResultStatus.NotTriggeredWasSuccessful:
+                        //         logType = LogMessageType.Verbose;
+                        //         logText = "BuildStep {0} is up-to-date and has been skipped".ToFormat(
+                        //             buildStep.ToString()
+                        //         );
+                        //         break;
+                        //
+                        //     case ResultStatus.NotProcessed:
+                        //         throw new InvalidDataException(
+                        //             "BuildStep has neither succeeded, failed, nor been cancelled"
+                        //         );
+                        // }
+                        //
+                        // if (logText != null) {
+                        //     var logMessage = new LogMessage(null, logType, logText);
+                        //     executeContext.Logger.Log(logMessage);
+                        // }
 
                         buildStep.RegisterResult(executeContext, status);
                         stepCounter.AddStepResult(status);
