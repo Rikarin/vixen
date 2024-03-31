@@ -12,7 +12,7 @@
         <PackageReference Include="Arch.Relationships" Version="1.0.1" />
         <PackageReference Include="Arch.System" Version="1.0.2" />
         <PackageReference Include="Arch.System.SourceGenerator" Version="1.1.2" />
-        <PackageReference Include="Serilog" Version="3.0.1" />
+        <PackageReference Include="Serilog" Version="3.1.1" />
     </ItemGroup>
 
     <ItemGroup>
