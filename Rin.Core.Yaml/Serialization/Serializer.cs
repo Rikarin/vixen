@@ -314,7 +314,7 @@ public sealed class Serializer {
     /// <param name="existingObject">The object to deserialize into. If null (the default) then a new object will be created</param>
     /// <returns>A deserialized object.</returns>
     /// <exception cref="System.ArgumentNullException">stream</exception>
-    public object Deserialize(string fromText, Type expectedType, object? existingObject = null) {
+    public object Deserialize(string fromText, Type? expectedType, object? existingObject = null) {
         if (fromText == null) {
             throw new ArgumentNullException(nameof(fromText));
         }
@@ -443,12 +443,11 @@ public sealed class Serializer {
     /// <exception cref="System.ArgumentNullException">reader</exception>
     public object Deserialize(
         EventReader reader,
-        Type expectedType,
+        Type? expectedType,
         object? existingObject = null,
         SerializerContextSettings? contextSettings = null
     ) {
-        SerializerContext context;
-        return Deserialize(reader, expectedType, existingObject, contextSettings, out context);
+        return Deserialize(reader, expectedType, existingObject, contextSettings, out _);
     }
 
     /// <summary>
@@ -463,7 +462,7 @@ public sealed class Serializer {
     /// <exception cref="System.ArgumentNullException">reader</exception>
     public object? Deserialize(
         EventReader reader,
-        Type expectedType,
+        Type? expectedType,
         object? existingObject,
         SerializerContextSettings? contextSettings,
         out SerializerContext? context

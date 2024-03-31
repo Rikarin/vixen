@@ -45,7 +45,7 @@ public class TypeDescriptorFactory : ITypeDescriptorFactory {
         this.namingConvention = namingConvention;
     }
 
-    public ITypeDescriptor Find(Type type) {
+    public ITypeDescriptor? Find(Type? type) {
         if (type == null) {
             return null;
         }

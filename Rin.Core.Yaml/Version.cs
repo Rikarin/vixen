@@ -1,4 +1,9 @@
+using System.Runtime.CompilerServices;
+
+[assembly:InternalsVisibleTo("Rin.Core.Yaml.Tests")]
+
 namespace Rin.Core.Yaml;
+
 
 /// <summary>
 ///     Specifies the version of the YAML language.

@@ -117,7 +117,7 @@ public class SerializerContext : ITagTypeResolver {
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>An instance of <see cref="ITypeDescriptor" />.</returns>
-    public ITypeDescriptor FindTypeDescriptor(Type type) => Serializer.TypeDescriptorFactory.Find(type);
+    public ITypeDescriptor? FindTypeDescriptor(Type? type) => Serializer.TypeDescriptorFactory.Find(type);
 
     /// <summary>
     ///     Resolves a type from the specified tag.

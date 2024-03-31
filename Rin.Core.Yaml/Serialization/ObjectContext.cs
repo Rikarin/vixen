@@ -64,7 +64,7 @@ public struct ObjectContext {
     /// <summary>
     ///     The expected type descriptor.
     /// </summary>
-    public ITypeDescriptor Descriptor { get; set; }
+    public ITypeDescriptor? Descriptor { get; set; }
 
     /// <summary>
     ///     The type descriptor of the parent of the instance type.
@@ -105,7 +105,7 @@ public struct ObjectContext {
     public ObjectContext(
         SerializerContext serializerContext,
         object instance,
-        ITypeDescriptor descriptor,
+        ITypeDescriptor? descriptor,
         ITypeDescriptor? parentTypeDescriptor = null,
         IMemberDescriptor? parentTypeMemberDescriptor = null
     ) : this() {

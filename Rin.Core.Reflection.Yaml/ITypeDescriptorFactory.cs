@@ -18,5 +18,5 @@ public interface ITypeDescriptorFactory {
     /// </summary>
     /// <param name="type">The type.</param>
     /// <returns>ITypeDescriptor.</returns>
-    ITypeDescriptor Find(Type type);
+    ITypeDescriptor? Find(Type? type);
 }
