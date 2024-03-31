@@ -4,4 +4,8 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Rin.Core.Reflection.Yaml\Rin.Core.Reflection.csproj" />
+      <ProjectReference Include="..\Rin.Core\Rin.Core.csproj" />
+    </ItemGroup>
 </Project>

@@ -17,7 +17,7 @@ Create game engine with requirements:
 ## Features
 
 - Entity Component System (Arch)
-- Serialization & InputSystem is based on the Stride Engine
+- Serialization & InputSystem is based on the Stride Engine (fe4aa87cdac41ca7ec45cd26660fd5d8c9632944)
 
 
 ## Used libraries
@@ -42,6 +42,8 @@ Create game engine with requirements:
 
 
 ## Topics (TODO)
+
+- FIX <RootNamespace>Rin.Core</RootNamespace>
 
 - Generic interface for wrapping Vulkan & OpenGL
 - Rendering Pipelines

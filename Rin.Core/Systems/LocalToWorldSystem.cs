@@ -1,8 +1,8 @@
 using Arch.Core;
 using Arch.Core.Extensions;
 using Arch.System;
+using Rin.Core.Common.Mathematics;
 using Rin.Core.Components;
-using Rin.Core.Math;
 using System.Numerics;
 
 namespace Rin.Core.Systems;

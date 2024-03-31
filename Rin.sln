@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Core.Shaders", "Rin.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Core.Shaders.Tests", "Tests\Rin.Core.Shaders.Tests\Rin.Core.Shaders.Tests.csproj", "{DDEEB6FA-00C3-4DF7-B5CD-E0782734DC66}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rin.Core.Reflection", "Rin.Core.Reflection.Yaml\Rin.Core.Reflection.csproj", "{3CCB7293-3291-4785-BE3D-DAA5974D82A5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +140,10 @@ Global
 		{DDEEB6FA-00C3-4DF7-B5CD-E0782734DC66}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDEEB6FA-00C3-4DF7-B5CD-E0782734DC66}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DDEEB6FA-00C3-4DF7-B5CD-E0782734DC66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CCB7293-3291-4785-BE3D-DAA5974D82A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CCB7293-3291-4785-BE3D-DAA5974D82A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CCB7293-3291-4785-BE3D-DAA5974D82A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CCB7293-3291-4785-BE3D-DAA5974D82A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{85FDF47D-31BA-409E-ACD5-CE910763065F} = {8924A455-8271-46D0-A725-E2D6B7C98247}

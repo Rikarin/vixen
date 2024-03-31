@@ -10,7 +10,7 @@ public static class AssemblyRegistry {
 
     static readonly Dictionary<Assembly, HashSet<string>> MapAssemblyToCategories = new();
 
-    // static readonly Dictionary<Assembly, ScanTypes> AssemblyToScanTypes = new();
+    static readonly Dictionary<Assembly, ScanTypes> AssemblyToScanTypes = new();
     static readonly Dictionary<string, Assembly> AssemblyNameToAssembly = new(StringComparer.OrdinalIgnoreCase);
 
     static AssemblyRegistry() {
@@ -104,6 +104,15 @@ public static class AssemblyRegistry {
     /// <returns>A set of assemblies associated with the specified categories.</returns>
     /// <exception cref="System.ArgumentNullException">categories</exception>
     public static HashSet<Assembly> Find(params string[] categories) => Find((IEnumerable<string>)categories);
+
+    public static void RegisterScanTypes(Assembly assembly, ScanTypes types) {
+        AssemblyToScanTypes.TryAdd(assembly, types);
+    }
+
+    public static ScanTypes? GetScanTypes(Assembly assembly) {
+        AssemblyToScanTypes.TryGetValue(assembly, out var assemblyScanTypes);
+        return assemblyScanTypes;
+    }
 
     /// <summary>
     ///     Registers an assembly with the specified categories.
@@ -217,4 +226,11 @@ public static class AssemblyRegistry {
     ///     Occurs when an assembly is registered.
     /// </summary>
     public static event EventHandler<AssemblyRegisteredEventArgs> AssemblyUnregistered;
+
+    /// <summary>
+    ///     List types that matches a given <see cref="AssemblyScanAttribute" /> for a given assembly.
+    /// </summary>
+    public class ScanTypes(Dictionary<Type, List<Type>> types) {
+        public IReadOnlyDictionary<Type, List<Type>> Types { get; } = types;
+    }
 }

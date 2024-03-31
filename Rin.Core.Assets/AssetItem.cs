@@ -1,4 +1,5 @@
 using Rin.Core.Design.IO;
+using Rin.Core.Serialization.Assets;
 
 namespace Rin.Core.Assets;
 

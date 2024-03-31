@@ -1,4 +1,4 @@
-using Rin.Core.Math;
+using Rin.Core.Common.Mathematics;
 
 namespace Rin.InputSystem.VirtualButtons;
 
