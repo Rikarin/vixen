@@ -147,9 +147,7 @@ public class DictionaryDescriptor : ObjectDescriptor {
         } else {
             // Only throw an exception if the addMethod is not accessible when adding to a dictionary
             if (indexerSetter == null) {
-                throw new InvalidOperationException(
-                    $"No indexer this[key] method found on dictionary [{Type}]"
-                );
+                throw new InvalidOperationException($"No indexer this[key] method found on dictionary [{Type}]");
             }
 
             indexerSetter.Invoke(dictionary, [key, value]);

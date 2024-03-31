@@ -76,7 +76,7 @@ class YamlAssemblyRegistry : ITagTypeRegistry {
             var assemblyScanTypes = AssemblyRegistry.GetScanTypes(assembly);
             if (assemblyScanTypes != null) {
                 // Register serializer factories
-                if (assemblyScanTypes.Types.TryGetValue(typeof(IYamlSerializableFactory), out List<Type> types)) {
+                if (assemblyScanTypes.Types.TryGetValue(typeof(IYamlSerializableFactory), out var types)) {
                     foreach (var type in types) {
                         if (typeof(IYamlSerializableFactory).IsAssignableFrom(type)
                             && type.GetConstructor(Type.EmptyTypes) != null) {

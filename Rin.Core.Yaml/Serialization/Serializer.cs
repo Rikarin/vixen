@@ -139,7 +139,12 @@ public sealed class Serializer {
     /// <param name="graph">The object to serialize.</param>
     /// <param name="type">The static type of the object to serialize.</param>
     /// <param name="contextSettings">The context settings.</param>
-    public void Serialize(IEmitter emitter, object graph, Type type, SerializerContextSettings? contextSettings = null) {
+    public void Serialize(
+        IEmitter emitter,
+        object graph,
+        Type type,
+        SerializerContextSettings? contextSettings = null
+    ) {
         if (emitter == null) {
             throw new ArgumentNullException(nameof(emitter));
         }

@@ -1,5 +1,4 @@
 using Rin.Core.Yaml.Tokens;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
 namespace Rin.Core.Yaml;

@@ -28,7 +28,7 @@ public class YamlSequenceNode : YamlNode, IEnumerable<YamlNode> {
     public override IEnumerable<YamlNode> AllNodes {
         get {
             yield return this;
-            
+
             foreach (var child in Children) {
                 foreach (var node in child.AllNodes) {
                     yield return node;
@@ -87,7 +87,7 @@ public class YamlSequenceNode : YamlNode, IEnumerable<YamlNode> {
     /// </summary>
     public YamlSequenceNode(IEnumerable<YamlNode> children) {
         foreach (var child in children) {
-            this.Children.Add(child);
+            Children.Add(child);
         }
     }
 

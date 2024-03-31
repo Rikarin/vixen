@@ -29,7 +29,7 @@ class PrimitiveSerializer : ScalarSerializerBase, IYamlSerializableFactory {
 
         // If type is an enum, try to parse it
         if (type.IsEnum) {
-            var result = primitiveType.ParseEnum(text, out bool enumRemapped);
+            var result = primitiveType.ParseEnum(text, out var enumRemapped);
             if (enumRemapped) {
                 context.SerializerContext.HasRemapOccurred = true;
             }

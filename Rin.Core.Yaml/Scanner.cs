@@ -1006,7 +1006,7 @@ public class Scanner {
         }
 
         var end = mark;
-        
+
         // Set the indentation level if it was specified.
         if (increment != 0) {
             currentIndent = indent >= 0 ? indent + increment : increment;
@@ -1219,6 +1219,7 @@ public class Scanner {
                                     "While parsing a quoted scalar, find unknown escape character."
                                 );
                             }
+
                             break;
                     }
 
@@ -1463,7 +1464,7 @@ public class Scanner {
     /// </summary>
     void RemoveSimpleKey() {
         var key = simpleKeys.Peek();
-        
+
         if (key is { IsPossible: true, IsRequired: true }) {
             // If the key is required, it is an error.
             throw new SyntaxErrorException(

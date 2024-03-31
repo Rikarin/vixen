@@ -185,7 +185,7 @@ public class ObjectDescriptor : ITypeDescriptor {
 
         var bindingFlags = BindingFlags.Instance | BindingFlags.Public;
 
-        var metadataTypeAttributes = Type.GetCustomAttributes<DataContractMetadataTypeAttribute>(inherit: true);
+        var metadataTypeAttributes = Type.GetCustomAttributes<DataContractMetadataTypeAttribute>(true);
         var metadataClassMemberInfos =
             metadataTypeAttributes.Any() ? new List<(MemberInfo MemberInfo, Type MemberType)>() : null;
         foreach (var metadataTypeAttr in metadataTypeAttributes) {

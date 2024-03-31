@@ -193,7 +193,7 @@ public class Parser : IParser {
 
             states.Push(ParserState.YamlParseDocumentEndState);
             state = ParserState.YamlParseBlockNodeState;
-            
+
             return new Events.DocumentStart(null, directives, true, GetCurrentToken().Start, GetCurrentToken().End);
         }
 
