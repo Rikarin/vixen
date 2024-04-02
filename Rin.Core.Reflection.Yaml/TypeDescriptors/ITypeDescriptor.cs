@@ -70,10 +70,10 @@ public interface ITypeDescriptor {
     IMemberDescriptor TryGetMember(string name);
 
     /// <summary>
-    ///     Determines whether the named member is remmaped.
+    ///     Determines whether the named member is remapped.
     /// </summary>
     /// <param name="name">The name.</param>
-    /// <returns><c>true</c> if the named member is remmaped; otherwise, <c>false</c>.</returns>
+    /// <returns><c>true</c> if the named member is remapped; otherwise, <c>false</c>.</returns>
     bool IsMemberRemapped(string name);
 
     /// <summary>
