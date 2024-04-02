@@ -1,0 +1,6 @@
+namespace Vixen.Core.Shaders.Ast;
+
+[Flags]
+public enum Qualifier {
+    None = 0
+}

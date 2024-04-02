@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Serilog" Version="3.1.1"/>
+
+        <ProjectReference Include="..\Vixen.Core.Common\Vixen.Core.Common.csproj" />
+        <ProjectReference Include="..\Vixen.Platform.Common\Vixen.Platform.Common.csproj" />
+    </ItemGroup>
+</Project>
