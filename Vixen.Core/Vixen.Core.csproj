@@ -25,6 +25,10 @@
         <Generator>TextTemplatingFileGenerator</Generator>
         <LastGenOutput>MemberSerializerGenerated.cs</LastGenOutput>
       </None>
+      <None Update="Serialization\MemberSerializerCore.ttinclude">
+        <Generator>TextTemplatingFilePreprocessor</Generator>
+        <LastGenOutput>MemberSerializerCore.cs</LastGenOutput>
+      </None>
     </ItemGroup>
 
     <ItemGroup>

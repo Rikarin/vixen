@@ -12,7 +12,7 @@ namespace Vixen.BuildEngine.Common;
 public class Builder : IDisposable {
     public const int ExpectedVersion = 4;
 
-    public const string MonitorPipeName = "Rin/BuildEngine/Monitor";
+    public const string MonitorPipeName = "Vixen/BuildEngine/Monitor";
     public static readonly string DoNotCompressTag = "DoNotCompress";
     public static readonly string DoNotPackTag = "DoNotPack";
 

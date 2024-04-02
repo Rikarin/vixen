@@ -1,11 +1,11 @@
 using ImGuiNET;
-using Rin.Platform.Internal;
+using Vixen.Platform.Internal;
 using Serilog;
 using Silk.NET.OpenGL.Extensions.ImGui;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace Rin.Platform.Silk;
+namespace Vixen.Platform.Silk;
 
 class SilkImGuiRenderer2 : IInternalGuiRenderer {
     readonly ImGuiController controller;

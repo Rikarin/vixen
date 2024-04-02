@@ -22,9 +22,9 @@ Thread.CurrentThread.Name = "Main";
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
-    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.RendererContext", LogEventLevel.Information)
-    .MinimumLevel.Override("Rin.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
-    // .MinimumLevel.Override("Rin.Editor.ShaderCompiler", LogEventLevel.Information)
+    .MinimumLevel.Override("Vixen.Platform.Abstractions.Rendering.RendererContext", LogEventLevel.Information)
+    .MinimumLevel.Override("Vixen.Platform.Abstractions.Rendering.ISwapchain", LogEventLevel.Information)
+    // .MinimumLevel.Override("Vixen.Editor.ShaderCompiler", LogEventLevel.Information)
 
     // For debugging pipeline
     // .MinimumLevel.Verbose()

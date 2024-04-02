@@ -663,7 +663,7 @@ Mother:
         var settings = new SerializerSettings();
         settings.RegisterAssembly(typeof(Z).Assembly);
         var sut = new Serializer(settings);
-        const string yaml = @"!Rin.Core.Yaml.Tests.Serialization.SerializationTests+W
+        const string yaml = @"!Vixen.Core.Yaml.Tests.Serialization.SerializationTests+W
     MyList:
         - aaa
         - bbb

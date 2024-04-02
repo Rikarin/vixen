@@ -19,7 +19,7 @@ public class Parser_Test {
         var tree = parser.compilation_unit();
         var module = tree.Accept(visitor) as Module;
         
-        Assert.Equal("Rin.Test", module.Package.Name.Text);
+        Assert.Equal("Vixen.Test", module.Package.Name.Text);
 
         var shader = module.Declarations.OfType<Shader>().First();
         Assert.Equal("TestShader", shader.Name.Text);

@@ -9,7 +9,7 @@ class SourceContextEnricher : ILogEventEnricher {
             var scalarValue = property as ScalarValue;
             var value = scalarValue?.Value as string;
 
-            if (value?.StartsWith("Rin") ?? false) {
+            if (value?.StartsWith("Vixen") ?? false) {
                 var lastElement = value.Split(".").LastOrDefault();
                 if (!string.IsNullOrWhiteSpace(lastElement)) {
                     logEvent.AddOrUpdateProperty(new("SourceContext", new ScalarValue($"[{lastElement}]")));

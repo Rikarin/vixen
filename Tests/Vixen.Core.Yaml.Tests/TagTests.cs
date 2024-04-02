@@ -4,7 +4,7 @@ using Vixen.Core.Yaml.Tests;
 using Xunit;
 
 // ReSharper disable once CheckNamespace - we explicitely want a custom namespace for the sake of the tests
-namespace Rin.Core.Yaml.Tests.TestNamespace;
+namespace Vixen.Core.Yaml.Tests.TestNamespace;
 
 // Note: do not move these types! If the namespace must be changed, be sure to update TagTests.Namespace.
 
@@ -59,8 +59,8 @@ public class AliasType2 { }
 #endregion Types
 
 public class TagTests : YamlTest {
-    const string AssemblyName = "Rin.Core.Yaml.Tests";
-    const string Namespace = "Rin.Core.Yaml.Tests.TestNamespace";
+    const string AssemblyName = "Vixen.Core.Yaml.Tests";
+    const string Namespace = "Vixen.Core.Yaml.Tests.TestNamespace";
 
     [Fact]
     public void TestNullType() {
@@ -88,7 +88,7 @@ public class TagTests : YamlTest {
         TestType(typeof(int?), "!System.Nullable%601[[System.Int32,System.Private.CoreLib]],System.Private.CoreLib");
         // TODO: we would like to have something like "!System.Guid?,System.Private.CoreLib"
         TestType(typeof(Guid?), "!System.Nullable%601[[System.Guid,System.Private.CoreLib]],System.Private.CoreLib");
-        // TODO: we would like to have something like "!Rin.Core.Yaml.Tests.TestNamespace.SimpleStruct?,Rin.Core.Yaml.Tests"
+        // TODO: we would like to have something like "!Vixen.Core.Yaml.Tests.TestNamespace.SimpleStruct?,Vixen.Core.Yaml.Tests"
         TestType(
             typeof(SimpleStruct?),
             $"!System.Nullable%601[[{Namespace}.SimpleStruct,{AssemblyName}]],System.Private.CoreLib"
@@ -173,7 +173,7 @@ public class TagTests : YamlTest {
 
     [Fact]
     public void TestGenericDataContractType() {
-        // TODO: we would like to have: !CustomName2[[Rin.Core.Yaml.Tests.TestNamespace.SimpleType,Rin.Core.Yaml.Tests]]
+        // TODO: we would like to have: !CustomName2[[Vixen.Core.Yaml.Tests.TestNamespace.SimpleType,Vixen.Core.Yaml.Tests]]
         TestType(
             typeof(GenericDataContractType<SimpleType>),
             $"!{Namespace}.GenericDataContractType%601[[{Namespace}.SimpleType,{AssemblyName}]],{AssemblyName}"
@@ -456,7 +456,7 @@ public class TagTests : YamlTest {
 
     [Fact]
     public void TestGenericDataContractTypeArray() {
-        // TODO: we would like to have: !CustomName2[[Rin.Core.Yaml.Tests.TestNamespace.SimpleType,Rin.Core.Yaml.Tests]][]
+        // TODO: we would like to have: !CustomName2[[Vixen.Core.Yaml.Tests.TestNamespace.SimpleType,Vixen.Core.Yaml.Tests]][]
         TestType(
             typeof(GenericDataContractType<SimpleType>[]),
             $"!{Namespace}.GenericDataContractType%601[[{Namespace}.SimpleType,{AssemblyName}]][],{AssemblyName}"

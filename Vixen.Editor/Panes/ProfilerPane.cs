@@ -90,12 +90,12 @@ sealed class ProfilerPane : Pane {
         ImGui.Spacing();
         ImGui.Text("Engine");
         ImGui.Separator();
-        PlotLineMetric("Rin.Renderer.SubmitCount", Cyan);
-        PlotLineMetric("Rin.Renderer.SubmitDisposalCount", Cyan);
-        PlotLineMetric("Rin.Application.WorkTime", LightBlue);
-        PlotLineMetric("Rin.Application.WaitTime", Yellow);
-        PlotLineMetric("Rin.Renderer.WorkTime", Cyan);
-        PlotLineMetric("Rin.Renderer.WaitTime", Pink);
+        PlotLineMetric("Vixen.Renderer.SubmitCount", Cyan);
+        PlotLineMetric("Vixen.Renderer.SubmitDisposalCount", Cyan);
+        PlotLineMetric("Vixen.Application.WorkTime", LightBlue);
+        PlotLineMetric("Vixen.Application.WaitTime", Yellow);
+        PlotLineMetric("Vixen.Renderer.WorkTime", Cyan);
+        PlotLineMetric("Vixen.Renderer.WaitTime", Pink);
 
         ImGui.Spacing();
         ImGui.Spacing();

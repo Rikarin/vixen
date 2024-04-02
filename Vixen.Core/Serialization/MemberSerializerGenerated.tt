@@ -8,9 +8,9 @@
 using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Rin.Core.Storage;
+using Vixen.Core.Storage;
 
-namespace Rin.Core.Serialization;
+namespace Vixen.Core.Serialization;
 
 <#
 var className = "MemberNullableSerializer";

@@ -40,7 +40,7 @@ public static class Profiler {
         eventSourcesListener = new();
 
         tracerProvider = Sdk.CreateTracerProviderBuilder()
-            .AddSource("Rin.*")
+            .AddSource("Vixen.*")
             // .AddConsoleExporter()
             // .AddInMemoryExporter(traces)
             .Build();

@@ -123,7 +123,7 @@ sealed class GuiRenderer : IDisposable {
         // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
         // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-        ImGui.Begin("Rin Editor", ref dockSpaceOpen, windowFlags);
+        ImGui.Begin("Vixen Editor", ref dockSpaceOpen, windowFlags);
         ImGui.PopStyleVar();
 
         if (fullScreenDock) {

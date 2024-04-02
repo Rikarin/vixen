@@ -1,7 +1,7 @@
-package Rin.Test
+package Vixen.Test
 
-import Rin.Core
-import Rin.BaseShaders
+import Vixen.Core
+import Vixen.BaseShaders
 
 // Test class
 shader TestShader : ExampleBase, CustomShader {

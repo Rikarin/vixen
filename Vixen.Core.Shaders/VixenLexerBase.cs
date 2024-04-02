@@ -55,7 +55,7 @@ public abstract class VixenLexerBase : Lexer {
         //     }
         //
         //     if (switchToFormatString) {
-        //         Mode(RinLexer.INTERPOLATION_FORMAT);
+        //         Mode(VixenLexer.INTERPOLATION_FORMAT);
         //     }
         // }
     }

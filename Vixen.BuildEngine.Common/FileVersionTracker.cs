@@ -8,7 +8,7 @@ namespace Vixen.BuildEngine.Common;
 ///     A tracker of file date.
 /// </summary>
 public class FileVersionTracker : IDisposable {
-    const string DefaultFileVersionTrackerFile = "Rin/FileVersionTracker.cache";
+    const string DefaultFileVersionTrackerFile = "Vixen/FileVersionTracker.cache";
 
     readonly FileVersionStorage storage;
     readonly Dictionary<FileVersionKey, object> locks;

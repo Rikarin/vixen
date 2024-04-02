@@ -43,7 +43,7 @@ Create game engine with requirements:
 
 ## Topics (TODO)
 
-- FIX <RootNamespace>Rin.Core</RootNamespace>
+- FIX <RootNamespace>Vixen.Core</RootNamespace>
 
 - Generic interface for wrapping Vulkan & OpenGL
 - Rendering Pipelines

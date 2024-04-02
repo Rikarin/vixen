@@ -33,7 +33,7 @@ sealed class VulkanContext : RendererContext, IDisposable {
             // TODO: fix these
             PApplicationName = (byte*)Marshal.StringToHGlobalAnsi("Hello Triangle"),
             ApplicationVersion = Vk.MakeVersion(1, 0),
-            PEngineName = (byte*)Marshal.StringToHGlobalAnsi("Rin"),
+            PEngineName = (byte*)Marshal.StringToHGlobalAnsi("Vixen"),
             EngineVersion = Vk.MakeVersion(1, 0),
             ApiVersion = Vk.MakeVersion(1, 2)
         };

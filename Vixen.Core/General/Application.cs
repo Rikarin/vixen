@@ -115,7 +115,7 @@ public class Application : IApplication, IDisposable {
 
     public static Application CreateDefault(Action<ApplicationOptions>? configureOptions = null) {
         var options = new ApplicationOptions {
-            Name = "Rin Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded, VSync = true
+            Name = "Vixen Engine", ThreadingPolicy = ThreadingPolicy.MultiThreaded, VSync = true
         };
         configureOptions?.Invoke(options);
 

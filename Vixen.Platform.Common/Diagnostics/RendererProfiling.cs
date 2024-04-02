@@ -5,8 +5,8 @@ using Vixen.Diagnostics;
 namespace Vixen.Platform.Common.Diagnostics;
 
 public static class RendererProfiling {
-    public static readonly ActivitySource ApplicationSource = new("Rin.Renderer");
-    public static readonly Meter ApplicationMeter = new("Rin.Renderer");
+    public static readonly ActivitySource ApplicationSource = new("Vixen.Renderer");
+    public static readonly Meter ApplicationMeter = new("Vixen.Renderer");
     
     public static readonly Histogram<double> WorkTime = ApplicationMeter.CreateHistogram<double>("WorkTime");
     public static readonly Histogram<double> WaitTime = ApplicationMeter.CreateHistogram<double>("WaitTime");

@@ -5,8 +5,8 @@ using Vixen.Diagnostics;
 namespace Vixen.Core.Diagnostics;
 
 public static class ApplicationProfiling {
-    public static readonly ActivitySource ApplicationSource = new("Rin.Application");
-    public static readonly Meter ApplicationMeter = new("Rin.Application");
+    public static readonly ActivitySource ApplicationSource = new("Vixen.Application");
+    public static readonly Meter ApplicationMeter = new("Vixen.Application");
     
     public static readonly Histogram<double> Initialization = ApplicationMeter.CreateHistogram<double>("Initialization");
     public static readonly Histogram<double> WorkTime = ApplicationMeter.CreateHistogram<double>("WorkTime");
