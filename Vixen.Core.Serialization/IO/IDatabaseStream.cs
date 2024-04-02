@@ -1,6 +1,6 @@
 using Vixen.Core.Storage;
 
-namespace Vixen.Core.Serialization.IO;
+namespace Vixen.Core.IO;
 
 public interface IDatabaseStream {
     ObjectId ObjectId { get; }

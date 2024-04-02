@@ -1,7 +1,7 @@
-using Vixen.Core.IO;
+using Vixen.Core.Serialization;
 using Vixen.Core.Serialization.Binary;
 
-namespace Vixen.Core.Serialization.IO;
+namespace Vixen.Core.IO;
 
 /// <summary>
 ///     A store that will be incrementally saved on the HDD.

@@ -1,9 +1,8 @@
 using System.Text;
 using Vixen.Core.IO;
-using Vixen.Core.Serialization.Serialization.Contents;
-using Vixen.Core.Storage;
+using Vixen.Core.Serialization.Contents;
 
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Object Database Backend (ODB) implementation using <see cref="VirtualFileSystem" />

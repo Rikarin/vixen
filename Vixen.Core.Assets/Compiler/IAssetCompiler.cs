@@ -1,5 +1,5 @@
 using Vixen.Core.Assets.Analysis;
-using Vixen.Core.Serialization.Serialization.Contents;
+using Vixen.Core.Serialization.Contents;
 
 namespace Vixen.Core.Assets.Compiler;
 

@@ -1,7 +1,6 @@
 using Vixen.Core.Design.IO;
 using Vixen.Core.Serialization;
-using Vixen.Core.Serialization.Assets;
-using Vixen.Core.Serialization.Serialization.Contents;
+using Vixen.Core.Serialization.Contents;
 
 namespace Vixen.Core.Assets;
 

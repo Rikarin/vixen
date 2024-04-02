@@ -4,6 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <RootNamespace>Vixen.Core</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
       <ProjectReference Include="..\Vixen.Core.IO\Vixen.Core.IO.csproj" />

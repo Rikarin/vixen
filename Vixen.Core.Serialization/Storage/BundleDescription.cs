@@ -1,6 +1,4 @@
-using Vixen.Core.Storage;
-
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Description of a bundle: header, dependencies, objects and assets.

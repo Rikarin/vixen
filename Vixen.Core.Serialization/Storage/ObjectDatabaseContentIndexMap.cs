@@ -1,7 +1,6 @@
-using Vixen.Core.Serialization.Serialization.Contents;
-using Vixen.Core.Storage;
+using Vixen.Core.Serialization.Contents;
 
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Content Index Map implementation which regroups all the asset index maps of every loaded file backend and asset

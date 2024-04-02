@@ -1,4 +1,4 @@
-namespace Vixen.Core.Serialization.Serialization.Contents;
+namespace Vixen.Core.Serialization.Contents;
 
 /// <summary>
 ///     This class describes the header of an asset serialized in a blob file. Its (serialized) size has to remain constant

@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Runtime.CompilerServices;
 
-namespace Vixen.Core.Serialization.LZ4;
+namespace Vixen.Core.LZ4;
 
 /// <summary>Block compression stream. Allows to use LZ4 for stream compression.</summary>
 public class LZ4Stream : Stream {

@@ -1,8 +1,7 @@
 using Vixen.Core.IO;
-using Vixen.Core.Serialization.Serialization.Contents;
-using Vixen.Core.Storage;
+using Vixen.Core.Serialization.Contents;
 
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Base class for custom object database backends (ODB).

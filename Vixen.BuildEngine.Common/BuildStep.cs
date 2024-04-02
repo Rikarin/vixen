@@ -1,6 +1,6 @@
 using Serilog;
 using Vixen.Core.Diagnostics;
-using Vixen.Core.Serialization.Serialization.Contents;
+using Vixen.Core.Serialization.Contents;
 using Vixen.Core.Storage;
 
 namespace Vixen.BuildEngine.Common;

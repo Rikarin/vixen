@@ -1,6 +1,6 @@
 using Vixen.Core.Storage;
 
-namespace Vixen.Core.Serialization.Serialization.Contents;
+namespace Vixen.Core.Serialization.Contents;
 
 public interface IContentIndexMap : IDisposable {
     ObjectId this[string url] { get; set; }

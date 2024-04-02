@@ -1,17 +1,16 @@
-# Game Engine
+# Vixen
 
-
-Freely available open source game engine designed in the similar way as Unity.
+Freely available open source game engine designed in the similar way as Unity and based on Stride.
 The whole codebase is licensed under MIT license.
 
 
 ## Motivation
 
 Create game engine with requirements:
-- Supports most popular desktop operation systems: win64, OSX64, OSX-ARM, Linux64
-- Runs on .NET 7
-- Uses Vulkan, OpenGL API
-- Has HLSL Shaders compiled to SPIR-V
+- Support most popular platforms: Win64, OSX64, OSX-ARM, Linux64, Android/iOS
+- Run on .NET 8
+- Use Vulkan, OpenGL API
+- Custom shader language compiled to SPIR-V
 
 
 ## Features
@@ -43,8 +42,7 @@ Create game engine with requirements:
 
 ## Topics (TODO)
 
-- FIX <RootNamespace>Vixen.Core</RootNamespace>
-
+- Explicitly use RootNamespace
 - Generic interface for wrapping Vulkan & OpenGL
 - Rendering Pipelines
     - Forward/Deferred rendering

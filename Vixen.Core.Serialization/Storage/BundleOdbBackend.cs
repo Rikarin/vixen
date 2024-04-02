@@ -1,12 +1,12 @@
 using System.IO.Compression;
 using Vixen.Core.Extensions;
 using Vixen.Core.IO;
+using Vixen.Core.LZ4;
+using Vixen.Core.Serialization;
 using Vixen.Core.Serialization.Binary;
-using Vixen.Core.Serialization.LZ4;
-using Vixen.Core.Serialization.Serialization.Contents;
-using Vixen.Core.Storage;
+using Vixen.Core.Serialization.Contents;
 
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Object Database Backend (ODB) implementation that bundles multiple chunks into a .bundle files, optionally

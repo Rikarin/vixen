@@ -1,10 +1,9 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using Vixen.Core.IO;
-using Vixen.Core.Serialization.IO;
 using Vixen.Core.Storage;
 
-namespace Vixen.Core.Serialization.Serialization.Contents;
+namespace Vixen.Core.Serialization.Contents;
 
 public sealed class ContentIndexMap : DictionaryStore<string, ObjectId>, IContentIndexMap {
     static readonly Regex RegexEntry = new(@"^(.*?)\s+(\w+)$");

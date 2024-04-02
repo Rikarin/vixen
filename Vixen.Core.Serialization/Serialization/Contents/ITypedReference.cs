@@ -1,4 +1,4 @@
-namespace Vixen.Core.Serialization.Serialization.Contents;
+namespace Vixen.Core.Serialization.Contents;
 
 /// <summary>
 ///     A typed <see cref="IReference" />

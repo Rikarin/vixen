@@ -1,7 +1,6 @@
 using Vixen.Core.IO;
-using Vixen.Core.Storage;
 
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     Gives access to the object database.

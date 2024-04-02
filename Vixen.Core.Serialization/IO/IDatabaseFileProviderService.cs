@@ -1,4 +1,4 @@
-namespace Vixen.Core.Serialization.IO;
+namespace Vixen.Core.IO;
 
 public interface IDatabaseFileProviderService {
     DatabaseFileProvider FileProvider { get; }

@@ -1,5 +1,4 @@
 using Vixen.Core.Design.IO;
-using Vixen.Core.Serialization.Assets;
 
 namespace Vixen.Core.Assets;
 

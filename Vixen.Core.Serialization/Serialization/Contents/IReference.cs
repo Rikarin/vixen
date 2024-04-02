@@ -1,6 +1,6 @@
-using Vixen.Core.Serialization.Assets;
+using Vixen.Core.Assets;
 
-namespace Vixen.Core.Serialization.Serialization.Contents;
+namespace Vixen.Core.Serialization.Contents;
 
 /// <summary>
 ///     An interface that provides a reference to an object identified by a <see cref="Guid" /> and a location.

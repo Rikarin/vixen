@@ -1,4 +1,6 @@
-namespace Vixen.Core.Serialization.Assets;
+using Vixen.Core.Serialization;
+
+namespace Vixen.Core.Assets;
 
 [DataContract("AssetId")]
 [DataSerializer(typeof(Serializer))]

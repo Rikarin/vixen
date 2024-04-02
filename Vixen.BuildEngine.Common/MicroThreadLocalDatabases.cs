@@ -1,6 +1,6 @@
+using Vixen.Core.IO;
 using Vixen.Core.MicroThreading;
-using Vixen.Core.Serialization.IO;
-using Vixen.Core.Serialization.Serialization.Contents;
+using Vixen.Core.Serialization.Contents;
 
 namespace Vixen.BuildEngine.Common;
 

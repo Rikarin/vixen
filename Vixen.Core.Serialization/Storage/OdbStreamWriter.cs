@@ -1,6 +1,4 @@
-using Vixen.Core.Storage;
-
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 public abstract class OdbStreamWriter : Stream {
     public Action<OdbStreamWriter> Disposed;

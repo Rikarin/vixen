@@ -3,7 +3,6 @@ using Vixen.Core.Annotations;
 using Vixen.Core.Design;
 using Vixen.Core.Design.IO;
 using Vixen.Core.Reflection;
-using Vixen.Core.Serialization.Assets;
 
 namespace Vixen.Core.Assets;
 

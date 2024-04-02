@@ -1,4 +1,4 @@
-namespace Vixen.Core.Serialization.Storage;
+namespace Vixen.Core.Storage;
 
 /// <summary>
 ///     A read-only <see cref="NativeMemoryStream" /> that will properly keep references on its underlying

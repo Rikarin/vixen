@@ -1,4 +1,4 @@
-namespace Vixen.Core.Serialization.IO;
+namespace Vixen.Core.IO;
 
 /// <summary>
 ///     A Key->Value store that will be incrementally saved on the HDD.

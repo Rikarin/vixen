@@ -1,6 +1,6 @@
 using System.Text;
+using Vixen.Core.IO;
 using Vixen.Core.Serialization;
-using Vixen.Core.Serialization.IO;
 using Vixen.Core.Serialization.Serializers;
 using Vixen.Core.Storage;
 

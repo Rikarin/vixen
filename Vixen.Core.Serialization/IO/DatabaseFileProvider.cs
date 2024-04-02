@@ -1,10 +1,8 @@
 using System.Text.RegularExpressions;
-using Vixen.Core.IO;
-using Vixen.Core.Serialization.Serialization.Contents;
-using Vixen.Core.Serialization.Storage;
+using Vixen.Core.Serialization.Contents;
 using Vixen.Core.Storage;
 
-namespace Vixen.Core.Serialization.IO;
+namespace Vixen.Core.IO;
 
 public sealed class DatabaseFileProvider : VirtualFileProviderBase {
     /// <summary>
