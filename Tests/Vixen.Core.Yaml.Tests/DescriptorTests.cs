@@ -174,7 +174,7 @@ public class DescriptorTests {
 
         public ICollection<string> Collection { get; set; }
 
-        public ICollection<string> CollectionReadOnly { get; private set; }
+        public ICollection<string> CollectionReadOnly { get; set; }
 
         [DataMemberIgnore]
         public string DontSerialize { get; set; }

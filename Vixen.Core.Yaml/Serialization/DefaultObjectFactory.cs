@@ -7,7 +7,7 @@ namespace Vixen.Core.Yaml.Serialization;
 ///     Creates objects using Activator.CreateInstance.
 /// </summary>
 public sealed class DefaultObjectFactory : IObjectFactory {
-    static readonly Type[] EmptyTypes = Array.Empty<Type>();
+    static readonly Type[] EmptyTypes = [];
 
     static readonly Dictionary<Type, Type> DefaultInterfaceImplementations = new() {
         { typeof(IList), typeof(List<object>) },
@@ -48,12 +48,13 @@ public sealed class DefaultObjectFactory : IObjectFactory {
         return type;
     }
 
+    /// <inheritdoc />
     public object Create(Type type) {
         type = GetDefaultImplementation(type);
 
-        // We can't instantiate primitive or arrays
+        // We can't instantiate primitives or arrays
         if (PrimitiveDescriptor.IsPrimitive(type) || type.IsArray) {
-            return null;
+            throw new InstanceCreationException($"Failed to create instance of type '{type}', wrong factory.");
         }
 
         if (type.GetConstructor(EmptyTypes) != null || type.IsValueType) {
@@ -67,9 +68,13 @@ public sealed class DefaultObjectFactory : IObjectFactory {
             }
         }
 
-        return null;
+        throw new InstanceCreationException(
+            $"Failed to create instance of type '{type}', type does not have a parameterless constructor."
+        );
     }
 
-    public class InstanceCreationException(string message, Exception innerException)
-        : Exception(message, innerException);
+    public class InstanceCreationException : Exception {
+        public InstanceCreationException(string message) : base(message) { }
+        public InstanceCreationException(string message, Exception innerException) : base(message, innerException) { }
+    }
 }

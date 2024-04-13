@@ -6,7 +6,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Vixen.Core.Common\Vixen.Core.Common.csproj" />
-      <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj" />
+        <ProjectReference Include="..\Vixen.Core.Common\Vixen.Core.Common.csproj"/>
+        <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj"/>
     </ItemGroup>
 </Project>

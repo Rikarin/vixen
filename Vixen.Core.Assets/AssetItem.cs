@@ -23,6 +23,7 @@ public sealed class AssetItem : IFileSynchronizable {
     ///     Gets the location of this asset.
     /// </summary>
     /// <value>The location.</value>
+    [DataMember]
     public UFile Location {
         get => location;
         internal set => location = value ?? throw new ArgumentNullException(nameof(value));
@@ -51,6 +52,7 @@ public sealed class AssetItem : IFileSynchronizable {
     ///     Gets the package where this asset is stored.
     /// </summary>
     /// <value>The package.</value>
+    [DataMember]
     public Package Package { get; internal set; }
 
     /// <summary>
@@ -97,6 +99,7 @@ public sealed class AssetItem : IFileSynchronizable {
     ///     Gets or sets the asset.
     /// </summary>
     /// <value>The asset.</value>
+    [DataMember]
     public Asset Asset {
         get => asset;
         internal set => asset = value ?? throw new ArgumentNullException(nameof(value));
@@ -111,11 +114,13 @@ public sealed class AssetItem : IFileSynchronizable {
     ///     true
     ///     , this time will get current time of modification.
     /// </remarks>
+    [DataMember]
     public DateTime ModifiedTime { get; internal set; }
 
     /// <summary>
     ///     Gets the asset version incremental counter, increased everytime the asset is edited.
     /// </summary>
+    [DataMember]
     public long Version {
         get => Interlocked.Read(ref version);
         internal set => Interlocked.Exchange(ref version, value);

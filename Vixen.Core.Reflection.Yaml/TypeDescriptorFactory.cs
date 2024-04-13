@@ -78,10 +78,7 @@ public class TypeDescriptorFactory : ITypeDescriptorFactory {
 
         if (PrimitiveDescriptor.IsPrimitive(type)) {
             descriptor = new PrimitiveDescriptor(this, type, emitDefaultValues, namingConvention);
-        } else if
-            (DictionaryDescriptor
-             .IsDictionary(type)) // resolve dictionary before collections, as they are also collections
-        {
+        } else if (DictionaryDescriptor.IsDictionary(type)) { // resolve dictionary before collections, as they are also collections
             // IDictionary
             descriptor = new DictionaryDescriptor(this, type, emitDefaultValues, namingConvention);
         } else if (ListDescriptor.IsList(type)) {
@@ -90,13 +87,10 @@ public class TypeDescriptorFactory : ITypeDescriptorFactory {
         } else if (SetDescriptor.IsSet(type)) {
             // ISet
             descriptor = new SetDescriptor(this, type, emitDefaultValues, namingConvention);
-        }
-        // TODO(Jiu): Verify if this can be removed
-        // else if (CollectionDescriptor.IsCollection(type)) {
-        //     // ICollection
-        //     descriptor = new OldCollectionDescriptor(this, type, emitDefaultValues, namingConvention);
-        // }
-        else if (type.IsArray) {
+        } else if (CollectionDescriptor.IsCollection(type)) {
+                // ICollection
+                descriptor = new OldCollectionDescriptor(this, type, emitDefaultValues, namingConvention);
+        } else if (type.IsArray) {
             if (type.GetArrayRank() == 1 && !type.GetElementType().IsArray) {
                 // array[] - only single dimension array is supported
                 descriptor = new ArrayDescriptor(this, type, emitDefaultValues, namingConvention);

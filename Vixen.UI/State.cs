@@ -1,5 +1,6 @@
 namespace Vixen.UI;
 
+// TODO: is this actually a Signal?? consider reimplementation
 public class State<T> {
     event Action<T> callbacks;
     

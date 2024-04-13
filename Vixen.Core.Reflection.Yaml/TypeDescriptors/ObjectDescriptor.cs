@@ -178,6 +178,37 @@ public class ObjectDescriptor : ITypeDescriptor {
 
     public bool Contains(string memberName) => mapMembers != null && mapMembers.ContainsKey(memberName);
 
+    static bool IsAccessibleThroughAccessModifiers(PropertyInfo property) {
+        var get = property.GetMethod;
+        var set = property.SetMethod;
+
+        if (get == null) {
+            return false;
+        }
+
+        var forced = property.GetCustomAttribute<DataMemberAttribute>() is not null;
+
+        if (forced && (get.IsPublic || get.IsAssembly)) {
+            return true;
+        }
+
+        // By default, allow access for get-only auto-property, i.e.: { get; } but not { get => }
+        // as the later may create side effects, and without a setter, we can't 'set' as a fallback for those exceptional cases.
+        if (get.IsPublic) {
+            return set?.IsPublic == true || (set == null && TryGetBackingField(property, out _));
+        }
+
+        return false;
+    }
+
+    static bool TryGetBackingField(PropertyInfo property, out FieldInfo backingField) {
+        backingField = property.DeclaringType.GetField(
+            $"<{property.Name}>k__BackingField",
+            BindingFlags.Instance | BindingFlags.NonPublic
+        );
+        return backingField != null;
+    }
+
     protected virtual List<IMemberDescriptor> PrepareMembers() {
         if (Type == typeof(Type)) {
             return EmptyMembers;
@@ -207,12 +238,13 @@ public class ObjectDescriptor : ITypeDescriptor {
         }
 
         // TODO: we might want an option to disable non-public.
-        if (Category == DescriptorCategory.Object || Category == DescriptorCategory.NotSupportedObject) {
+        if (Category is DescriptorCategory.Object or DescriptorCategory.NotSupportedObject) {
             bindingFlags |= BindingFlags.NonPublic;
         }
 
         var memberList = (from propertyInfo in Type.GetProperties(bindingFlags)
-            where propertyInfo.CanRead && propertyInfo.GetIndexParameters().Length == 0 && IsMemberToVisit(propertyInfo)
+            where Type.IsAnonymous() || IsAccessibleThroughAccessModifiers(propertyInfo)
+            where propertyInfo.GetIndexParameters().Length == 0 && IsMemberToVisit(propertyInfo)
             select new PropertyDescriptor(
                 factory.Find(propertyInfo.PropertyType),
                 propertyInfo,
@@ -230,7 +262,9 @@ public class ObjectDescriptor : ITypeDescriptor {
         // Add all public fields
         memberList.AddRange(
             from fieldInfo in Type.GetFields(bindingFlags)
-            where fieldInfo.IsPublic && IsMemberToVisit(fieldInfo)
+            where fieldInfo.IsPublic
+                || (fieldInfo.IsAssembly && fieldInfo.GetCustomAttribute<DataMemberAttribute>() != null)
+            where IsMemberToVisit(fieldInfo)
             select new FieldDescriptor(factory.Find(fieldInfo.FieldType), fieldInfo, NamingConvention.Comparer)
             into member
             where PrepareMember(
@@ -262,8 +296,7 @@ public class ObjectDescriptor : ITypeDescriptor {
         }
 
         // Gets the style
-        var styleAttribute = attributes.FirstOrDefault(x => x is DataStyleAttribute) as DataStyleAttribute;
-        if (styleAttribute != null) {
+        if (attributes.FirstOrDefault(x => x is DataStyleAttribute) is DataStyleAttribute styleAttribute) {
             member.Style = styleAttribute.Style;
             member.ScalarStyle = styleAttribute.ScalarStyle;
         }
@@ -274,10 +307,9 @@ public class ObjectDescriptor : ITypeDescriptor {
             ((IMemberDescriptor)member).Mask = memberAttribute.Mask;
             if (!member.HasSet) {
                 if (memberAttribute.Mode == DataMemberMode.Assign
-                    || (memberType.IsValueType && member.Mode == DataMemberMode.Content)) {
-                    throw new ArgumentException(
-                        $"{memberType.FullName} {member.OriginalName} is not writeable by {memberAttribute.Mode.ToString()}."
-                    );
+                    || memberType.IsValueType
+                    || memberType == typeof(string)) {
+                    member.Mode = DataMemberMode.Never;
                 }
             }
 
@@ -322,20 +354,6 @@ public class ObjectDescriptor : ITypeDescriptor {
         if (!member.IsPublic) {
             if (memberAttribute == null) {
                 return false;
-            }
-        }
-
-        if (member.Mode == DataMemberMode.Binary) {
-            if (!memberType.IsArray) {
-                throw new InvalidOperationException(
-                    $"{memberType.FullName} {member.OriginalName} of {Type.FullName} is not an array. Can not be serialized as binary."
-                );
-            }
-
-            if (!memberType.GetElementType().IsPureValueType()) {
-                throw new InvalidOperationException(
-                    $"{memberType.GetElementType()} is not a pure ValueType. {memberType.FullName} {member.OriginalName} of {Type.FullName} can not serialize as binary."
-                );
             }
         }
 
@@ -421,12 +439,7 @@ public class ObjectDescriptor : ITypeDescriptor {
             }
         }
 
-
         // Member is not displayed if there is a YamlIgnore attribute on it
-        if (AttributeRegistry.GetAttribute<DataMemberIgnoreAttribute>(memberInfo) != null) {
-            return false;
-        }
-
-        return true;
+        return AttributeRegistry.GetAttribute<DataMemberIgnoreAttribute>(memberInfo) is null;
     }
 }

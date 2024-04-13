@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" PrivateAssets="All" />
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" PrivateAssets="All"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj" />
+        <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj"/>
     </ItemGroup>
 </Project>

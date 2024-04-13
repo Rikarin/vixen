@@ -26,18 +26,17 @@ public class DefaultObjectSerializerBackend : IObjectSerializerBackend {
         // Apply this only for primitives
         if (style == DataStyle.Any) {
             var isPrimitiveElementType = false;
-            // TODO(Jiu): Verify commented out collection usage
-            // var collectionDescriptor = objectContext.Descriptor as CollectionDescriptor;
+            var collectionDescriptor = objectContext.Descriptor as CollectionDescriptor;
             var count = 0;
-            // if (collectionDescriptor != null) {
-            //     isPrimitiveElementType = PrimitiveDescriptor.IsPrimitive(collectionDescriptor.ElementType);
-            //     count = collectionDescriptor.GetCollectionCount(objectContext.Instance);
-            // } else {
-            if (objectContext.Descriptor is ArrayDescriptor arrayDescriptor) {
-                isPrimitiveElementType = PrimitiveDescriptor.IsPrimitive(arrayDescriptor.ElementType);
-                count = ((Array)objectContext.Instance)?.Length ?? -1;
+            if (collectionDescriptor != null) {
+                isPrimitiveElementType = PrimitiveDescriptor.IsPrimitive(collectionDescriptor.ElementType);
+                count = collectionDescriptor.GetCollectionCount(objectContext.Instance);
+            } else {
+                if (objectContext.Descriptor is ArrayDescriptor arrayDescriptor) {
+                    isPrimitiveElementType = PrimitiveDescriptor.IsPrimitive(arrayDescriptor.ElementType);
+                    count = ((Array)objectContext.Instance)?.Length ?? -1;
+                }
             }
-            // }
 
             style = objectContext.Instance == null
                 || count >= objectContext.SerializerContext.Settings.LimitPrimitiveFlowSequence

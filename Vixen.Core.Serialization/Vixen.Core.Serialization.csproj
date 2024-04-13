@@ -7,9 +7,9 @@
         <RootNamespace>Vixen.Core</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Vixen.Core.IO\Vixen.Core.IO.csproj" />
+        <ProjectReference Include="..\Vixen.Core.IO\Vixen.Core.IO.csproj"/>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="K4os.Compression.LZ4" Version="1.3.7-beta" />
+        <PackageReference Include="K4os.Compression.LZ4" Version="1.3.7-beta"/>
     </ItemGroup>
 </Project>

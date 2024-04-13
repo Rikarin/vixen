@@ -1,5 +1,6 @@
 using System.Collections;
 using System.ComponentModel;
+using Vixen.Core.Reflection;
 using Vixen.Core.Reflection.MemberDescriptors;
 using Vixen.Core.Reflection.TypeDescriptors;
 using Vixen.Core.Yaml.Serialization;
@@ -9,6 +10,10 @@ using Xunit;
 namespace Vixen.Core.Yaml.Tests.Serialization;
 
 public class SerializationTests2 {
+    public SerializationTests2() {
+        // AssemblyRegistry.RegisterScanTypes();
+    }
+    
     [Fact]
     public void TestHelloWorld() {
         var serializer = new Serializer();
@@ -886,7 +891,7 @@ Test: !ClassWithImplicitMemberTypeInner
 
         public int[] Array { get; set; }
 
-        public int[] ArrayContent { get; private set; }
+        public int[] ArrayContent { get; set; }
 
         public MyObject() {
             ArrayContent = new int[2];
@@ -992,7 +997,7 @@ Test: !ClassWithImplicitMemberTypeInner
         ///     value of the list stored in this instance instead of
         ///     creating a new List&lt;T&gtl instance.
         /// </summary>
-        public List<string> StringListByContent { get; private set; }
+        public List<string> StringListByContent { get; set; }
 
         /// <summary>
         ///     Gets or sets the basic map.
@@ -1011,7 +1016,7 @@ Test: !ClassWithImplicitMemberTypeInner
         ///     Idem as for <see cref="StringListByContent" /> but for dictionary.
         /// </summary>
         /// <value>The content of the string mapby.</value>
-        public Dictionary<string, object> StringMapbyContent { get; private set; }
+        public Dictionary<string, object> StringMapByContent { get; set; }
 
         /// <summary>
         ///     For this property, the deserializer is using the actual
@@ -1019,11 +1024,11 @@ Test: !ClassWithImplicitMemberTypeInner
         ///     creating a new List&lt;T&gtl instance.
         /// </summary>
         /// <value>The content of the list by.</value>
-        public IList ListByContent { get; private set; }
+        public IList<string> ListByContent { get; private set; }
 
         public MyCustomClassWithSpecialMembers() {
             StringListByContent = new();
-            StringMapbyContent = new();
+            StringMapByContent = new();
             ListByContent = new List<string>();
         }
     }
@@ -1470,7 +1475,8 @@ Test: !ClassWithImplicitMemberTypeInner
     }
 
     public class ClassWithImplicitMemberType {
-        public object Test { get; protected set; }
+        [DataMember]
+        public object Test { get; init; }
 
         public ClassWithImplicitMemberType() {
             Test = new ClassWithImplicitMemberTypeInner { String = "test" };

@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Vixen.Core.Common\Vixen.Core.Common.csproj" />
-      <ProjectReference Include="..\Vixen.Diagnostics\Vixen.Diagnostics.csproj" />
+        <ProjectReference Include="..\Vixen.Core.Common\Vixen.Core.Common.csproj"/>
+        <ProjectReference Include="..\Vixen.Diagnostics\Vixen.Diagnostics.csproj"/>
     </ItemGroup>
 </Project>

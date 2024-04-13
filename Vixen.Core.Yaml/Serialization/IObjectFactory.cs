@@ -8,7 +8,7 @@
 /// </remarks>
 public interface IObjectFactory {
     /// <summary>
-    ///     Creates an instance of the specified type. Returns null if instance cannot be created.
+    ///     Creates an instance of the specified type. Throws with an appropriate exception if the type cannot be created.
     /// </summary>
     object Create(Type type);
 }

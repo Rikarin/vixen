@@ -12,12 +12,9 @@ public class FieldDescriptor : MemberDescriptorBase {
     /// </summary>
     /// <value>The property information.</value>
     public FieldInfo FieldInfo { get; }
-
     public override Type Type => FieldInfo.FieldType;
-
     public override bool IsPublic => FieldInfo.IsPublic;
-
-    public override bool HasSet => true;
+    public override bool HasSet => !FieldInfo.IsInitOnly;
 
     public FieldDescriptor(ITypeDescriptor typeDescriptor, FieldInfo fieldInfo, StringComparer defaultNameComparer)
         : base(fieldInfo, defaultNameComparer) {

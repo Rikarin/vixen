@@ -1,7 +1,7 @@
 namespace Vixen.UI;
 
 public abstract partial class View {
-    Dictionary<Type, object> configurations = new();
+    readonly Dictionary<Type, object> configurations = new();
     
     // View? cachedBody;
     ContextMenuView? contextMenuView;

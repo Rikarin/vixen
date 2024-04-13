@@ -33,12 +33,8 @@ public class PropertyDescriptor : MemberDescriptorBase {
         }
 
         PropertyInfo = propertyInfo;
-
-        getMethod = propertyInfo.GetGetMethod(false) ?? propertyInfo.GetGetMethod(true);
-        if (propertyInfo.CanWrite && propertyInfo.GetSetMethod(!IsPublic) != null) {
-            setMethod = propertyInfo.GetSetMethod(!IsPublic);
-        }
-
+        getMethod = propertyInfo.GetMethod;
+        setMethod = propertyInfo.SetMethod;
         TypeDescriptor = typeDescriptor;
     }
 

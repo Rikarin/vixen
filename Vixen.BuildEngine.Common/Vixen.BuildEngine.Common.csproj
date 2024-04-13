@@ -5,9 +5,9 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Vixen.Core.IO\Vixen.Core.IO.csproj" />
-      <ProjectReference Include="..\Vixen.Core.MicroThreading\Vixen.Core.MicroThreading.csproj" />
-      <ProjectReference Include="..\Vixen.Core.Serialization\Vixen.Core.Serialization.csproj" />
-      <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj" />
+        <ProjectReference Include="..\Vixen.Core.IO\Vixen.Core.IO.csproj"/>
+        <ProjectReference Include="..\Vixen.Core.MicroThreading\Vixen.Core.MicroThreading.csproj"/>
+        <ProjectReference Include="..\Vixen.Core.Serialization\Vixen.Core.Serialization.csproj"/>
+        <ProjectReference Include="..\Vixen.Core\Vixen.Core.csproj"/>
     </ItemGroup>
 </Project>

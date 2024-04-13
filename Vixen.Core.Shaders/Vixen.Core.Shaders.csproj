@@ -5,15 +5,15 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        <PrivateAssets>all</PrivateAssets>
-      </PackageReference>
-      <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
+        <PackageReference Include="Antlr4.CodeGenerator" Version="4.6.6">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Antlr4.Runtime" Version="4.6.6"/>
     </ItemGroup>
     <ItemGroup>
-      <Content Include="VixenLexer.g4" />
-      <Content Include="VixenParser.g4" />
-      <Content Include="UnicodeClasses.g4" />
+        <Content Include="VixenLexer.g4"/>
+        <Content Include="VixenParser.g4"/>
+        <Content Include="UnicodeClasses.g4"/>
     </ItemGroup>
 </Project>

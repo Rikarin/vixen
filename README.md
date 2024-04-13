@@ -42,6 +42,7 @@ Create game engine with requirements:
 
 ## Topics (TODO)
 
+- Consider replacing UI.State with Signal implementation
 - Explicitly use RootNamespace
 - Generic interface for wrapping Vulkan & OpenGL
 - Rendering Pipelines

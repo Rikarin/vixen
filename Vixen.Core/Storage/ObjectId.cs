@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Vixen.Core.Storage;
@@ -61,7 +62,7 @@ public unsafe partial struct ObjectId : IEquatable<ObjectId>, IComparable<Object
         this.hash4 = hash4;
     }
 
-    public static explicit operator ObjectId(Guid guid) => *(ObjectId*)&guid;
+    public static explicit operator ObjectId(Guid guid) => Unsafe.As<Guid, ObjectId>(ref guid);
 
     public static ObjectId Combine(ObjectId left, ObjectId right) =>
         // Note: we don't carry (probably not worth the performance hit)
@@ -129,7 +130,7 @@ public unsafe partial struct ObjectId : IEquatable<ObjectId>, IComparable<Object
             return false;
         }
 
-        var hash = new byte[HashSize];
+        var hash = stackalloc byte[HashSize];
         for (var i = 0; i < HashStringLength; i += 2) {
             var c1 = input[i];
             var c2 = input[i + 1];
@@ -144,7 +145,8 @@ public unsafe partial struct ObjectId : IEquatable<ObjectId>, IComparable<Object
             hash[i >> 1] = (byte)((digit1 << 4) | digit2);
         }
 
-        result = new(hash);
+        var hashSpan = new Span<uint>(hash, HashSizeInUInt);
+        result = new(hashSpan[0], hashSpan[1], hashSpan[2], hashSpan[3]);
         return true;
     }
 
@@ -175,12 +177,7 @@ public unsafe partial struct ObjectId : IEquatable<ObjectId>, IComparable<Object
     }
 
     /// <inheritdoc />
-    public override int GetHashCode() {
-        fixed (uint* objPtr = &hash1) {
-            var obj1 = (int*)objPtr;
-            return *obj1;
-        }
-    }
+    public override int GetHashCode() => (int)hash1;
 
     /// <inheritdoc />
     public int CompareTo(ObjectId other) {
@@ -222,11 +219,7 @@ public unsafe partial struct ObjectId : IEquatable<ObjectId>, IComparable<Object
     ///     Gets a <see cref="Guid" /> from this object identifier.
     /// </summary>
     /// <returns>Guid.</returns>
-    public Guid ToGuid() {
-        fixed (void* hashStart = &hash1) {
-            return *(Guid*)hashStart;
-        }
-    }
+    public Guid ToGuid() => Unsafe.As<ObjectId, Guid>(ref this);
 
     /// <summary>
     ///     News this instance.

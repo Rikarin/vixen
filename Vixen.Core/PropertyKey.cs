@@ -12,12 +12,14 @@ namespace Vixen.Core;
 [DataSerializer(typeof(PropertyKeySerializer<>), Mode = DataSerializerGenericMode.Type)]
 [DebuggerDisplay("{" + nameof(Name) + "}")]
 public abstract class PropertyKey : IComparable {
+    protected string name;
     DefaultValueMetadata defaultValueMetadata;
 
     /// <summary>
     ///     Gets the name of this key.
     /// </summary>
-    public string Name { get; protected set; }
+    public string Name { get => name; init => name = value; }
+
 
     /// <summary>
     ///     Gets the metadatas.

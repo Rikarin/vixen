@@ -38,6 +38,18 @@ public class SerializationTests : YamlTest {
     }
 
     [Fact]
+    public void ThrowWithoutEmptyCtor() {
+        try {
+            SerializeThenDeserialize(new ClassWithNonEmptyCtor(default));
+            Assert.Fail(
+                "An exception should have been thrown by this method before hitting this line, the class provided does not have an empty constructor"
+            );
+        } catch (Exception ex) {
+            Assert.IsType<DefaultObjectFactory.InstanceCreationException>(ex.InnerException);
+        }
+    }
+
+    [Fact]
     public void RoundtripWithDefaults() {
         var settings = new SerializerSettings { EmitDefaultValues = true };
         settings.RegisterAssembly(typeof(SerializationTests).Assembly);
@@ -688,6 +700,10 @@ Mother:
         Dump.WriteLine("serialized =\n-----\n{0}", serialized);
 
         return serializer.Deserialize<T>(new StringReader(serialized));
+    }
+
+    class ClassWithNonEmptyCtor {
+        public ClassWithNonEmptyCtor(bool parameter) { }
     }
 
     class Y {
