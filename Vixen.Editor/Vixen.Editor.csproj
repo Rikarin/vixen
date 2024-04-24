@@ -18,7 +18,7 @@
         <PackageReference Include="Silk.NET.Shaderc" Version="2.18.0"/>
         <PackageReference Include="Silk.NET.SPIRV.Cross" Version="2.18.0"/>
         <PackageReference Include="Silk.NET.SPIRV.Cross.Native" Version="2.18.0"/>
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0"/>
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.21.0"/>
         <PackageReference Include="YamlDotNet" Version="13.7.1"/>
         <!--        <PackageReference Include="MessagePack" Version="2.5.108" />-->
     </ItemGroup>
