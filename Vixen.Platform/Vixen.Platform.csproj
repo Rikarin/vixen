@@ -9,7 +9,7 @@
     <ItemGroup>
         <PackageReference Include="Serilog" Version="3.1.1"/>
         <PackageReference Include="Silk.NET" Version="2.18.0"/>
-        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.18.0" PrivateAssets="All"/>
+        <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.21.0" PrivateAssets="All"/>
 
         <!--        <PackageReference Include="Twizzle.ImPlot.NET" Version="1.89.4" />-->
         <PackageReference Include="Silk.NET.Vulkan" Version="2.18.0"/>
